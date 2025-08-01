@@ -10,11 +10,11 @@ import { RequestBuilder } from '../../request-builder';
 
 import { Version } from '../../models/version';
 
-export interface VersionGet$Params {
+export interface GetVersion$Params {
 }
 
-export function versionGet(http: HttpClient, rootUrl: string, params?: VersionGet$Params, context?: HttpContext): Observable<StrictHttpResponse<Version>> {
-  const rb = new RequestBuilder(rootUrl, versionGet.PATH, 'get');
+export function getVersion(http: HttpClient, rootUrl: string, params?: GetVersion$Params, context?: HttpContext): Observable<StrictHttpResponse<Version>> {
+  const rb = new RequestBuilder(rootUrl, getVersion.PATH, 'get');
   if (params) {
   }
 
@@ -28,4 +28,4 @@ export function versionGet(http: HttpClient, rootUrl: string, params?: VersionGe
   );
 }
 
-versionGet.PATH = '/version';
+getVersion.PATH = '/version';
