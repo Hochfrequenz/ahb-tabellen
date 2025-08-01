@@ -20,5 +20,7 @@ export interface Ahb {
 'description': string;
 'direction': string;
 'pruefidentifikator': string;
+'versionsnummer': string;
+'veroeffentlichungsdatum': string;
 };
 }
