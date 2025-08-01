@@ -20,9 +20,9 @@ export default class AHBRepository {
   // Retrieve a single AHB from either database (JSON) or generate XLSX on the fly
   public async get(pruefi: string, formatVersion: string, type: FileType): Promise<Ahb | Buffer> {
     if (type === FileType.JSON) {
-      return this.getAhbFromDatabase(pruefi, formatVersion);
+      return this.getCompleteAhbFromDatabase(pruefi, formatVersion);
     } else if (type === FileType.XLSX) {
-      const ahb = await this.getAhbFromDatabase(pruefi, formatVersion);
+      const ahb = await this.getCompleteAhbFromDatabase(pruefi, formatVersion);
       return this.xlsxGenerator.generateXlsx(ahb);
     } else {
       throw new Error('Unsupported file type');
@@ -34,6 +34,8 @@ export default class AHBRepository {
       description: line.description || '',
       direction: line.direction || '',
       pruefidentifikator: line.pruefidentifikator,
+      versionsnummer: '', // Default value since this field is not available in the database
+      veroeffentlichungsdatum: '', // Default value since this field is not available in the database
     };
   }
 
@@ -56,7 +58,7 @@ export default class AHBRepository {
     };
   }
 
-  private async getAhbFromDatabase(pruefi: string, formatVersion: string): Promise<Ahb> {
+  private async getAhbFromDatabase(pruefi: string, formatVersion: string): Promise<Ahb['lines']> {
     // Initialize the database connection if not already initialized
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
@@ -76,13 +78,45 @@ export default class AHBRepository {
       );
     }
 
-    // Get the first line to extract meta information
-    const firstLine = lines[0];
-
     // Transform the data to match the API schema
+    return lines.map(line => this.mapLine(line));
+  }
+
+  private async getMetaInformationFromDatabase(
+    pruefi: string,
+    formatVersion: string
+  ): Promise<Ahb['meta']> {
+    // Initialize the database connection if not already initialized
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
+
+    // Get a single line to extract meta information
+    const firstLine = await AppDataSource.getRepository(AhbLine)
+      .createQueryBuilder('al')
+      .where('al.format_version = :formatVersion', { formatVersion })
+      .andWhere('al.pruefidentifikator = :pruefi', { pruefi })
+      .orderBy('al.sort_path', 'ASC')
+      .getOne();
+
+    if (!firstLine) {
+      throw new NotFoundError(
+        `AHB document not found. Prüfidentifikator: ${pruefi}, Format Version: ${formatVersion}`
+      );
+    }
+
+    return this.mapMetaInformation(firstLine);
+  }
+
+  private async getCompleteAhbFromDatabase(pruefi: string, formatVersion: string): Promise<Ahb> {
+    const [lines, meta] = await Promise.all([
+      this.getAhbFromDatabase(pruefi, formatVersion),
+      this.getMetaInformationFromDatabase(pruefi, formatVersion),
+    ]);
+
     return {
-      meta: this.mapMetaInformation(firstLine),
-      lines: lines.map(line => this.mapLine(line)),
+      lines,
+      meta,
     };
   }
 }
