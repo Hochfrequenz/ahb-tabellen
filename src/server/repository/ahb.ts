@@ -20,9 +20,9 @@ export default class AHBRepository {
   // Retrieve a single AHB from either database (JSON) or generate XLSX on the fly
   public async get(pruefi: string, formatVersion: string, type: FileType): Promise<Ahb | Buffer> {
     if (type === FileType.JSON) {
-      return this.getFromDatabase(pruefi, formatVersion);
+      return this.getAhbFromDatabase(pruefi, formatVersion);
     } else if (type === FileType.XLSX) {
-      const ahb = await this.getFromDatabase(pruefi, formatVersion);
+      const ahb = await this.getAhbFromDatabase(pruefi, formatVersion);
       return this.xlsxGenerator.generateXlsx(ahb);
     } else {
       throw new Error('Unsupported file type');
@@ -56,7 +56,7 @@ export default class AHBRepository {
     };
   }
 
-  private async getFromDatabase(pruefi: string, formatVersion: string): Promise<Ahb> {
+  private async getAhbFromDatabase(pruefi: string, formatVersion: string): Promise<Ahb> {
     // Initialize the database connection if not already initialized
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
