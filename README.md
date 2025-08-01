@@ -170,7 +170,6 @@ To deploy to the production environment:
 4. A manual approval step in Octopus Deploy will be required
 5. After approval, the application will be deployed to [ahb-tabellen.hochfrequenz.de](https://ahb-tabellen.hochfrequenz.de)
 
-
 ## Update the database
 
 ### Overview
