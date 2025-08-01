@@ -120,6 +120,7 @@ paths:
       tags:
         - maintenance
       summary: Get the current version of the AHB-Tabellen application
+      operationId: getVersion
       responses:
         '200':
           description: successful operation
