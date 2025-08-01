@@ -138,7 +138,8 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 
 ### OpenAPI Specification Generation
 
-Run `npm run ng-openapi-gen` to generate the OpenAPI specification and related TypeScript interfaces. This command will update the API client code based on the OpenAPI specification.
+Run `npm run ng-openapi-gen` to generate the OpenAPI specification and related TypeScript interfaces.
+This command will update the API client code based on the OpenAPI specification.
 
 ## 🚀 Deployment
 

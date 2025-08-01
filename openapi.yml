@@ -120,6 +120,7 @@ paths:
       tags:
         - maintenance
       summary: Get the current version of the AHB-Tabellen application
+      operationId: getVersion
       responses:
         '200':
           description: successful operation
@@ -194,10 +195,18 @@ components:
             pruefidentifikator:
               type: string
               example: '25007'
+            versionsnummer:
+              type: string
+              example: '2.1c'
+            veroeffentlichungsdatum:
+              type: string
+              example: '2025-04-17'
           required:
             - description
             - direction
             - pruefidentifikator
+            - versionsnummer
+            - veroeffentlichungsdatum
       required:
         - lines
         - meta

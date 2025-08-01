@@ -38,6 +38,16 @@
             {{ getSenderEmpfaenger(ahb.meta.direction).empfaenger }}
           </p>
           <p class="text-[14px]">
+            <span class="font-bold">Version:</span>
+            <!-- naming is not consistent at bdew. In XML it is 'versionsnummer', in the AHB pdf documents it is 'version' -->
+            {{ ahb.meta.versionsnummer }}
+          </p>
+          <p class="text-[14px]">
+            <span class="font-bold">Publikationsdatum:</span>
+            <!-- naming is not consistent at bdew. In XML it is 'veroeffentlichungsdatum', in the AHB pdf documents it is 'publikationsdatum' -->
+            {{ ahb.meta.veroeffentlichungsdatum | date: 'dd.MM.yyyy' }}
+          </p>
+          <p class="text-[14px]">
             <span class="font-bold"> Format: </span>
             {{ edifactFormat() }}
           </p>
