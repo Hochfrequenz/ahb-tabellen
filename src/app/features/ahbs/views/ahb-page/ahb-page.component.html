@@ -38,6 +38,14 @@
             {{ getSenderEmpfaenger(ahb.meta.direction).empfaenger }}
           </p>
           <p class="text-[14px]">
+            <span class="font-bold">Versionsnummer:</span>
+            {{ ahb.meta.versionsnummer }}
+          </p>
+          <p class="text-[14px]">
+            <span class="font-bold">Veröffentlichungsdatum:</span>
+            {{ ahb.meta.veroeffentlichungsdatum | date: 'dd.MM.yyyy' }}
+          </p>
+          <p class="text-[14px]">
             <span class="font-bold"> Format: </span>
             {{ edifactFormat() }}
           </p>
