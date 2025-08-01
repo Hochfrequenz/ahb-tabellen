@@ -1,7 +1,7 @@
 import { Ahb } from '../../app/core/api/models';
 import { NotFoundError } from '../infrastructure/errors';
 import { AppDataSource } from '../infrastructure/database';
-import { AhbLine } from '../entities/ahb-line.entity';
+import { AhbLine, Anwendungshandbuch } from '../entities/ahb-line.entity';
 import { XlsxGeneratorService } from '../infrastructure/xlsx-generator.service';
 
 export enum FileType {
@@ -29,13 +29,13 @@ export default class AHBRepository {
     }
   }
 
-  private mapMetaInformation(line: AhbLine): Ahb['meta'] {
+  private mapMetaInformation(line: AhbLine, ahb: Anwendungshandbuch): Ahb['meta'] {
     return {
       description: line.description || '',
       direction: line.direction || '',
       pruefidentifikator: line.pruefidentifikator,
-      versionsnummer: '', // Default value since this field is not available in the database
-      veroeffentlichungsdatum: '', // Default value since this field is not available in the database
+      versionsnummer: ahb.versionsnummer,
+      veroeffentlichungsdatum: ahb.veroeffentlichungsdatum,
     };
   }
 
@@ -105,7 +105,17 @@ export default class AHBRepository {
       );
     }
 
-    return this.mapMetaInformation(firstLine);
+    const ahb_document_metadata = await AppDataSource.getRepository(Anwendungshandbuch).findOne({
+      where: { primary_key: firstLine.anwendungshandbuch_primary_key },
+    });
+
+    if (!ahb_document_metadata) {
+      throw new NotFoundError(
+        `AHB document not found. Prüfidentifikator: ${pruefi}, Format Version: ${formatVersion}`
+      );
+    }
+
+    return this.mapMetaInformation(firstLine, ahb_document_metadata);
   }
 
   private async getCompleteAhbFromDatabase(pruefi: string, formatVersion: string): Promise<Ahb> {
