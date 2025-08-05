@@ -65,7 +65,7 @@ export class InputSearchEnhancedComponent {
   updateURL(query: string | undefined): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { query: query || null },
+      queryParams: { query: query ? encodeURIComponent(query) : null },
       queryParamsHandling: 'merge',
     });
   }
