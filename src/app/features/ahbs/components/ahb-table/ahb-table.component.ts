@@ -260,8 +260,8 @@ export class AhbTableComponent {
       '25': 'UTILTS',
       '91': 'CONTRL',
       '92': 'APERAK',
-      '44': 'UTILMD',
-      '55': 'UTILMD',
+      '44': 'UTILMDG',
+      '55': 'UTILMDS',
     };
 
     const key = pruefi.substring(0, 2);
