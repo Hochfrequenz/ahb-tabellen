@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: AHB Tabellen API Documentation
+  title: AHB-Tabellen API Documentation
   description: >
     This is the description for the API of the ahb-tabellen web application.
 
