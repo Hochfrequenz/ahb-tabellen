@@ -12,9 +12,16 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
   templateUrl: './header.component.html',
   animations: [
     trigger('expandCollapse', [
-      state('closed', style({ height: '0px', opacity: 0, overflow: 'hidden' })),
-      state('open', style({ height: '*', opacity: 1, overflow: 'hidden' })),
-      transition('closed <=> open', animate('200ms ease-in-out')),
+      state(
+        'closed',
+        style({ height: '0px', opacity: 0, overflow: 'hidden', transform: 'translateY(-4px)' })
+      ),
+      state(
+        'open',
+        style({ height: '*', opacity: 1, overflow: 'hidden', transform: 'translateY(0)' })
+      ),
+      transition('closed => open', animate('280ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+      transition('open => closed', animate('220ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
     ]),
   ],
 })

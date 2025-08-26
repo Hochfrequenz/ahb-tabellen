@@ -55,28 +55,28 @@
     </button>
   </nav>
 
-  <!-- Mobile Menu - Only visible on mobile -->
-  @if (isMobileMenuOpen()) {
-    <div
-      [@expandCollapse]="isMobileMenuOpen() ? 'open' : 'closed'"
-      id="mobile-menu"
-      class="lg:hidden bg-hf-grell-rose border-t border-hf-grell-rose shadow-sm">
-      <div class="px-4 py-3 space-y-3">
-        <!-- Mobile Search Form -->
-        <div class="w-full">
-          <ng-content select="[slot=search-form-mobile]"></ng-content>
-        </div>
+  <!-- Mobile Menu - always rendered for smooth animations -->
+  <div
+    [@expandCollapse]="isMobileMenuOpen() ? 'open' : 'closed'"
+    id="mobile-menu"
+    class="lg:hidden bg-hf-grell-rose border-t border-hf-grell-rose shadow-sm"
+    [attr.aria-hidden]="!isMobileMenuOpen()"
+    [style.pointer-events]="isMobileMenuOpen() ? 'auto' : 'none'">
+    <div class="px-4 py-3 space-y-3">
+      <!-- Mobile Search Form -->
+      <div class="w-full">
+        <ng-content select="[slot=search-form-mobile]"></ng-content>
+      </div>
 
-        <!-- Mobile Search Input -->
-        <div class="w-full">
-          <ng-content select="[slot=search-mobile]"></ng-content>
-        </div>
+      <!-- Mobile Search Input -->
+      <div class="w-full">
+        <ng-content select="[slot=search-mobile]"></ng-content>
+      </div>
 
-        <!-- Mobile Login Button -->
-        <div class="w-full">
-          <app-login-button />
-        </div>
+      <!-- Mobile Login Button -->
+      <div class="w-full">
+        <app-login-button />
       </div>
     </div>
-  }
+  </div>
 </header>
