@@ -4,12 +4,79 @@
       <app-icon-logo [size]="23" />
     </a>
     <span class="text-xl flex items-center me-14">AHB-Tabellen</span>
-    <div class="flex-grow">
-      <ng-content select="app-ahb-search-form-header"></ng-content>
+
+    <!-- Desktop Search Form - Hidden on mobile -->
+    <div class="hidden lg:flex flex-grow">
+      <ng-content select="[slot=search-form]"></ng-content>
     </div>
-    <div class="flex gap-2">
-      <ng-content select="app-input-search-enhanced"></ng-content>
+
+    <!-- Desktop Actions - Hidden on mobile -->
+    <div class="hidden lg:flex gap-2">
+      <ng-content select="[slot=search]"></ng-content>
       <app-login-button />
     </div>
+
+    <!-- Mobile Menu Button - Only visible on mobile -->
+    <button
+      type="button"
+      class="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-hf-weiches-schwarz hover:bg-hf-pastell-rose focus:outline-none focus:ring-2 focus:ring-inset focus:ring-hf-dunkel-rose ml-2"
+      (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="isMobileMenuOpen()"
+      aria-controls="mobile-menu">
+      <span class="sr-only">Open main menu</span>
+      <!-- Icon when menu is closed -->
+      <svg
+        *ngIf="!isMobileMenuOpen()"
+        class="block h-6 w-6"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+      <!-- Icon when menu is open -->
+      <svg
+        *ngIf="isMobileMenuOpen()"
+        class="block h-6 w-6"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
   </nav>
+
+  <!-- Mobile Menu - always rendered for smooth animations -->
+  <div
+    [@expandCollapse]="isMobileMenuOpen() ? 'open' : 'closed'"
+    id="mobile-menu"
+    class="lg:hidden bg-hf-grell-rose border-t border-hf-grell-rose shadow-sm"
+    [attr.aria-hidden]="!isMobileMenuOpen()"
+    [style.pointer-events]="isMobileMenuOpen() ? 'auto' : 'none'">
+    <div class="px-4 py-3 space-y-3">
+      <!-- Mobile Search Form -->
+      <div class="w-full">
+        <ng-content select="[slot=search-form-mobile]"></ng-content>
+      </div>
+
+      <!-- Mobile Search Input -->
+      <div class="w-full">
+        <ng-content select="[slot=search-mobile]"></ng-content>
+      </div>
+
+      <!-- Mobile Login Button -->
+      <div class="w-full">
+        <app-login-button />
+      </div>
+    </div>
+  </div>
 </header>
