@@ -74,6 +74,9 @@
         <p class="text-xl">AHB-Tabelle wird geladen ...</p>
       </div>
     }
+
+    <!-- Solutions footer inside scroll: visible only on small screens -->
+    <app-solutions-footer class="block md:hidden"></app-solutions-footer>
   </div>
 
   <div *ngIf="errorOccurred" class="flex-1 flex items-center justify-center">
@@ -83,7 +86,9 @@
       [formatVersion]="formatVersion()"></app-fallback-page>
   </div>
 
+  <!-- Solutions footer for desktop/tablet: visible on md+ screens at bottom -->
+  <app-solutions-footer class="flex-none hidden md:block"></app-solutions-footer>
+
   <!-- Fixed Footer -->
-  <app-solutions-footer class="flex-none"></app-solutions-footer>
   <app-footer class="flex-none" />
 </div>
