@@ -1,14 +1,36 @@
 <div class="h-screen flex flex-col">
   <!-- Fixed Main Header -->
   <app-header class="flex-none">
+    <!-- Desktop projection -->
     <app-ahb-search-form-header
-      class="flex-1 hidden md:inline"
+      slot="search-form"
+      class="flex-1"
       [formatVersion]="formatVersion()"
       [pruefi]="pruefi()"
       (formatVersionChange)="onFormatVersionChange($event)"
       (pruefiChange)="onPruefiChange($event)" />
     <app-input-search-enhanced
+      slot="search"
       class="inline-block w-full md:w-96"
+      [searchQuery]="searchQuery()"
+      (searchQueryChange)="onSearchQueryChange($event)"
+      (keyupEnter)="onNextClick()"
+      (nextClick)="onNextClick()"
+      (previousClick)="onPreviousClick()"
+      [selectedPosition]="(table()?.markIndex() ?? 0) + 1"
+      [totalResults]="table()?.markElements()?.length" />
+
+    <!-- Mobile projection -->
+    <app-ahb-search-form-header
+      slot="search-form-mobile"
+      class="w-full"
+      [formatVersion]="formatVersion()"
+      [pruefi]="pruefi()"
+      (formatVersionChange)="onFormatVersionChange($event)"
+      (pruefiChange)="onPruefiChange($event)" />
+    <app-input-search-enhanced
+      slot="search-mobile"
+      class="w-full"
       [searchQuery]="searchQuery()"
       (searchQueryChange)="onSearchQueryChange($event)"
       (keyupEnter)="onNextClick()"
