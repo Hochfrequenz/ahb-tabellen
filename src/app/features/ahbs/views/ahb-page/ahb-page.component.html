@@ -102,8 +102,15 @@
   </div>
 
   <div *ngIf="errorOccurred" class="flex-1 flex items-center justify-center">
+    <!-- Show DVGW fallback page for specific Prüfidentifikatoren -->
+    <app-dvgw-fallback-page
+      *ngIf="isDvgwPruefi()"
+      class="w-11/12 max-w-4xl"></app-dvgw-fallback-page>
+
+    <!-- Show regular fallback page for other cases -->
     <app-fallback-page
-      class="w-1/2"
+      *ngIf="!isDvgwPruefi()"
+      class="w-11/12 max-w-4xl"
       [pruefi]="pruefi()"
       [formatVersion]="formatVersion()"></app-fallback-page>
   </div>
