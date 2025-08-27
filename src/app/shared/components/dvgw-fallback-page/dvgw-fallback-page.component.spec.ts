@@ -21,7 +21,7 @@ describe('DvgwFallbackPageComponent', () => {
 
   it('should display the correct DVGW message', () => {
     const expectedMessage =
-      'Die Prüfidentifikatoren 70095 und 70096 werden von in einem PDF Dokument der DVGW veröffentlicht. Uns stehen zur Zeit nur die Dokumente des BDEW in maschinenlesbarer Form bereit.';
+      'Die Prüfidentifikatoren 70095 und 70096 werden in einem PDF Dokument der DVGW veröffentlicht. Uns stehen zur Zeit nur die Dokumente des BDEW in maschinenlesbarer Form bereit.';
     expect(component.message).toBe(expectedMessage);
   });
 
