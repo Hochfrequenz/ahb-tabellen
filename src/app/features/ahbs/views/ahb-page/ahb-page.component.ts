@@ -112,7 +112,7 @@ export class AhbPageComponent implements OnInit, OnDestroy {
     this.errorOccurred = false;
 
     // Check if this is a DVGW Prüfidentifikator
-    if (pruefi === '70095' || pruefi === '70096') {
+    if (this.isDvgwPruefi()) {
       this.errorOccurred = true;
       this.ahb$ = of({} as Ahb);
       this.lines$ = of([]);
