@@ -51,13 +51,15 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   searchQuery = signal<string | undefined>('');
   edifactFormat = computed(() => this.getEdifactFormat(this.pruefi()));
 
+  private readonly mehrMinderMengenMeldungSLP = '70095';
+  private readonly mehrMinderMengenMeldungRLM = '70096';
+
   // Computed properties for fallback pages
   isDvgwPruefi = computed(() => {
-    const mehrMinderMengenMeldungSLP = '70095';
-    const mehrMinderMengenMeldungRLM = '70096';
     const currentPruefi = this.pruefi();
     return (
-      currentPruefi === mehrMinderMengenMeldungSLP || currentPruefi === mehrMinderMengenMeldungRLM
+      currentPruefi === this.mehrMinderMengenMeldungSLP ||
+      currentPruefi === this.mehrMinderMengenMeldungRLM
     );
   });
 
