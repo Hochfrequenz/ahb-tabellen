@@ -22,6 +22,7 @@ import { InputSearchEnhancedComponent } from '../../../../shared/components/inpu
 import { ExportButtonComponent } from '../../components/export-button/export-button.component';
 import { IconCopyUrlComponent } from '../../../../shared/components/icon-copy-url/icon-copy-url.component';
 import { FallbackPageComponent } from '../../../../shared/components/fallback-page/fallback-page.component';
+import { DvgwFallbackPageComponent } from '../../../../shared/components/dvgw-fallback-page/dvgw-fallback-page.component';
 
 @Component({
   selector: 'app-ahb-page',
@@ -39,6 +40,7 @@ import { FallbackPageComponent } from '../../../../shared/components/fallback-pa
     ExportButtonComponent,
     IconCopyUrlComponent,
     FallbackPageComponent,
+    DvgwFallbackPageComponent,
   ],
   templateUrl: './ahb-page.component.html',
 })
@@ -48,6 +50,12 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   pruefi = signal<string>('');
   searchQuery = signal<string | undefined>('');
   edifactFormat = computed(() => this.getEdifactFormat(this.pruefi()));
+
+  // Computed properties for fallback pages
+  isDvgwPruefi = computed(() => {
+    const currentPruefi = this.pruefi();
+    return currentPruefi === '70095' || currentPruefi === '70096';
+  });
 
   // View references
   table = viewChild(AhbTableComponent);
@@ -98,6 +106,14 @@ export class AhbPageComponent implements OnInit, OnDestroy {
 
   private loadAhbData(formatVersion: string, pruefi: string) {
     this.errorOccurred = false;
+
+    // Check if this is a DVGW Prüfidentifikator
+    if (pruefi === '70095' || pruefi === '70096') {
+      this.errorOccurred = true;
+      this.ahb$ = of({} as Ahb);
+      this.lines$ = of([]);
+      return;
+    }
 
     this.ahb$ = this.ahbService
       .getAhb$Json({
