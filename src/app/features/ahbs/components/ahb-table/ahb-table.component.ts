@@ -22,7 +22,6 @@ interface ExpandedState {
   standalone: true,
   imports: [HighlightPipe, IconLinkComponent],
   templateUrl: './ahb-table.component.html',
-  styleUrl: './ahb-table.component.scss',
 })
 export class AhbTableComponent {
   header = viewChild<ElementRef>('header');
