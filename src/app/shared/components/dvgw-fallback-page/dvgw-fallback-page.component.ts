@@ -6,7 +6,6 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './dvgw-fallback-page.component.html',
-  styleUrls: ['./dvgw-fallback-page.component.scss'],
 })
 export class DvgwFallbackPageComponent {
   readonly message =
