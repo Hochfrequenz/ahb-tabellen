@@ -53,8 +53,12 @@ export class AhbPageComponent implements OnInit, OnDestroy {
 
   // Computed properties for fallback pages
   isDvgwPruefi = computed(() => {
+    const mehrMinderMengenMeldungSLP = '70095';
+    const mehrMinderMengenMeldungRLM = '70096';
     const currentPruefi = this.pruefi();
-    return currentPruefi === '70095' || currentPruefi === '70096';
+    return (
+      currentPruefi === mehrMinderMengenMeldungSLP || currentPruefi === mehrMinderMengenMeldungRLM
+    );
   });
 
   // View references
