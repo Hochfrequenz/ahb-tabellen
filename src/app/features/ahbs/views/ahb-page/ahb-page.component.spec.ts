@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AhbTableComponent } from '../../components/ahb-table/ahb-table.component';
 import { signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 describe('AhbPageComponent', () => {
   let mockRouter: { navigate: jest.Mock };
@@ -52,6 +53,12 @@ describe('AhbPageComponent', () => {
       .provide({
         provide: Router,
         useValue: mockRouter,
+      })
+      .provide({
+        provide: HttpClient,
+        useValue: {
+          get: jest.fn(() => of('')),
+        },
       });
   });
 
