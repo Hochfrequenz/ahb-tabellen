@@ -35,7 +35,7 @@ export class InputSearchEnhancedComponent {
     this.route.queryParams.subscribe(params => {
       const query = params['query'];
       if (query) {
-        this.searchQuery.set(query);
+        this.searchQuery.set(decodeURIComponent(query));
       }
     });
 
@@ -65,9 +65,8 @@ export class InputSearchEnhancedComponent {
   updateURL(query: string | undefined): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { query: query || null },
+      queryParams: { query: query ? encodeURIComponent(query) : null },
       queryParamsHandling: 'merge',
-      encode: 'query',
     });
   }
 }
