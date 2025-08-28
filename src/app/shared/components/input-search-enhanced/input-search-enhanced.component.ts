@@ -67,7 +67,7 @@ export class InputSearchEnhancedComponent {
       relativeTo: this.route,
       queryParams: { query: query || null },
       queryParamsHandling: 'merge',
-      encode: 'query'
+      encode: 'query',
     });
   }
 }
