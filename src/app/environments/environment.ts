@@ -11,4 +11,5 @@ export const environment: EnvironmentInterface = {
   auth0Domain: 'auth.hochfrequenz.de',
   auth0ClientId: 'Hku0EniRjy4B2krnx1sCwTIOzAiVta1B',
   baseUrl: 'http://localhost:4200',
+  warmupUrl: 'https://ahbicht-stage.azurewebsites.net/api/ResolveConditionText/FV2504/UTILMDS/333',
 };
