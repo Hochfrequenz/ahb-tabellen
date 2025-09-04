@@ -74,7 +74,7 @@ postprocessors = [
 [git]
 # Parse commits according to the conventional commits specification.
 # See https://www.conventionalcommits.org
-conventional_commits = false
+conventional_commits = true
 # Exclude commits that do not match the conventional commits specification.
 filter_unconventional = false
 # Split commits on newlines, treating each line as an individual commit.
