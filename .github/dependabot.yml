@@ -9,10 +9,6 @@ updates:
     directory: '/' # Location of package manifests
     schedule:
       interval: 'weekly'
-    reviewers:
-      - 'TommyBom'
-      - 'ohenning'
-      - '@Hochfrequenz/frontend-developers-review-team'
     groups:
       angular:
         applies-to: version-updates
@@ -25,15 +21,11 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
-    reviewers:
-      - 'hf-krechan'
     commit-message:
       prefix: 'chore'
   - package-ecosystem: 'docker'
     directory: '/'
     schedule:
       interval: 'weekly'
-    reviewers:
-      - '@Hochfrequenz/frontend-developers-review-team'
     commit-message:
       prefix: 'chore'
