@@ -124,8 +124,3 @@ jobs:
           release_number: ${{ env.VERSION_TAG }}
           environments: |
             Staging
-
-      - name: Notify for Production Deployment Approval
-        if: ${{ github.event.release.prerelease == 'false' }}
-        run: |
-          echo "Release ${{ env.VERSION_TAG }} created. Awaiting manual approval for production deployment."
