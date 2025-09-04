@@ -4,36 +4,31 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-### Bug Fixes
-
-- *(url-encoding)* Refactor updateURL to simplify query parameter handling (#651)
-
-
 ### Build
 
 - *(deps)* Bump actions/attest-build-provenance from 2 to 3 (#653)
 - *(deps)* Bump node from 24.6-alpine to 24.7-alpine (#654)
 
 
+### 🐛 Bug Fixes
+
+- *(url-encoding)* Refactor updateURL to simplify query parameter handling (#651)
+
+
 ## 1.3.0-rc00 - 2025-08-27
 
-### Features
+### ✨ Features
 
 - *(dvgw-fallback)* Add DVGW Fallback Component (#649)
 
 
-### Styling
+### 🎨 Styling
 
 - *(responsive-ui)* Make AHB Tabellen Responsive (#647)
 - *(responsive-ui)* Make Landingpage and AHB Landingpage Responsive (#648)
 
 
 ## 1.2.1 - 2025-08-18
-
-### Bug Fixes
-
-- *(pruefi format mapping)* Corrects UTILMD values in pruefi mapping (#638)
-
 
 ### Build
 
@@ -44,26 +39,26 @@ All notable changes to this project will be documented in this file.
 - *(deps)* Bump node from 24.5-alpine to 24.6-alpine (#645)
 
 
+### 🐛 Bug Fixes
+
+- *(pruefi format mapping)* Corrects UTILMD values in pruefi mapping (#638)
+
+
 ## 1.2.0 - 2025-08-01
 
-### Features
+### ✨ Features
 
 - *(add versionsnummer and veroeffentlichungsdatum)* Adds versionsnummer and veroeffentlichungsdatum to the AHB metadata. (#634)
 
 
 ## 1.1.2 - 2025-07-21
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - *(No Category)* Remove old db, no more hoarding (#631)
 
 
 ## 1.1.0 - 2025-07-21
-
-### Features
-
-- *(No Category)* Is this the way to update? No it says it comes from fundamend, but how? (#630)
-
 
 ### Build
 
@@ -81,17 +76,12 @@ All notable changes to this project will be documented in this file.
 - *(deps-dev)* Bump postcss from 8.5.3 to 8.5.4 (#615)
 
 
+### ✨ Features
+
+- *(No Category)* Is this the way to update? No it says it comes from fundamend, but how? (#630)
+
+
 ## 1.0.1 - 2025-05-22
-
-### Bug Fixes
-
-- *(No Category)* Use correct query param name for EBD deeplink (#600)
-
-
-### Miscellaneous Tasks
-
-- *(No Category)* Remove "versuchen Sie es erneut" from error message (#583)
-
 
 ### Build
 
@@ -105,33 +95,31 @@ All notable changes to this project will be documented in this file.
 - *(deps-dev)* Bump @typescript-eslint/eslint-plugin from 8.31.1 to 8.32.1 (#596)
 
 
+### 🐛 Bug Fixes
+
+- *(No Category)* Use correct query param name for EBD deeplink (#600)
+
+
+### 🧹 Miscellaneous Tasks
+
+- *(No Category)* Remove "versuchen Sie es erneut" from error message (#583)
+
+
 ## 1.0.0 - 2025-05-06
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - *(search)* Add Qualifier Column To Search (#582)
 
 
 ## 0.7.9 - 2025-05-05
 
-### Miscellaneous Tasks
+### 🧹 Miscellaneous Tasks
 
 - *(rename-project)* Rename To AHB Tabellen (#579)
 
 
 ## 0.7.8 - 2025-05-05
-
-### Features
-
-- *(link-to-stage)* Link To Stage Applications (#572)
-
-
-### Miscellaneous Tasks
-
-- *(bruno)* Add Version Endpoint Request (#571)
-- *(remove-submodule)* Remove Git Submodule machine-readable_anwendungshandbuecher (#570)
-- *(No Category)* Replace kohlrahbi with fundamend in "powered by"-footer (#578)
-
 
 ### Build
 
@@ -141,65 +129,72 @@ All notable changes to this project will be documented in this file.
 - *(deps-dev)* Bump @typescript-eslint/eslint-plugin from 8.31.0 to 8.31.1 (#576)
 
 
+### ✨ Features
+
+- *(link-to-stage)* Link To Stage Applications (#572)
+
+
+### 🧹 Miscellaneous Tasks
+
+- *(bruno)* Add Version Endpoint Request (#571)
+- *(remove-submodule)* Remove Git Submodule machine-readable_anwendungshandbuecher (#570)
+- *(No Category)* Replace kohlrahbi with fundamend in "powered by"-footer (#578)
+
+
 ## 0.7.7 - 2025-05-03
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - *(link-preview)* Fix Link Preview (#569)
 
 
 ## 0.7.6 - 2025-05-02
 
-### Bug Fixes
+### 🎨 Styling
+
+- *(landing-page)* Remove Border Of Login Button (#568)
+
+
+### 🐛 Bug Fixes
 
 - *(health-check)* Fix Test Db Query (#567)
 - *(iac)* Remove Azure Storage Account (#566)
 
 
-### Styling
-
-- *(landing-page)* Remove Border Of Login Button (#568)
-
-
 ## 0.7.5 - 2025-05-01
 
-### Features
+### ✨ Features
 
 - *(use-sqlite-for-excel)* Use sqlite data to create excel files (#565)
 
 
 ## 0.7.4 - 2025-04-30
 
-### Miscellaneous Tasks
+### 🧹 Miscellaneous Tasks
 
 - *(No Category)* Upgrade ahb.db (fixes many F2410 AHBs, updates some FV2504, adds entirely new FV2510) (#564)
 
 
 ## 0.7.3 - 2025-04-29
 
-### Performance
+### 🚀 Performance
 
 - *(format-version-endpoint)* ⚡Read distinct format versions from suited SQLite table (not the `v_ahbtabellen` view) (#562)
 
 
 ## 0.7.2 - 2025-04-28
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - *(express-bug)* Fix by downgrade express (#561)
 
 
-### Miscellaneous Tasks
+### 🧹 Miscellaneous Tasks
 
 - *(version-bump)* Update to v0.7.0 (#558)
 
 
 ## 0.7.1 - 2025-04-28
-
-### Features
-
-- *(cache)* Add Memory Caching In Format Versions Endpoint (#559)
-
 
 ### Build
 
@@ -207,12 +202,12 @@ All notable changes to this project will be documented in this file.
 - *(deps)* Bump express from 4.21.2 to 5.1.0 (#557)
 
 
+### ✨ Features
+
+- *(cache)* Add Memory Caching In Format Versions Endpoint (#559)
+
+
 ## 0.7.0 - 2025-04-25
-
-### Features
-
-- *(sqlite)* Use new SQLite Database (#553)
-
 
 ### Build
 
@@ -225,28 +220,12 @@ All notable changes to this project will be documented in this file.
 - *(deps-dev)* Bump eslint from 9.24.0 to 9.25.0 (#550)
 
 
+### ✨ Features
+
+- *(sqlite)* Use new SQLite Database (#553)
+
+
 ## 0.6.4 - 2025-04-11
-
-### Bug Fixes
-
-- *(scroll behaviour)* Fix Search Result Scrolling Behaviour (#538)
-
-
-### Documentation
-
-- *(No Category)* Mention data source for SQLite DB (is not XML) (#541)
-
-
-### Features
-
-- *(disclaimer)* Add Disclaimer (#540)
-- *(refresh-token)* Use refresh token (#513)
-
-
-### Styling
-
-- *(footer)* Incease padding in y direction (#512)
-
 
 ### Build
 
@@ -266,19 +245,28 @@ All notable changes to this project will be documented in this file.
 - *(deps-dev)* Bump @typescript-eslint/eslint-plugin from 8.28.0 to 8.29.0 (#536)
 
 
+### ✨ Features
+
+- *(disclaimer)* Add Disclaimer (#540)
+- *(refresh-token)* Use refresh token (#513)
+
+
+### 🎨 Styling
+
+- *(footer)* Incease padding in y direction (#512)
+
+
+### 🐛 Bug Fixes
+
+- *(scroll behaviour)* Fix Search Result Scrolling Behaviour (#538)
+
+
+### 📚 Documentation
+
+- *(No Category)* Mention data source for SQLite DB (is not XML) (#541)
+
+
 ## 0.6.3 - 2025-03-10
-
-### Miscellaneous Tasks
-
-- *(version-endpoint)* Remove auth0 client id from version endpoint (#505)
-
-
-### Styling
-
-- *(No Category)* Change border line to hf-grell-rose (#481)
-- *(No Category)* Change heart icon in footer (#488)
-- *(No Category)* Further Design Updates (#491)
-
 
 ### Build
 
@@ -306,63 +294,56 @@ All notable changes to this project will be documented in this file.
 - *(No Category)* Remove PAT references from workflows (#502)
 
 
+### 🎨 Styling
+
+- *(No Category)* Change border line to hf-grell-rose (#481)
+- *(No Category)* Change heart icon in footer (#488)
+- *(No Category)* Further Design Updates (#491)
+
+
+### 🧹 Miscellaneous Tasks
+
+- *(version-endpoint)* Remove auth0 client id from version endpoint (#505)
+
+
 ## 0.6.2 - 2025-02-20
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - *(pruefi-input)* Fix prüfi input on ahb landing page (#477)
 
 
 ## 0.6.1 - 2025-02-20
 
-### Bug Fixes
+### 🎨 Styling
+
+- *(No Category)* Fix Colors By Using Rosé Instead Of Red (#471)
+
+
+### 🐛 Bug Fixes
 
 - *(healthcheck)* Fix Format of HealthCheck Results (#473)
 - *(No Category)* Fix Many Requests After Using Back Button (#467)
 
 
-### Styling
-
-- *(No Category)* Fix Colors By Using Rosé Instead Of Red (#471)
-
-
 ## 0.6.0 - 2025-02-19
 
-### Features
+### ✨ Features
 
 - *(healthcheck)* Add Healthcheck Endpoint (#466)
 
 
-### Miscellaneous Tasks
-
-- *(jest)* Fix Jest Deprecation Warnings (#465)
-
-
-### Styling
+### 🎨 Styling
 
 - *(No Category)* Change color of mehr anzeigen (#468)
 
 
+### 🧹 Miscellaneous Tasks
+
+- *(jest)* Fix Jest Deprecation Warnings (#465)
+
+
 ## 0.5.0 - 2025-02-18
-
-### Bug Fixes
-
-- *(deeplink)* Fix Deep Links (#461)
-- *(ui)* Remove shadow from "Jetzt öffnen" button (#437)
-
-
-### Refactor
-
-- *(No Category)* Align ahb-landing-page with ahb-table-page (#456)
-- *(No Category)* Fix Table Not Found Error (#457)
-
-
-### Styling
-
-- *(No Category)* Align Landing Page To Design Guideline (#458)
-- *(No Category)* Align color in link kopiert (#459)
-- *(No Category)* Align Landingpage To Designguide (#462)
-
 
 ### Build
 
@@ -376,18 +357,26 @@ All notable changes to this project will be documented in this file.
 - *(deps-dev)* Bump postcss from 8.5.1 to 8.5.2 (#448)
 
 
+### 🎨 Styling
+
+- *(No Category)* Align Landing Page To Design Guideline (#458)
+- *(No Category)* Align color in link kopiert (#459)
+- *(No Category)* Align Landingpage To Designguide (#462)
+
+
+### 🐛 Bug Fixes
+
+- *(deeplink)* Fix Deep Links (#461)
+- *(ui)* Remove shadow from "Jetzt öffnen" button (#437)
+
+
+### 🔄 Refactor
+
+- *(No Category)* Align ahb-landing-page with ahb-table-page (#456)
+- *(No Category)* Fix Table Not Found Error (#457)
+
+
 ## 0.4.5 - 2025-02-04
-
-### Bug Fixes
-
-- *(ui)* Solutions footer in white (#434)
-- *(ui)* Change footer background to dark rose (#436)
-
-
-### Miscellaneous Tasks
-
-- *(No Category)* Bump companystylesheet submodule to latest main (#435)
-
 
 ### Build
 
@@ -397,104 +386,87 @@ All notable changes to this project will be documented in this file.
 - *(deps-dev)* Bump @typescript-eslint/eslint-plugin from 8.21.0 to 8.22.0 (#424)
 
 
+### 🐛 Bug Fixes
+
+- *(ui)* Solutions footer in white (#434)
+- *(ui)* Change footer background to dark rose (#436)
+
+
+### 🧹 Miscellaneous Tasks
+
+- *(No Category)* Bump companystylesheet submodule to latest main (#435)
+
+
 ## 0.4.4 - 2025-01-30
 
-### Features
+### ✨ Features
 
 - *(No Category)* Display version in footer (#421)
 
 
 ## 0.4.3 - 2025-01-30
 
-### Features
+### ✨ Features
 
 - *(No Category)* Use default format version in dropdown; fix: FV2504 is now in June, not April (#419)
 
 
 ## 0.4.1 - 2025-01-30
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - *(UI)* Let footer stay at bottom of page, even when loading, and center loading message (#417)
 
 
-### Miscellaneous Tasks
+### 🧹 Miscellaneous Tasks
 
 - *(No Category)* Increase form elements' border radius and center components (#420)
 
 
 ## 0.4.0 - 2025-01-29
 
-### Documentation
+### 📚 Documentation
 
 - *(CD)* Add Deployment Section to README (#412)
 
 
 ## 0.3.4 - 2025-01-28
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - *(cd)* Use PAT instead of `GITHUB_TOKEN` for submodule checkout (#407)
 
 
 ## 0.3.2 - 2025-01-27
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - *(No Category)* Checkout companystylesheet submodule in deploy step (#406)
 
 
 ## 0.3.1 - 2025-01-27
 
-### Bug Fixes
-
-- *(No Category)* Drop gfonts; load .ttf files from scss, not missing woff2 from css (#393)
-
-
-### Documentation
-
-- *(No Category)* Add section for code generation in README (#405)
-
-
-### Features
-
-- *(No Category)* Add link to self (instead of just other solutions) (#403)
-
-
 ### Build
 
 - *(deps-dev)* Bump typescript from 5.5.4 to 5.7.3 (#402)
 
 
+### ✨ Features
+
+- *(No Category)* Add link to self (instead of just other solutions) (#403)
+
+
+### 🐛 Bug Fixes
+
+- *(No Category)* Drop gfonts; load .ttf files from scss, not missing woff2 from css (#393)
+
+
+### 📚 Documentation
+
+- *(No Category)* Add section for code generation in README (#405)
+
+
 ## 0.3.0 - 2025-01-26
-
-### Bug Fixes
-
-- *(No Category)* Remove unused imports (#400)
-- *(No Category)* Rename `getFormatVersion` function to `getFormat` (#401)
-
-
-### Features
-
-- *(No Category)* Add second (off-white) footer with link to other solutions (#398)
-- *(No Category)* Display EBD deep links if value_pool_entry contains EBD key (#396)
-
-
-### Miscellaneous Tasks
-
-- *(design)* Fix Footer (#382)
-- *(design)* Fix Landingpage (#389)
-- *(design)* Make kohlrahbi in footer monospace font (#391)
-- *(design)* Add logout icon and use mdi  (#392)
-- *(No Category)* Add environment variable `ebdBaseUrl` to config (#394)
-- *(No Category)* Bump submodule to prettiered version (#397)
-- *(No Category)* Adjust landing page text and remove justification (#399)
-
-
-### Refactor
-
-- *(api)* Refactor interaction with blobstorage (#390)
-
 
 ### Build
 
@@ -505,31 +477,54 @@ All notable changes to this project will be documented in this file.
 - *(deps-dev)* Bump @typescript-eslint/eslint-plugin from 8.20.0 to 8.21.0 (#386)
 
 
+### ✨ Features
+
+- *(No Category)* Add second (off-white) footer with link to other solutions (#398)
+- *(No Category)* Display EBD deep links if value_pool_entry contains EBD key (#396)
+
+
+### 🐛 Bug Fixes
+
+- *(No Category)* Remove unused imports (#400)
+- *(No Category)* Rename `getFormatVersion` function to `getFormat` (#401)
+
+
+### 🔄 Refactor
+
+- *(api)* Refactor interaction with blobstorage (#390)
+
+
+### 🧹 Miscellaneous Tasks
+
+- *(design)* Fix Footer (#382)
+- *(design)* Fix Landingpage (#389)
+- *(design)* Make kohlrahbi in footer monospace font (#391)
+- *(design)* Add logout icon and use mdi  (#392)
+- *(No Category)* Add environment variable `ebdBaseUrl` to config (#394)
+- *(No Category)* Bump submodule to prettiered version (#397)
+- *(No Category)* Adjust landing page text and remove justification (#399)
+
+
 ## 0.2.0 - 2025-01-23
 
-### Miscellaneous Tasks
+### 🧹 Miscellaneous Tasks
 
 - *(No Category)* Switch to Roboto as default font, everywhere (#380)
 
 
 ## 0.1.1 - 2025-01-22
 
-### Documentation
+### 📚 Documentation
 
 - *(No Category)* Add link to prod URL (#376)
 
 
-### Miscellaneous Tasks
+### 🧹 Miscellaneous Tasks
 
 - *(corporate design)* Add "Kontakt" link to footer (#378)
 
 
 ## 0.1.0 - 2025-01-22
-
-### Miscellaneous Tasks
-
-- *(design)* Switch from SVG heart to unicode ♡ in footer (#375)
-
 
 ### Build
 
@@ -543,6 +538,11 @@ All notable changes to this project will be documented in this file.
 - *(deps-dev)* Bump postcss from 8.4.49 to 8.5.1 (#370)
 - *(deps-dev)* Bump @typescript-eslint/parser from 8.19.1 to 8.20.0 (#371)
 - *(deps-dev)* Bump @typescript-eslint/eslint-plugin from 8.19.0 to 8.20.0 (#372)
+
+
+### 🧹 Miscellaneous Tasks
+
+- *(design)* Switch from SVG heart to unicode ♡ in footer (#375)
 
 
 ## 0.0.39 - 2025-01-11
@@ -610,11 +610,6 @@ All notable changes to this project will be documented in this file.
 
 ## 0.0.32 - 2024-12-20
 
-### Bug Fixes
-
-- *(No Category)* Move auth button into header component (#341)
-
-
 ### Build
 
 - *(deps-dev)* Bump eslint from 9.14.0 to 9.17.0 (#319)
@@ -625,14 +620,19 @@ All notable changes to this project will be documented in this file.
 - *(octopus)* Accelerate Deployment Process (#343)
 
 
+### 🐛 Bug Fixes
+
+- *(No Category)* Move auth button into header component (#341)
+
+
 ## 0.0.31 - 2024-12-19
 
-### Bug Fixes
+### 🐛 Bug Fixes
 
 - *(Dockerfile)* Dockerfile To Get Build Information Into Version Endpoint (#340)
 
 
-### Miscellaneous Tasks
+### 🧹 Miscellaneous Tasks
 
 - *(No Category)* Skip authentication during local development (#338)
 
@@ -646,33 +646,33 @@ All notable changes to this project will be documented in this file.
 
 ## 0.0.29 - 2024-12-17
 
-### Bug Fixes
-
-- *(auth0)* Add new client id (#337)
-- *(No Category)* Fix linebreak of collapsible conditions (#331)
-
-
 ### Ci
 
 - *(octopus)* Update Pulumi For Prod Environment (#335)
 
 
+### 🐛 Bug Fixes
+
+- *(auth0)* Add new client id (#337)
+- *(No Category)* Fix linebreak of collapsible conditions (#331)
+
+
 ## 0.0.28 - 2024-12-16
-
-### Features
-
-- *(No Category)* Add toggle to wrap and unwrap text in `Bedingung` column (#326)
-
-
-### Miscellaneous Tasks
-
-- *(No Category)* Add `Impressum` and `Datenschutz` hyperlinks to footer (#328)
-- *(No Category)* Use solid line between different `Datenelement` values (#329)
-
 
 ### Ci
 
 - *(GH Action)* Fill Version Endpoint with Information (#330)
+
+
+### ✨ Features
+
+- *(No Category)* Add toggle to wrap and unwrap text in `Bedingung` column (#326)
+
+
+### 🧹 Miscellaneous Tasks
+
+- *(No Category)* Add `Impressum` and `Datenschutz` hyperlinks to footer (#328)
+- *(No Category)* Use solid line between different `Datenelement` values (#329)
 
 
 ## 0.0.27 - 2024-12-16
@@ -779,14 +779,14 @@ All notable changes to this project will be documented in this file.
 
 ## 0.0.10 - 2024-11-04
 
-### Features
-
-- *(No Category)* 🔐 set up auth0 authentication (#264)
-
-
 ### Ci
 
 - *(check conventional commits)* Add Check For Conventional Commits (#253)
+
+
+### ✨ Features
+
+- *(No Category)* 🔐 set up auth0 authentication (#264)
 
 
 ## 0.0.1 - 2024-07-05
