@@ -38,6 +38,7 @@ export class AhbTableComponent {
   private highlightSignal = computed(() => this.highlight());
   markIndex = signal(0);
   expandedRows = signal<ExpandedState>({});
+  private lastHighlightText = signal<string | undefined>(undefined);
 
   // max. string length of 'Bedingung/Hinweis' entries
   readonly COLLAPSE_LENGTH = 80;
@@ -72,9 +73,17 @@ export class AhbTableComponent {
     // Watch for highlight changes to reset the index and auto-expand rows
     effect(() => {
       const highlight = this.highlight();
-      if (highlight) {
+      const lastHighlight = this.lastHighlightText();
+
+      // Only run auto-expansion when the highlight text actually changes
+      if (highlight && highlight !== lastHighlight) {
+        this.lastHighlightText.set(highlight);
         this.markIndex.set(0);
         this.autoExpandRowsWithMatches(highlight);
+        setTimeout(() => this.applyCurrentMark());
+      } else if (highlight && highlight === lastHighlight) {
+        // If highlight text is the same, just reset index and apply current mark
+        this.markIndex.set(0);
         setTimeout(() => this.applyCurrentMark());
       }
     });
@@ -283,10 +292,17 @@ export class AhbTableComponent {
 
   toggleExpand(index: number) {
     const currentState = this.expandedRows();
-    this.expandedRows.set({
+    const newState = {
       ...currentState,
       [index]: !currentState[index],
-    });
+    };
+    this.expandedRows.set(newState);
+
+    // If there's an active search, re-apply highlighting to show/hide matches
+    const highlight = this.highlight();
+    if (highlight) {
+      setTimeout(() => this.applyCurrentMark());
+    }
   }
 
   isExpanded(index: number): boolean {
@@ -332,7 +348,9 @@ export class AhbTableComponent {
           isCurrentlyExpanded
         );
 
-        if (highlightResult.needsExpansion) {
+        // Only auto-expand if there's a match in the collapsed content
+        // and the row is not already expanded
+        if (highlightResult.needsExpansion && !isCurrentlyExpanded) {
           newExpandedState[index] = true;
         }
       }
