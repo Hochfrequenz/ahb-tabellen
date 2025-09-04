@@ -1,4 +1,4 @@
-name: Deploy on Release or Pre-release
+name: Deploy on Version Tag
 
 env:
   REGISTRY: ghcr.io
@@ -10,8 +10,9 @@ env:
   VERSION_TAG: 'set by build_release_info step'
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
   generate-changelog:
