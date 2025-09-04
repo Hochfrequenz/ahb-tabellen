@@ -31,7 +31,7 @@ jobs:
         id: git-cliff
         with:
           config: cliff.toml
-          args: -vv --latest --no-exec --github-repo ${{ github.repository }}
+          args: --latest --no-exec --github-repo ${{ github.repository }}
   deploy:
     name: Deploy to Docker and Octopus Deploy
     needs: generate-changelog
