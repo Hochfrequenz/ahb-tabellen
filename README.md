@@ -174,3 +174,15 @@ To deploy to the production environment:
 - Generate machine-readable files from AHB documents with [KohlrAHBi](https://github.com/Hochfrequenz/kohlrahbi) 🥬.
 - Official edi@energy AHB documents are provided by BDEW at [edi-energy.de](https://www.edi-energy.de/index.php?id=38).
 - To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+## 📝 Changelog
+
+The changelog is generated using [git-cliff](https://github.com/orhun/git-cliff) and is automatically added to the GitHub release.
+
+To generate the changelog locally, run
+
+```bash
+$ git cliff -o CHANGELOG.md --github-token <your-github-token>
+```
+
+The github token is required to avoid rate limiting.
