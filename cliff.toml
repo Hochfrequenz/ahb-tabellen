@@ -91,7 +91,7 @@ commit_preprocessors = [
 # Assigns commits to groups.
 # Optionally sets the commit's scope and can decide to exclude commits from further processing.
 commit_parsers = [
-  { message = "^feat", group = "<!-- 0 -->⛰️  Features" },
+  { message = "^feat", group = "<!-- 0 -->⛰️ Features" },
   { message = "^fix", group = "<!-- 1 -->🐛 Bug Fixes" },
   { message = "^refactor", group = "<!-- 2 -->🚜 Refactor" },
   { message = "^doc", group = "<!-- 3 -->📚 Documentation" },
