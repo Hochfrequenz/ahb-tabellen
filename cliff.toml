@@ -75,7 +75,7 @@ postprocessors = [
 # Parse commits according to the conventional commits specification.
 # See https://www.conventionalcommits.org
 conventional_commits = true
-# Exclude commits that do not match the conventional commits specification.
+# Allow commits that do not match the conventional commits specification.
 filter_unconventional = false
 # Split commits on newlines, treating each line as an individual commit.
 split_commits = false
@@ -101,6 +101,8 @@ commit_parsers = [
   { message = "^chore|^ci", group = "<!-- 7 -->⚙️ Miscellaneous Tasks" },
   { body = ".*security", group = "<!-- 8 -->🛡️ Security" },
   { message = "^revert", group = "<!-- 9 -->◀️ Revert" },
+  # Other is used for commits that do not match conventional commits specification.
+  { message = ".*", group = "<!-- 10 -->🧹 Other", default_scope = "other"},
 ]
 # Prevent commits that are breaking from being excluded by commit parsers.
 protect_breaking_commits = false
