@@ -7,11 +7,13 @@ import {
   output,
   signal,
   viewChild,
+  inject,
 } from '@angular/core';
 import { Ahb } from '../../../../core/api';
-import { HighlightPipe } from '../../../../shared/pipes/highlight.pipe';
+import { HighlightPipe, HighlightResult } from '../../../../shared/pipes/highlight.pipe';
 import { environment } from '../../../../environments/environment';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
+import { DomSanitizer } from '@angular/platform-browser';
 
 interface ExpandedState {
   [key: number]: boolean;
@@ -64,12 +66,15 @@ export class AhbTableComponent {
     return Array.from(nativeElement.querySelectorAll('mark'));
   });
 
+  private readonly domSanitizer = inject(DomSanitizer);
+
   constructor(private readonly elementRef: ElementRef) {
-    // Watch for highlight changes to reset the index
+    // Watch for highlight changes to reset the index and auto-expand rows
     effect(() => {
       const highlight = this.highlight();
       if (highlight) {
         this.markIndex.set(0);
+        this.autoExpandRowsWithMatches(highlight);
         setTimeout(() => this.applyCurrentMark());
       }
     });
@@ -304,5 +309,56 @@ export class AhbTableComponent {
     }
 
     return allConditions[0];
+  }
+
+  /**
+   * Auto-expands rows that have search matches in their collapsed content
+   */
+  private autoExpandRowsWithMatches(highlightText: string): void {
+    const lines = this.lines();
+    const currentExpandedState = this.expandedRows();
+    const newExpandedState = { ...currentExpandedState };
+
+    lines.forEach((line, index) => {
+      if (line.conditions && this.shouldShowToggle(line.conditions)) {
+        const displayedText = this.getDisplayText(line.conditions, index);
+        const isCurrentlyExpanded = this.isExpanded(index);
+
+        // Check if there's a match in the full text but not in the displayed text
+        const highlightResult = this.getEnhancedHighlightResult(
+          displayedText,
+          highlightText,
+          line.conditions,
+          isCurrentlyExpanded
+        );
+
+        if (highlightResult.needsExpansion) {
+          newExpandedState[index] = true;
+        }
+      }
+    });
+
+    // Only update if there are changes to avoid unnecessary re-renders
+    if (JSON.stringify(currentExpandedState) !== JSON.stringify(newExpandedState)) {
+      this.expandedRows.set(newExpandedState);
+    }
+  }
+
+  /**
+   * Gets enhanced highlight result for conditions column
+   */
+  getEnhancedHighlightResult(
+    displayedText: string,
+    highlightText: string,
+    fullText: string,
+    isExpanded: boolean
+  ): HighlightResult {
+    const highlightPipe = new HighlightPipe(this.domSanitizer);
+    return highlightPipe.transform(
+      displayedText,
+      highlightText,
+      fullText,
+      isExpanded
+    ) as HighlightResult;
   }
 }
