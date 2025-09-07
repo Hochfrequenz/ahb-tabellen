@@ -31,7 +31,7 @@ export class LandingPageComponent implements OnInit {
         name: 'keywords',
         content: 'AHB, Anwendungshandbuch, Energie, Hochfrequenz, Tabellen, Prüfidentifikator',
       },
-      { property: 'og:title', content: 'AHB Tabellen - Anwendungshandbücher für Menschen' },
+      { property: 'og:title', content: 'AHB-Tabellen - Anwendungshandbücher für Menschen' },
       {
         property: 'og:description',
         content:
@@ -42,16 +42,16 @@ export class LandingPageComponent implements OnInit {
       { property: 'og:image', content: `${baseUrl}/assets/logo.png` },
       { property: 'og:image:width', content: '1200' },
       { property: 'og:image:height', content: '630' },
-      { property: 'og:site_name', content: 'AHB Tabellen' },
+      { property: 'og:site_name', content: 'AHB-Tabellen' },
       { property: 'twitter:card', content: 'summary_large_image' },
-      { property: 'twitter:title', content: 'AHB Tabellen - Anwendungshandbücher für Menschen' },
+      { property: 'twitter:title', content: 'AHB-Tabellen - Anwendungshandbücher für Menschen' },
       {
         property: 'twitter:description',
         content:
           'AHB-Tabellen ist ein intuitives Tool, das die Navigation in Anwendungshandbüchern vereinfacht, indem es die Daten pro Prüfidentifikator klar darstellt.',
       },
       { property: 'twitter:image', content: `${baseUrl}/assets/logo.png` },
-      { property: 'linkedin:title', content: 'AHB Tabellen - Anwendungshandbücher für Menschen' },
+      { property: 'linkedin:title', content: 'AHB-Tabellen - Anwendungshandbücher für Menschen' },
       {
         property: 'linkedin:description',
         content:

@@ -7,6 +7,7 @@ import {
   signal,
   computed,
 } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
@@ -22,6 +23,8 @@ import { InputSearchEnhancedComponent } from '../../../../shared/components/inpu
 import { ExportButtonComponent } from '../../components/export-button/export-button.component';
 import { IconCopyUrlComponent } from '../../../../shared/components/icon-copy-url/icon-copy-url.component';
 import { FallbackPageComponent } from '../../../../shared/components/fallback-page/fallback-page.component';
+import { DvgwFallbackPageComponent } from '../../../../shared/components/dvgw-fallback-page/dvgw-fallback-page.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-ahb-page',
@@ -39,6 +42,7 @@ import { FallbackPageComponent } from '../../../../shared/components/fallback-pa
     ExportButtonComponent,
     IconCopyUrlComponent,
     FallbackPageComponent,
+    DvgwFallbackPageComponent,
   ],
   templateUrl: './ahb-page.component.html',
 })
@@ -48,6 +52,18 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   pruefi = signal<string>('');
   searchQuery = signal<string | undefined>('');
   edifactFormat = computed(() => this.getEdifactFormat(this.pruefi()));
+
+  private readonly mehrMinderMengenMeldungSLP = '70095';
+  private readonly mehrMinderMengenMeldungRLM = '70096';
+
+  // Computed properties for fallback pages
+  isDvgwPruefi = computed(() => {
+    const currentPruefi = this.pruefi();
+    return (
+      currentPruefi === this.mehrMinderMengenMeldungSLP ||
+      currentPruefi === this.mehrMinderMengenMeldungRLM
+    );
+  });
 
   // View references
   table = viewChild(AhbTableComponent);
@@ -63,10 +79,12 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   constructor(
     private readonly ahbService: AhbService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly http: HttpClient
   ) {}
 
   ngOnInit() {
+    this.triggerWarmupIfNeeded();
     // Handle route parameters
     this.route.params.pipe(takeUntil(this.destroy$), distinctUntilChanged()).subscribe(params => {
       const formatVersion = params['formatVersion'];
@@ -98,6 +116,14 @@ export class AhbPageComponent implements OnInit, OnDestroy {
 
   private loadAhbData(formatVersion: string, pruefi: string) {
     this.errorOccurred = false;
+
+    // Check if this is a DVGW Prüfidentifikator
+    if (this.isDvgwPruefi()) {
+      this.errorOccurred = true;
+      this.ahb$ = of({} as Ahb);
+      this.lines$ = of([]);
+      return;
+    }
 
     this.ahb$ = this.ahbService
       .getAhb$Json({
@@ -192,6 +218,26 @@ export class AhbPageComponent implements OnInit, OnDestroy {
 
     const key = pruefi.substring(0, 2);
     return mapping[key];
+  }
+
+  private triggerWarmupIfNeeded(): void {
+    try {
+      const storageKey = 'ahbicht-functions-warmup-triggered';
+      if (sessionStorage.getItem(storageKey)) {
+        return;
+      }
+      const warmupUrl = environment.warmupUrl;
+      if (!warmupUrl) {
+        return;
+      }
+      // Fire-and-forget; ignore result and errors
+      this.http
+        .get(warmupUrl, { responseType: 'text' })
+        .pipe(catchError(() => of(null)))
+        .subscribe(() => sessionStorage.setItem(storageKey, 'true'));
+    } catch {
+      // Access to sessionStorage can fail in some browsers modes; ignore
+    }
   }
 
   // splitting meta.direction into sender and empfaenger

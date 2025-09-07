@@ -11,9 +11,9 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
+import { getVersion } from '../fn/maintenance/get-version';
+import { GetVersion$Params } from '../fn/maintenance/get-version';
 import { Version } from '../models/version';
-import { versionGet } from '../fn/maintenance/version-get';
-import { VersionGet$Params } from '../fn/maintenance/version-get';
 
 @Injectable({ providedIn: 'root' })
 export class MaintenanceService extends BaseService {
@@ -21,8 +21,8 @@ export class MaintenanceService extends BaseService {
     super(config, http);
   }
 
-  /** Path part for operation `versionGet()` */
-  static readonly VersionGetPath = '/version';
+  /** Path part for operation `getVersion()` */
+  static readonly GetVersionPath = '/version';
 
   /**
    * Get the current version of the AHB-Tabellen application.
@@ -30,12 +30,12 @@ export class MaintenanceService extends BaseService {
    *
    *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `versionGet()` instead.
+   * To access only the response body, use `getVersion()` instead.
    *
    * This method doesn't expect any request body.
    */
-  versionGet$Response(params?: VersionGet$Params, context?: HttpContext): Observable<StrictHttpResponse<Version>> {
-    return versionGet(this.http, this.rootUrl, params, context);
+  getVersion$Response(params?: GetVersion$Params, context?: HttpContext): Observable<StrictHttpResponse<Version>> {
+    return getVersion(this.http, this.rootUrl, params, context);
   }
 
   /**
@@ -44,12 +44,12 @@ export class MaintenanceService extends BaseService {
    *
    *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `versionGet$Response()` instead.
+   * To access the full response (for headers, for example), `getVersion$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  versionGet(params?: VersionGet$Params, context?: HttpContext): Observable<Version> {
-    return this.versionGet$Response(params, context).pipe(
+  getVersion(params?: GetVersion$Params, context?: HttpContext): Observable<Version> {
+    return this.getVersion$Response(params, context).pipe(
       map((r: StrictHttpResponse<Version>): Version => r.body)
     );
   }

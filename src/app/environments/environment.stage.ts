@@ -9,4 +9,5 @@ export const environment: EnvironmentInterface = {
   auth0Domain: 'auth.hochfrequenz.de',
   auth0ClientId: 'Hku0EniRjy4B2krnx1sCwTIOzAiVta1B',
   baseUrl: 'https://ahb-tabellen.stage.hochfrequenz.de',
+  warmupUrl: 'https://ahbicht-stage.azurewebsites.net/api/ResolveConditionText/FV2504/UTILMDS/333',
 };

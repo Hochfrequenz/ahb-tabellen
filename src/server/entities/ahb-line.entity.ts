@@ -12,12 +12,21 @@ export class Anwendungshandbuch {
   primary_key!: string;
   // we omit the other columns as they are not relevant to use right now
   @Column({ type: 'varchar', nullable: true })
+  versionsnummer!: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  veroeffentlichungsdatum!: string;
+
+  @Column({ type: 'varchar', nullable: true })
   edifact_format_version?: string;
 }
 @Entity({ name: 'v_ahbtabellen', synchronize: false })
 export class AhbLine {
   @PrimaryColumn({ type: 'varchar', length: 32 })
   id!: string;
+
+  @Column({ type: 'varchar', length: 32 })
+  anwendungshandbuch_primary_key!: string;
 
   @Column({ type: 'varchar' })
   format_version!: string;

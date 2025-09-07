@@ -138,7 +138,8 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 
 ### OpenAPI Specification Generation
 
-Run `npm run ng-openapi-gen` to generate the OpenAPI specification and related TypeScript interfaces. This command will update the API client code based on the OpenAPI specification.
+Run `npm run ng-openapi-gen` to generate the OpenAPI specification and related TypeScript interfaces.
+This command will update the API client code based on the OpenAPI specification.
 
 ## 🚀 Deployment
 
@@ -155,23 +156,33 @@ The deployment process is automated using a combination of GitHub Actions, Pulum
 
 To deploy to the stage environment:
 
-1. Create a new release in GitHub
-2. Set the release as "Pre-release"
-3. This will automatically trigger the deployment pipeline
-4. The application will be deployed to [ahb-tabellen.stage.hochfrequenz.de](https://ahb-tabellen.stage.hochfrequenz.de)
+1. Set a new git tag in the format `v<major>.<minor>.<patch>-rc<rc>`, e.g. `v1.0.0-rc01`.
+2. This will automatically trigger the deployment pipeline and creates a new GitHub pre-release.
+3. The application will be deployed to [ahb-tabellen.stage.hochfrequenz.de](https://ahb-tabellen.stage.hochfrequenz.de).
 
 ### Production Deployment
 
 To deploy to the production environment:
 
-1. Create a new release in GitHub
-2. Publish it as a full release (not pre-release)
-3. This will trigger the production deployment pipeline
-4. A manual approval step in Octopus Deploy will be required
-5. After approval, the application will be deployed to [ahb-tabellen.hochfrequenz.de](https://ahb-tabellen.hochfrequenz.de)
+1. Set a new git tag in the format `v<major>.<minor>.<patch>`, e.g. `v1.0.0`.
+2. This will trigger the deployment pipeline and creates a new GitHub release.
+3. A manual approval step in [Octopus Deploy](https://hochfrequenz.octopus.app) will be required
+4. After approval, the application will be deployed to [ahb-tabellen.hochfrequenz.de](https://ahb-tabellen.hochfrequenz.de)
 
 ## 🔗 Links
 
 - Generate machine-readable files from AHB documents with [KohlrAHBi](https://github.com/Hochfrequenz/kohlrahbi) 🥬.
 - Official edi@energy AHB documents are provided by BDEW at [edi-energy.de](https://www.edi-energy.de/index.php?id=38).
 - To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+## 📝 Changelog
+
+The changelog is generated using [git-cliff](https://github.com/orhun/git-cliff) and is automatically added to the GitHub release.
+
+To generate the changelog locally, run
+
+```bash
+$ git cliff -o CHANGELOG.md --github-token <your-github-token>
+```
+
+The github token is required to avoid rate limiting.
