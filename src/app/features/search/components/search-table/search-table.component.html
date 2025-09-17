@@ -1,9 +1,9 @@
-<div class="search-table-container">
+<div class="w-full overflow-x-auto">
   <mat-table
     [dataSource]="dataSource"
     matSort
     (matSortChange)="onSortChange($event)"
-    class="search-table">
+    class="w-full min-w-[1200px]">
     <!-- Format Version Column -->
     <ng-container matColumnDef="format_version">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Format Version</mat-header-cell>
@@ -19,18 +19,17 @@
     <!-- Prüfidentifikator Column -->
     <ng-container matColumnDef="pruefidentifikator">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Prüfidentifikator</mat-header-cell>
-      <mat-cell *matCellDef="let row" [class]="row.pruefidentifikator ? 'clickable-cell' : ''">
+      <mat-cell *matCellDef="let row" [class]="row.pruefidentifikator ? 'p-0' : ''">
         <button
           *ngIf="row.pruefidentifikator"
-          mat-button
-          class="pruefidentifikator-button"
+          class="w-full h-full min-h-[40px] px-3 py-2 text-left justify-start border-0 bg-transparent text-hf-grell-rot font-medium flex items-center gap-2 focus:outline-2 focus:outline-offset-[-2px]"
           (click)="onPruefidentifikatorClick(row)"
           [attr.aria-label]="'Navigate to AHB table for ' + formatCellValue(row.pruefidentifikator)"
           tabindex="0">
           {{ formatCellValue(row.pruefidentifikator) }}
-          <mat-icon class="navigate-icon">open_in_new</mat-icon>
+          <mat-icon class="text-base w-4 h-4 opacity-70">open_in_new</mat-icon>
         </button>
-        <span *ngIf="!row.pruefidentifikator" class="no-link-text">
+        <span *ngIf="!row.pruefidentifikator" class="block px-3 py-2 text-gray-500 italic">
           {{ formatCellValue(row.pruefidentifikator) }}
         </span>
       </mat-cell>
@@ -39,7 +38,7 @@
     <!-- Description Column -->
     <ng-container matColumnDef="description">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Description</mat-header-cell>
-      <mat-cell *matCellDef="let row" class="description-cell">{{
+      <mat-cell *matCellDef="let row" class="max-w-[200px] break-words whitespace-pre-wrap">{{
         formatCellValue(row.description)
       }}</mat-cell>
     </ng-container>
@@ -71,7 +70,7 @@
     <!-- AHB Status Column -->
     <ng-container matColumnDef="line_ahb_status">
       <mat-header-cell *matHeaderCellDef mat-sort-header>AHB Status</mat-header-cell>
-      <mat-cell *matCellDef="let row" class="status-cell">{{
+      <mat-cell *matCellDef="let row" class="max-w-[150px] break-words">{{
         formatCellValue(row.line_ahb_status)
       }}</mat-cell>
     </ng-container>
@@ -79,7 +78,7 @@
     <!-- Line Name Column -->
     <ng-container matColumnDef="line_name">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Line Name</mat-header-cell>
-      <mat-cell *matCellDef="let row" class="line-name-cell">{{
+      <mat-cell *matCellDef="let row" class="max-w-[200px] break-words whitespace-pre-wrap">{{
         formatCellValue(row.line_name)
       }}</mat-cell>
     </ng-container>
@@ -87,7 +86,7 @@
     <!-- Bedingung Column -->
     <ng-container matColumnDef="bedingung">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Bedingung</mat-header-cell>
-      <mat-cell *matCellDef="let row" class="bedingung-cell">{{
+      <mat-cell *matCellDef="let row" class="max-w-[200px] break-words whitespace-pre-wrap">{{
         formatCellValue(row.bedingung)
       }}</mat-cell>
     </ng-container>
@@ -108,6 +107,7 @@
     [pageIndex]="page - 1"
     [pageSizeOptions]="[10, 25, 50, 100]"
     (page)="onPageChange($event)"
-    showFirstLastButtons>
+    showFirstLastButtons
+    class="bg-gray-50 border-t border-gray-300">
   </mat-paginator>
 </div>

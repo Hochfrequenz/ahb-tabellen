@@ -1,13 +1,4 @@
-.search-table-container {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.search-table {
-  width: 100%;
-  min-width: 1200px;
-}
-
+// Basic Material table styling - most styling now handled by Tailwind
 .mat-mdc-header-cell,
 .mat-mdc-cell {
   padding: 8px 12px;
@@ -21,33 +12,11 @@
 }
 
 .mat-mdc-row:hover {
-  background-color: #f9f9f9;
-}
-
-.description-cell,
-.line-name-cell,
-.bedingung-cell {
-  max-width: 200px;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-}
-
-.status-cell {
-  max-width: 150px;
-  word-wrap: break-word;
-}
-
-.mat-mdc-paginator {
-  background-color: #fafafa;
-  border-top: 1px solid #e0e0e0;
+  background-color: #cbafaf;
 }
 
 // Responsive adjustments
 @media (max-width: 768px) {
-  .search-table-container {
-    font-size: 11px;
-  }
-
   .mat-mdc-header-cell,
   .mat-mdc-cell {
     padding: 6px 8px;
