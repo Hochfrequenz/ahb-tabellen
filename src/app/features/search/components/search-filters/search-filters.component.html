@@ -1,7 +1,7 @@
 <div class="search-filters" [formGroup]="searchForm">
   <!-- Global Search -->
   <div class="global-search">
-    <mat-form-field appearance="outline" class="search-field">
+    <mat-form-field appearance="fill" class="search-field">
       <mat-label>Global Search</mat-label>
       <input matInput formControlName="q" placeholder="Search across all fields..." />
       <mat-icon matSuffix>search</mat-icon>
@@ -11,7 +11,7 @@
   <!-- Individual Filters -->
   <div class="filter-grid">
     <div *ngFor="let field of filterFields" class="filter-field">
-      <mat-form-field appearance="outline" class="filter-input">
+      <mat-form-field appearance="fill" class="filter-input">
         <mat-label>{{ field.label }}</mat-label>
 
         <!-- Select dropdown for format_version -->
