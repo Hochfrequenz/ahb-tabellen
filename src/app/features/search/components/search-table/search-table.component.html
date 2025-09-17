@@ -19,8 +19,9 @@
     <!-- Prüfidentifikator Column -->
     <ng-container matColumnDef="pruefidentifikator">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Prüfidentifikator</mat-header-cell>
-      <mat-cell *matCellDef="let row" class="clickable-cell">
+      <mat-cell *matCellDef="let row" [class]="row.pruefidentifikator ? 'clickable-cell' : ''">
         <button
+          *ngIf="row.pruefidentifikator"
           mat-button
           class="pruefidentifikator-button"
           (click)="onPruefidentifikatorClick(row)"
@@ -29,6 +30,9 @@
           {{ formatCellValue(row.pruefidentifikator) }}
           <mat-icon class="navigate-icon">open_in_new</mat-icon>
         </button>
+        <span *ngIf="!row.pruefidentifikator" class="no-link-text">
+          {{ formatCellValue(row.pruefidentifikator) }}
+        </span>
       </mat-cell>
     </ng-container>
 
