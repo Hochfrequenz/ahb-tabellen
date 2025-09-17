@@ -8,6 +8,7 @@ import {
   computed,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Title } from '@angular/platform-browser';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
@@ -17,7 +18,7 @@ import { Ahb, AhbService } from '../../../../core/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Observable, Subject, of } from 'rxjs';
-import { map, shareReplay, catchError, takeUntil, distinctUntilChanged } from 'rxjs/operators';
+import { map, shareReplay, catchError, takeUntil, distinctUntilChanged, tap } from 'rxjs/operators';
 import { AhbSearchFormHeaderComponent } from '../../components/ahb-search-form-header/ahb-search-form-header.component';
 import { InputSearchEnhancedComponent } from '../../../../shared/components/input-search-enhanced/input-search-enhanced.component';
 import { ExportButtonComponent } from '../../components/export-button/export-button.component';
@@ -80,7 +81,8 @@ export class AhbPageComponent implements OnInit, OnDestroy {
     private readonly ahbService: AhbService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly http: HttpClient
+    private readonly http: HttpClient,
+    private readonly title: Title
   ) {}
 
   ngOnInit() {
@@ -94,6 +96,7 @@ export class AhbPageComponent implements OnInit, OnDestroy {
         this.formatVersion.set(formatVersion);
         this.pruefi.set(pruefi);
         this.loadAhbData(formatVersion, pruefi);
+        this.updateTitle({ pruefi, formatVersion });
       }
     });
 
@@ -131,6 +134,15 @@ export class AhbPageComponent implements OnInit, OnDestroy {
         pruefi: pruefi,
       })
       .pipe(
+        tap(ahb => {
+          if (ahb && (ahb as Ahb).meta) {
+            this.updateTitle({
+              pruefi,
+              formatVersion,
+              description: (ahb as Ahb).meta.description,
+            });
+          }
+        }),
         shareReplay(1),
         catchError(error => {
           if (error.status === 404) {
@@ -153,6 +165,19 @@ export class AhbPageComponent implements OnInit, OnDestroy {
 
   triggerSearch(query: string | undefined) {
     if (!query) return;
+  }
+
+  private updateTitle(params: {
+    pruefi: string;
+    formatVersion: string;
+    description?: string;
+  }): void {
+    const { pruefi, formatVersion, description } = params;
+    const appName = 'AHB Tabellen';
+    const base = description ? `${pruefi} – ${description}` : `${pruefi}`;
+    const suffix = formatVersion;
+    const full = [base, suffix, appName].filter(Boolean).join(' | ');
+    this.title.setTitle(full);
   }
 
   scrollToElement(element: HTMLElement, offsetY: number): void {

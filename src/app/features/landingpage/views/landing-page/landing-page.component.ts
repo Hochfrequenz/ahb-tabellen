@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { environment } from '../../../../environments/environment';
-import { Meta } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-landing-page',
@@ -15,12 +15,14 @@ export class LandingPageComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private router: Router,
-    private meta: Meta
+    private meta: Meta,
+    private readonly title: Title
   ) {}
 
   ngOnInit() {
     const baseUrl = environment.baseUrl;
 
+    this.title.setTitle('AHB-Tabellen - Anwendungshandbücher für Menschen');
     this.meta.addTags([
       {
         name: 'description',
