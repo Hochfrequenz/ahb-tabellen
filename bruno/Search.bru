@@ -1,0 +1,30 @@
+meta {
+  name: Search
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{host}}/api/search/query
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "page": 1,
+    "pageSize": 25,
+    "sort": [
+      {
+        "field": "format_version",
+        "direction": "asc"
+      }
+    ],
+    "q": "Z21",
+    "filters": {}
+  }
+}
+
+settings {
+  encodeUrl: true
+}
