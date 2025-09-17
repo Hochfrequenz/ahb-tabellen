@@ -187,7 +187,7 @@ export class AhbPageComponent implements OnInit, OnDestroy {
     const { pruefi, formatVersion, description } = params;
     const appName = 'AHB Tabellen';
     const base = description ? `${pruefi} – ${description}` : `${pruefi}`;
-    const suffix = formatVersion ? formatVersion : '';
+    const suffix = formatVersion;
     const full = [base, suffix, appName].filter(Boolean).join(' | ');
     this.title.setTitle(full);
   }
