@@ -146,16 +146,25 @@ export class AhbPageComponent implements OnInit, OnDestroy {
     this.lines$ = this.ahb$.pipe(map(ahb => ahb.lines));
 
     // Update title once metadata arrives
-    this.ahb$.pipe(takeUntil(this.destroy$)).subscribe(ahb => {
-      if (!ahb || !ahb.meta) {
-        return;
-      }
-      this.updateTitle({
-        pruefi,
-        formatVersion,
-        description: ahb.meta.description,
+    this.ahb$
+      .pipe(
+        map(ahb => ({
+          ahb,
+          pruefi,
+          formatVersion
+        })),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(({ ahb, pruefi, formatVersion }) => {
+        if (!ahb || !ahb.meta) {
+          return;
+        }
+        this.updateTitle({
+          pruefi,
+          formatVersion,
+          description: ahb.meta.description,
+        });
       });
-    });
   }
 
   onFormatVersionChange(newFormatVersion: string) {
