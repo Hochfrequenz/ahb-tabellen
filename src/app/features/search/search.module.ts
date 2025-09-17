@@ -1,9 +1,8 @@
 import { NgModule } from '@angular/core';
-import { SearchRoutingModule } from './search.routes';
 import { SearchService } from './services/search.service';
+import { FormatVersionCacheService } from './services/format-version-cache.service';
 
 @NgModule({
-  imports: [SearchRoutingModule],
-  providers: [SearchService],
+  providers: [SearchService, FormatVersionCacheService],
 })
 export class SearchModule {}

@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { FormatVersionCacheService } from '../../services/format-version-cache.service';
 
 @Component({
   selector: 'app-search-filters',
@@ -17,6 +19,7 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
@@ -30,8 +33,18 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   searchForm: FormGroup;
 
-  filterFields = [
-    { key: 'format_version', label: 'Format Version', type: 'text' },
+  filterFields: Array<{
+    key: string;
+    label: string;
+    type: 'text' | 'select';
+    options?: string[];
+  }> = [
+    {
+      key: 'format_version',
+      label: 'Format Version',
+      type: 'select',
+      options: [], // Will be populated from API
+    },
     { key: 'format', label: 'Format', type: 'text' },
     { key: 'pruefidentifikator', label: 'Prüfidentifikator', type: 'text' },
     { key: 'description', label: 'Description', type: 'text' },
@@ -44,7 +57,10 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
     { key: 'bedingung', label: 'Bedingung', type: 'text' },
   ];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private formatVersionCacheService: FormatVersionCacheService
+  ) {
     this.searchForm = this.fb.group({
       q: [''],
       ...this.filterFields.reduce(
@@ -58,6 +74,9 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Load format versions from cache/API
+    this.loadFormatVersions();
+
     // Global search query
     this.searchForm
       .get('q')
@@ -82,13 +101,36 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  private loadFormatVersions(): void {
+    this.formatVersionCacheService
+      .getFormatVersions()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: formatVersions => {
+          // Update the format_version field options
+          const formatVersionField = this.filterFields.find(
+            field => field.key === 'format_version'
+          );
+          if (formatVersionField) {
+            formatVersionField.options = formatVersions;
+          }
+        },
+        error: error => {
+          console.error('Failed to load format versions:', error);
+          // Keep empty options array if loading fails
+        },
+      });
+  }
+
   private emitFilters(): void {
     const filters: Record<string, any> = {};
 
     this.filterFields.forEach(field => {
       const value = this.searchForm.get(field.key)?.value;
       if (value && value.trim()) {
-        filters[field.key] = { contains: value.trim() };
+        // Use 'eq' for select fields, 'contains' for text fields
+        const operator = field.type === 'select' ? 'eq' : 'contains';
+        filters[field.key] = { [operator]: value.trim() };
       }
     });
 

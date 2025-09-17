@@ -13,10 +13,25 @@
     <div *ngFor="let field of filterFields" class="filter-field">
       <mat-form-field appearance="outline" class="filter-input">
         <mat-label>{{ field.label }}</mat-label>
+
+        <!-- Select dropdown for format_version -->
+        <mat-select
+          *ngIf="field.type === 'select'"
+          [formControlName]="field.key"
+          [placeholder]="'Select ' + field.label.toLowerCase()">
+          <mat-option value="">All {{ field.label }}</mat-option>
+          <mat-option *ngFor="let option of field.options" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-select>
+
+        <!-- Text input for other fields -->
         <input
+          *ngIf="field.type === 'text'"
           matInput
           [formControlName]="field.key"
           [placeholder]="'Filter by ' + field.label.toLowerCase()" />
+
         <button
           mat-icon-button
           matSuffix
