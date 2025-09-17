@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
@@ -27,7 +28,7 @@ import { InputSearchEnhancedComponent } from '../../../../shared/components/inpu
   ],
   templateUrl: './ahb-landing-page.component.html',
 })
-export class AhbLandingPageComponent {
+export class AhbLandingPageComponent implements OnInit {
   form = new FormGroup({
     formatVersion: new FormControl<string>('', {
       nonNullable: true,
@@ -36,7 +37,10 @@ export class AhbLandingPageComponent {
     pruefi: new FormControl<string>('', { nonNullable: true, validators: [Validators.required] }),
   });
 
-  constructor(private readonly router: Router) {
+  constructor(
+    private readonly router: Router,
+    private readonly title: Title
+  ) {
     // Subscribe to pruefi value changes
     this.form.controls.pruefi.valueChanges.subscribe(value => {
       // If we have a 5-digit number and a format version, navigate immediately
@@ -44,6 +48,10 @@ export class AhbLandingPageComponent {
         this.onClickSubmit();
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.title.setTitle('AHB-Tabellen - Anwendungshandbücher für Menschen');
   }
 
   onClickSubmit() {
