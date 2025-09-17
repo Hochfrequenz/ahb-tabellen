@@ -1,0 +1,46 @@
+<div class="search-filters" [formGroup]="searchForm">
+  <!-- Global Search -->
+  <div class="global-search">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Global Search</mat-label>
+      <input matInput formControlName="q" placeholder="Search across all fields..." />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </div>
+
+  <!-- Individual Filters -->
+  <div class="filter-grid">
+    <div *ngFor="let field of filterFields" class="filter-field">
+      <mat-form-field appearance="outline" class="filter-input">
+        <mat-label>{{ field.label }}</mat-label>
+        <input
+          matInput
+          [formControlName]="field.key"
+          [placeholder]="'Filter by ' + field.label.toLowerCase()" />
+        <button
+          mat-icon-button
+          matSuffix
+          *ngIf="searchForm.get(field.key)?.value"
+          (click)="searchForm.get(field.key)?.setValue('')"
+          matTooltip="Clear filter">
+          <mat-icon>clear</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Filter Actions -->
+  <div class="filter-actions">
+    <button
+      mat-button
+      color="warn"
+      (click)="clearFilters()"
+      [disabled]="getActiveFilterCount() === 0">
+      <mat-icon>clear_all</mat-icon>
+      Clear All Filters
+      <span *ngIf="getActiveFilterCount() > 0" class="filter-count">
+        ({{ getActiveFilterCount() }})
+      </span>
+    </button>
+  </div>
+</div>

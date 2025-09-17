@@ -15,7 +15,7 @@ export const routes: Routes = [
   },
   {
     path: 'search',
-    component: InputSearchEnhancedComponent,
+    loadChildren: async () => (await import('./features/search/search.routes')).SEARCH_ROUTES,
     canActivate: [AuthGuard],
   },
 ];
