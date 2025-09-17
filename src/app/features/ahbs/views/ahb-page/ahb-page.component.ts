@@ -8,6 +8,7 @@ import {
   computed,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Title } from '@angular/platform-browser';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
@@ -80,7 +81,8 @@ export class AhbPageComponent implements OnInit, OnDestroy {
     private readonly ahbService: AhbService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly http: HttpClient
+    private readonly http: HttpClient,
+    private readonly title: Title
   ) {}
 
   ngOnInit() {
