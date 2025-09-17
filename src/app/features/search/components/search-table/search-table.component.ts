@@ -1,15 +1,25 @@
 import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSortModule, MatSort, Sort } from '@angular/material/sort';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { SearchItem } from '../../../../core/api/models';
 
 @Component({
   selector: 'app-search-table',
   templateUrl: './search-table.component.html',
   styleUrls: ['./search-table.component.scss'],
-  imports: [CommonModule, MatTableModule, MatPaginatorModule, MatSortModule],
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatButtonModule,
+    MatIconModule,
+  ],
   standalone: true,
 })
 export class SearchTableComponent {
@@ -24,6 +34,8 @@ export class SearchTableComponent {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+
+  constructor(private router: Router) {}
 
   dataSource = new MatTableDataSource<SearchItem>([]);
   displayedColumns: string[] = [
@@ -76,5 +88,14 @@ export class SearchTableComponent {
       return '-';
     }
     return String(value);
+  }
+
+  onPruefidentifikatorClick(item: SearchItem): void {
+    if (item.format_version && item.pruefidentifikator) {
+      const url = this.router
+        .createUrlTree(['/ahb', item.format_version, item.pruefidentifikator])
+        .toString();
+      window.open(url, '_blank');
+    }
   }
 }

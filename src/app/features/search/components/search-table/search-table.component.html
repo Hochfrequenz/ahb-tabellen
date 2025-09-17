@@ -19,7 +19,17 @@
     <!-- Prüfidentifikator Column -->
     <ng-container matColumnDef="pruefidentifikator">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Prüfidentifikator</mat-header-cell>
-      <mat-cell *matCellDef="let row">{{ formatCellValue(row.pruefidentifikator) }}</mat-cell>
+      <mat-cell *matCellDef="let row" class="clickable-cell">
+        <button
+          mat-button
+          class="pruefidentifikator-button"
+          (click)="onPruefidentifikatorClick(row)"
+          [attr.aria-label]="'Navigate to AHB table for ' + formatCellValue(row.pruefidentifikator)"
+          tabindex="0">
+          {{ formatCellValue(row.pruefidentifikator) }}
+          <mat-icon class="navigate-icon">open_in_new</mat-icon>
+        </button>
+      </mat-cell>
     </ng-container>
 
     <!-- Description Column -->
