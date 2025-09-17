@@ -96,6 +96,7 @@ export class AhbPageComponent implements OnInit, OnDestroy {
         this.formatVersion.set(formatVersion);
         this.pruefi.set(pruefi);
         this.loadAhbData(formatVersion, pruefi);
+        this.updateTitle({ pruefi, formatVersion });
       }
     });
 
