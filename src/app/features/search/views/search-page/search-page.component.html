@@ -1,6 +1,6 @@
 <div class="search-page">
   <mat-toolbar class="search-header">
-    <h1>AHB Search</h1>
+    <h1>AHB Globale Suche</h1>
     <span class="spacer"></span>
     <button mat-icon-button (click)="onClearFilters()" matTooltip="Clear all filters">
       <mat-icon>clear_all</mat-icon>
@@ -11,7 +11,7 @@
     <!-- Search Filters -->
     <mat-card class="filters-card">
       <mat-card-header>
-        <mat-card-title>Search & Filters</mat-card-title>
+        <mat-card-title>Suche & Filter</mat-card-title>
       </mat-card-header>
       <mat-card-content>
         <app-search-filters
@@ -25,7 +25,7 @@
     <mat-card class="results-card">
       <mat-card-header>
         <mat-card-title>
-          Search Results
+          Ergebnisse
           <span *ngIf="searchResults" class="result-count">
             ({{ searchResults.total }} items)
           </span>
