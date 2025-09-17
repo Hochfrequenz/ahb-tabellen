@@ -157,6 +157,19 @@ export class AhbPageComponent implements OnInit, OnDestroy {
     if (!query) return;
   }
 
+  private updateTitle(params: {
+    pruefi: string;
+    formatVersion: string;
+    description?: string;
+  }): void {
+    const { pruefi, formatVersion, description } = params;
+    const appName = 'AHB Tabellen';
+    const base = description ? `${pruefi} – ${description}` : `${pruefi}`;
+    const suffix = formatVersion ? formatVersion : '';
+    const full = [base, suffix, appName].filter(Boolean).join(' | ');
+    this.title.setTitle(full);
+  }
+
   scrollToElement(element: HTMLElement, offsetY: number): void {
     const scrollContainer = this.scroll();
     if (!scrollContainer?.nativeElement) return;
