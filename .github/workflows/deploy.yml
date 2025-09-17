@@ -91,13 +91,24 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
-      - name: Create GitHub release
+      - name: Publish GitHub Pre-release
+        if: ${{ contains(env.VERSION_TAG, '-') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
-          name: Release ${{ env.VERSION_TAG }}
+          name: 'Pre-release ${{ env.VERSION_TAG }}'
           body: ${{ needs.generate-changelog.outputs.release_body }}
-          prerelease: ${{ contains(env.VERSION_TAG, '-') }}
+          prerelease: true
+          draft: false
+
+      - name: Publish GitHub Release
+        if: ${{ !contains(env.VERSION_TAG, '-') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION_TAG }}
+          name: 'Release ${{ env.VERSION_TAG }}'
+          body: ${{ needs.generate-changelog.outputs.release_body }}
+          prerelease: false
           draft: false
 
       - name: Login to Octopus Deploy 🐙
