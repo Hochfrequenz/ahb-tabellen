@@ -17,6 +17,210 @@ export default class AHBRepository {
     this.xlsxGenerator = new XlsxGeneratorService();
   }
 
+  public async searchAhbLines(payload: {
+    page: number;
+    pageSize: number;
+    sort: { field: string; direction?: 'asc' | 'desc' }[];
+    q: string;
+    filters?: Partial<
+      Record<
+        | 'format_version'
+        | 'format'
+        | 'pruefidentifikator'
+        | 'description'
+        | 'segmentgroup_key'
+        | 'segment_code'
+        | 'data_element'
+        | 'qualifier'
+        | 'line_ahb_status'
+        | 'line_name'
+        | 'bedingung',
+        {
+          eq?: string;
+          neq?: string;
+          contains?: string;
+          startsWith?: string;
+          endsWith?: string;
+          in?: string[];
+          isNull?: boolean;
+          isNotNull?: boolean;
+        }
+      >
+    >;
+  }): Promise<{
+    items: Array<{
+      format_version: string;
+      format: string;
+      pruefidentifikator: string;
+      description?: string | null;
+      segmentgroup_key?: string | null;
+      segment_code?: string | null;
+      data_element?: string | null;
+      qualifier?: string | null;
+      line_ahb_status?: string | null;
+      line_name?: string | null;
+      bedingung?: string | null;
+      direction?: string | null;
+    }>;
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
+
+    const allowedFields = [
+      'format_version',
+      'format',
+      'pruefidentifikator',
+      'description',
+      'segmentgroup_key',
+      'segment_code',
+      'data_element',
+      'qualifier',
+      'line_ahb_status',
+      'line_name',
+      'bedingung',
+      'direction',
+    ] as const;
+
+    const qb = AppDataSource.getRepository(AhbLine)
+      .createQueryBuilder('al')
+      .select([
+        'al.format_version as format_version',
+        'al.format as format',
+        'al.pruefidentifikator as pruefidentifikator',
+        'al.description as description',
+        'al.segmentgroup_key as segmentgroup_key',
+        'al.segment_code as segment_code',
+        'al.data_element as data_element',
+        'al.qualifier as qualifier',
+        'al.line_ahb_status as line_ahb_status',
+        'al.line_name as line_name',
+        'al.bedingung as bedingung',
+        'al.direction as direction',
+        'al.sort_path as sort_path',
+      ]);
+
+    // Filters (AND)
+    const filters = payload.filters ?? {};
+    Object.entries(filters).forEach(([field, value]) => {
+      if (!value) return;
+      if (!(allowedFields as readonly string[]).includes(field)) return;
+      const paramBase = `f_${field}`;
+      if (value.eq !== undefined) {
+        qb.andWhere(`al.${field} = :${paramBase}_eq`, { [`${paramBase}_eq`]: value.eq });
+      }
+      if (value.neq !== undefined) {
+        qb.andWhere(`(al.${field} IS NULL OR al.${field} != :${paramBase}_neq)`, {
+          [`${paramBase}_neq`]: value.neq,
+        });
+      }
+      if (value.contains !== undefined) {
+        qb.andWhere(`LOWER(al.${field}) LIKE :${paramBase}_contains`, {
+          [`${paramBase}_contains`]: `%${value.contains.toLowerCase()}%`,
+        });
+      }
+      if (value.startsWith !== undefined) {
+        qb.andWhere(`LOWER(al.${field}) LIKE :${paramBase}_starts`, {
+          [`${paramBase}_starts`]: `${value.startsWith.toLowerCase()}%`,
+        });
+      }
+      if (value.endsWith !== undefined) {
+        qb.andWhere(`LOWER(al.${field}) LIKE :${paramBase}_ends`, {
+          [`${paramBase}_ends`]: `%${value.endsWith.toLowerCase()}`,
+        });
+      }
+      if (value.in && value.in.length > 0) {
+        qb.andWhere(`al.${field} IN (:...${paramBase}_in)`, {
+          [`${paramBase}_in`]: value.in,
+        });
+      }
+      if (value.isNull) {
+        qb.andWhere(`al.${field} IS NULL`);
+      }
+      if (value.isNotNull) {
+        qb.andWhere(`al.${field} IS NOT NULL`);
+      }
+    });
+
+    // Global q across the 11 fields (case-insensitive LIKE)
+    const q = (payload.q || '').trim().toLowerCase();
+    if (q.length > 0) {
+      const qFields = [
+        'format_version',
+        'format',
+        'pruefidentifikator',
+        'description',
+        'segmentgroup_key',
+        'segment_code',
+        'data_element',
+        'qualifier',
+        'line_ahb_status',
+        'line_name',
+        'bedingung',
+      ];
+      const orClauses = qFields.map((f, idx) => `LOWER(al.${f}) LIKE :q${idx}`);
+      const params = Object.fromEntries(qFields.map((_, idx) => [`q${idx}`, `%${q}%`]));
+      qb.andWhere(`(${orClauses.join(' OR ')})`, params);
+    }
+
+    // Sorting (allowlist)
+    const sortRules = Array.isArray(payload.sort) ? payload.sort : [];
+    if (sortRules.length === 0) {
+      qb.addOrderBy('al.sort_path', 'ASC');
+      qb.addOrderBy('al.pruefidentifikator', 'ASC');
+    } else {
+      sortRules.forEach((rule, idx) => {
+        if (!rule || !(allowedFields as readonly string[]).includes(rule.field)) return;
+        const dir = (rule.direction || 'asc').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+        if (idx === 0) qb.orderBy(`al.${rule.field}`, dir as 'ASC' | 'DESC');
+        else qb.addOrderBy(`al.${rule.field}`, dir as 'ASC' | 'DESC');
+      });
+      // Always add stable sort fallback
+      qb.addOrderBy('al.sort_path', 'ASC');
+      qb.addOrderBy('al.pruefidentifikator', 'ASC');
+    }
+
+    // Pagination
+    const pageSize = Math.min(Math.max(payload.pageSize || 25, 1), 200);
+    const page = Math.max(payload.page || 1, 1);
+    qb.skip((page - 1) * pageSize).take(pageSize);
+
+    const [rows, total] = await qb.getRawAndEntities().then(async () => {
+      const [items, count] = await qb.getRawMany().then(async rawItems => {
+        const totalQb = AppDataSource.getRepository(AhbLine).createQueryBuilder('al');
+        // replicate where conditions for count
+        totalQb.setParameters(qb.getParameters());
+        totalQb.where(
+          qb.expressionMap.wheres.length
+            ? qb.expressionMap.wheres.map(w => w.condition).join(' AND ')
+            : '1=1'
+        );
+        const totalCount = await totalQb.getCount();
+        return [rawItems, totalCount] as [any[], number];
+      });
+      return [items, count] as [any[], number];
+    });
+
+    const items = rows.map(r => ({
+      format_version: r['format_version'],
+      format: r['format'],
+      pruefidentifikator: r['pruefidentifikator'],
+      description: r['description'] ?? null,
+      segmentgroup_key: r['segmentgroup_key'] ?? null,
+      segment_code: r['segment_code'] ?? null,
+      data_element: r['data_element'] ?? null,
+      qualifier: r['qualifier'] ?? null,
+      line_ahb_status: r['line_ahb_status'] ?? null,
+      line_name: r['line_name'] ?? null,
+      bedingung: r['bedingung'] ?? null,
+      direction: r['direction'] ?? null,
+    }));
+
+    return { items, total, page, pageSize };
+  }
   // Retrieve a single AHB from either database (JSON) or generate XLSX on the fly
   public async get(pruefi: string, formatVersion: string, type: FileType): Promise<Ahb | Buffer> {
     if (type === FileType.JSON) {
