@@ -38,12 +38,14 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
     label: string;
     type: 'text' | 'select';
     options?: string[];
+    multiple?: boolean;
   }> = [
     {
       key: 'format_version',
       label: 'Format Version',
       type: 'select',
       options: [], // Will be populated from API
+      multiple: true,
     },
     { key: 'format', label: 'Format', type: 'text' },
     { key: 'pruefidentifikator', label: 'Prüfidentifikator', type: 'text' },
@@ -65,7 +67,8 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
       q: [''],
       ...this.filterFields.reduce(
         (acc, field) => {
-          acc[field.key] = new FormControl('');
+          // Multi-select holds an array of strings, single select/text holds a string
+          acc[field.key] = new FormControl(field.multiple ? ([] as string[]) : '');
           return acc;
         },
         {} as Record<string, FormControl>
@@ -113,6 +116,13 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
           );
           if (formatVersionField) {
             formatVersionField.options = formatVersions;
+            // Set default selection to second last entry if available
+            if (Array.isArray(formatVersions) && formatVersions.length >= 2) {
+              const secondLast = formatVersions[formatVersions.length - 2];
+              // Avoid double emissions: set value without emitting, then emit once explicitly
+              this.searchForm.get('format_version')?.setValue([secondLast], { emitEvent: false });
+              this.emitFilters();
+            }
           }
         },
         error: error => {
@@ -127,10 +137,22 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
 
     this.filterFields.forEach(field => {
       const value = this.searchForm.get(field.key)?.value;
-      if (value && value.trim()) {
-        // Use 'eq' for select fields, 'contains' for text fields
-        const operator = field.type === 'select' ? 'eq' : 'contains';
-        filters[field.key] = { [operator]: value.trim() };
+      if (field.type === 'select' && field.multiple) {
+        const values: string[] = Array.isArray(value)
+          ? value.filter(v => !!v && typeof v === 'string')
+          : [];
+        if (values.length > 0) {
+          // For multi-select use 'in' operator with array of values
+          filters[field.key] = { in: values };
+        }
+      } else if (field.type === 'select') {
+        if (typeof value === 'string' && value.trim()) {
+          filters[field.key] = { eq: value.trim() };
+        }
+      } else {
+        if (typeof value === 'string' && value.trim()) {
+          filters[field.key] = { contains: value.trim() };
+        }
       }
     });
 
@@ -142,10 +164,10 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
       q: '',
       ...this.filterFields.reduce(
         (acc, field) => {
-          acc[field.key] = '';
+          acc[field.key] = field.multiple ? [] : '';
           return acc;
         },
-        {} as Record<string, string>
+        {} as Record<string, any>
       ),
     });
   }
@@ -153,7 +175,10 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
   getActiveFilterCount(): number {
     return this.filterFields.filter(field => {
       const value = this.searchForm.get(field.key)?.value;
-      return value && value.trim();
+      if (field.type === 'select' && field.multiple) {
+        return Array.isArray(value) && value.length > 0;
+      }
+      return typeof value === 'string' && value.trim();
     }).length;
   }
 }

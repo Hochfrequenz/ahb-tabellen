@@ -18,8 +18,9 @@
         <mat-select
           *ngIf="field.type === 'select'"
           [formControlName]="field.key"
-          [placeholder]="'Select ' + field.label.toLowerCase()">
-          <mat-option value="">All {{ field.label }}</mat-option>
+          [placeholder]="'Select ' + field.label.toLowerCase()"
+          [multiple]="field.multiple">
+          <mat-option *ngIf="!field.multiple" value="">All {{ field.label }}</mat-option>
           <mat-option *ngFor="let option of field.options" [value]="option">
             {{ option }}
           </mat-option>
