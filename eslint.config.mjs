@@ -13,7 +13,7 @@ const compat = new FlatCompat({
 
 export default [{
     ignores: ["projects/**/*", "**/dist"],
-}, ...compat.extends(
+    ignores: ['projects/**/*', '**/dist', 'src/app/core/api/**/*'],
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@angular-eslint/recommended",
