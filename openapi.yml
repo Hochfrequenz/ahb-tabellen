@@ -121,7 +121,7 @@ paths:
                 items:
                   type: string
                 example: [FV2310, FV2404, FV2410]
-  /api/format-versions/{format-version}/pruefis:
+  /api/pruefidentifikatoren/{format-version}:
     get:
       tags:
         - prüfidentifikatoren
