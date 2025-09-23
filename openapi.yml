@@ -253,6 +253,10 @@ components:
         - meta
     FormatVersion:
       type: string
+      example: 'FV2510'
+    Format:
+      type: string
+      example: 'UTILMD'
     Version:
       type: object
       properties:
