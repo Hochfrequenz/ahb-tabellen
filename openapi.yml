@@ -69,6 +69,37 @@ paths:
       security:
         - ahb_tabellen_auth:
             - read:ahb
+  /api/formate:
+    get:
+      tags:
+        - formate
+      summary: Get a list of all available formate
+      operationId: getFormate
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Format'
+                example:
+                  [
+                    CONTRL,
+                    MSCONS,
+                    ORDERS,
+                    ORDRSP,
+                    PARTIN,
+                    PRICAT,
+                    QUOTES,
+                    REMADV,
+                    REQOTE,
+                    UTILMD,
+                    UTILTS,
+                  ]
+        - ahb_tabellen_auth:
+            - read:ahb
   /api/format-versions:
     get:
       tags:
