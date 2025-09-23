@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { AppDataSource } from '../infrastructure/database';
 import FormateController from './formate';
 import FormateRepository from '../repository/formate';
 
@@ -30,7 +29,7 @@ describe('FormateController', () => {
     // Create a mock repository
     mockFormateRepository = {
       list: jest.fn(),
-    } as any;
+    } as jest.Mocked<FormateRepository>;
 
     formateController = new FormateController(mockFormateRepository);
   });

@@ -5,8 +5,14 @@ jest.mock('../infrastructure/database');
 
 describe('FormateRepository', () => {
   let formateRepository: FormateRepository;
-  let mockQueryBuilder: any;
-  let mockRepository: any;
+  let mockQueryBuilder: {
+    select: jest.Mock;
+    orderBy: jest.Mock;
+    getRawMany: jest.Mock;
+  };
+  let mockRepository: {
+    createQueryBuilder: jest.Mock;
+  };
 
   beforeEach(() => {
     formateRepository = new FormateRepository();
