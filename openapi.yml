@@ -22,6 +22,16 @@ servers:
 tags:
   - name: ahb
     description: Everything about AHB documents
+  - name: formate
+    description: EDIFACT formats like UTILMD, MSCONS etc
+  - name: search
+    description: Find information in AHB documents
+  - name: format-versions
+    description: EDIFACT format versions e.g. `FV2510`
+  - name: prüfidentifikatoren
+    description: Prüfidentifikatoren which is defined by edi@energy, e.g. 55001
+  - name: maintenance
+    description: Endpoints which have mainly a technical focus
 paths:
   /api/ahb/{format-version}/{pruefi}:
     get:
@@ -103,7 +113,7 @@ paths:
   /api/format-versions:
     get:
       tags:
-        - ahb
+        - format-versions
       summary: Get a list of all available format versions
       operationId: getFormatVersions
       responses:
@@ -119,7 +129,7 @@ paths:
   /api/format-versions/{format-version}/pruefis:
     get:
       tags:
-        - ahb
+        - prüfidentifikatoren
       summary: Get a list of all available Pruefidentifikators for a given format version
       operationId: getPruefis
       parameters:
