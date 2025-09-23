@@ -25,7 +25,7 @@ export class PrufidentifikatorenService extends BaseService {
   }
 
   /** Path part for operation `getPruefis()` */
-  static readonly GetPruefisPath = '/api/format-versions/{format-version}/pruefis';
+  static readonly GetPruefisPath = '/api/pruefidentifikatoren/{format-version}';
 
   /**
    * Get a list of all available Pruefidentifikators for a given format version.
