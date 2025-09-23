@@ -3,7 +3,7 @@ import FormateRepository from '../repository/formate';
 
 export default class FormateController {
   private repository: FormateRepository;
-  
+
   constructor(repository?: FormateRepository) {
     this.repository = repository ?? new FormateRepository();
   }
