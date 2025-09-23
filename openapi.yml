@@ -76,9 +76,6 @@ paths:
               schema:
                 type: string
                 format: binary
-      security:
-        - ahb_tabellen_auth:
-            - read:ahb
   /api/formate:
     get:
       tags:
@@ -108,8 +105,6 @@ paths:
                     UTILMD,
                     UTILTS,
                   ]
-        - ahb_tabellen_auth:
-            - read:ahb
   /api/format-versions:
     get:
       tags:
@@ -275,11 +270,3 @@ components:
         buildBranch:
           type: string
           example: 'main'
-  securitySchemes:
-    ahb_tabellen_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
-          scopes:
-            read:ahb: read your ahb
