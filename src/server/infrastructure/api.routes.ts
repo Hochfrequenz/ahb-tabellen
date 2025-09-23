@@ -1,12 +1,14 @@
 import { Router, IRouter } from 'express';
 import AHBController from '../controller/ahb';
 import FormatVersionController from '../controller/formatVersion';
+import FormateController from '../controller/formate';
 import HealthController from '../controller/health';
 
 const router: IRouter = Router();
 
 const ahbController = new AHBController();
 const formatVersionController = new FormatVersionController();
+const formateController = new FormateController();
 const healthController = new HealthController();
 
 router.get('/health', async (req, res, next) => {
@@ -19,6 +21,10 @@ router.get('/ahb/:formatVersion/:pruefi', (req, res, next) => {
 
 router.get('/format-versions', async (req, res, next) => {
   await formatVersionController.list(req, res).catch((err: Error) => next(err));
+});
+
+router.get('/formate', async (req, res, next) => {
+  await formateController.list(req, res).catch((err: Error) => next(err));
 });
 
 router.get('/pruefidentifikatoren/:formatVersion', async (req, res, next) => {
