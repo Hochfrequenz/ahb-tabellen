@@ -6,7 +6,7 @@ import {
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { AhbService } from '../../../../core/api';
+import { FormatVersionsService } from '../../../../core/api';
 import { Observable, map, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
@@ -30,11 +30,11 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
 
   public onChange?: (formatVersion: string | null) => void;
 
-  constructor(private readonly ahbService: AhbService) {}
+  constructor(private readonly formatVersionsService: FormatVersionsService) {}
 
   ngOnInit(): void {
     this.control.disable();
-    this.formatVersions$ = this.ahbService.getFormatVersions().pipe(
+    this.formatVersions$ = this.formatVersionsService.getFormatVersions().pipe(
       map(versions =>
         versions.map(v => ({
           value: v,

@@ -22,8 +22,16 @@ servers:
 tags:
   - name: ahb
     description: Everything about AHB documents
+  - name: formate
+    description: EDIFACT formats like UTILMD, MSCONS etc
   - name: search
-    description: Server-side search across AHB lines (v_ahbtabellen)
+    description: Find information in AHB documents
+  - name: format-versions
+    description: EDIFACT format versions e.g. `FV2510`
+  - name: prüfidentifikatoren
+    description: Prüfidentifikatoren which is defined by edi@energy, e.g. 55001
+  - name: maintenance
+    description: Endpoints which have mainly a technical focus
 paths:
   /api/ahb/{format-version}/{pruefi}:
     get:
@@ -68,9 +76,35 @@ paths:
               schema:
                 type: string
                 format: binary
-      security:
-        - ahb_tabellen_auth:
-            - read:ahb
+  /api/formate:
+    get:
+      tags:
+        - formate
+      summary: Get a list of all available formate
+      operationId: getFormate
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Format'
+                example:
+                  [
+                    CONTRL,
+                    MSCONS,
+                    ORDERS,
+                    ORDRSP,
+                    PARTIN,
+                    PRICAT,
+                    QUOTES,
+                    REMADV,
+                    REQOTE,
+                    UTILMD,
+                    UTILTS,
+                  ]
   /api/search/query:
     post:
       tags:
@@ -92,15 +126,10 @@ paths:
                 $ref: '#/components/schemas/SearchQueryResponse'
         '400':
           description: invalid request
-        '401':
-          description: unauthorized
-      security:
-        - ahb_tabellen_auth:
-            - read:ahb
   /api/format-versions:
     get:
       tags:
-        - ahb
+        - format-versions
       summary: Get a list of all available format versions
       operationId: getFormatVersions
       responses:
@@ -113,10 +142,10 @@ paths:
                 items:
                   type: string
                 example: [FV2310, FV2404, FV2410]
-  /api/format-versions/{format-version}/pruefis:
+  /api/pruefidentifikatoren/{format-version}:
     get:
       tags:
-        - ahb
+        - prüfidentifikatoren
       summary: Get a list of all available Pruefidentifikators for a given format version
       operationId: getPruefis
       parameters:
@@ -389,6 +418,10 @@ components:
         - meta
     FormatVersion:
       type: string
+      example: 'FV2510'
+    Format:
+      type: string
+      example: 'UTILMD'
     Version:
       type: object
       properties:
@@ -407,11 +440,3 @@ components:
         buildBranch:
           type: string
           example: 'main'
-  securitySchemes:
-    ahb_tabellen_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
-          scopes:
-            read:ahb: read your ahb

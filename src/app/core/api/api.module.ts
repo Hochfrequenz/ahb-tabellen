@@ -7,6 +7,9 @@ import { HttpClient } from '@angular/common/http';
 import { ApiConfiguration, ApiConfigurationParams } from './api-configuration';
 
 import { AhbService } from './services/ahb.service';
+import { FormateService } from './services/formate.service';
+import { FormatVersionsService } from './services/format-versions.service';
+import { PrufidentifikatorenService } from './services/prufidentifikatoren.service';
 import { SearchService } from './services/search.service';
 import { MaintenanceService } from './services/maintenance.service';
 
@@ -19,6 +22,9 @@ import { MaintenanceService } from './services/maintenance.service';
   declarations: [],
   providers: [
     AhbService,
+    FormateService,
+    FormatVersionsService,
+    PrufidentifikatorenService,
     SearchService,
     MaintenanceService,
     ApiConfiguration

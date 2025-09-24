@@ -15,6 +15,10 @@ import { getVersion } from '../fn/maintenance/get-version';
 import { GetVersion$Params } from '../fn/maintenance/get-version';
 import { Version } from '../models/version';
 
+
+/**
+ * Endpoints which have mainly a technical focus
+ */
 @Injectable({ providedIn: 'root' })
 export class MaintenanceService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {

@@ -1,6 +1,7 @@
 import { Router, IRouter } from 'express';
 import AHBController from '../controller/ahb';
 import FormatVersionController from '../controller/formatVersion';
+import FormateController from '../controller/formate';
 import HealthController from '../controller/health';
 import SearchController from '../controller/search';
 
@@ -8,6 +9,7 @@ const router: IRouter = Router();
 
 const ahbController = new AHBController();
 const formatVersionController = new FormatVersionController();
+const formateController = new FormateController();
 const healthController = new HealthController();
 const searchController = new SearchController();
 
@@ -27,7 +29,11 @@ router.get('/format-versions', async (req, res, next) => {
   await formatVersionController.list(req, res).catch((err: Error) => next(err));
 });
 
-router.get('/format-versions/:formatVersion/pruefis', async (req, res, next) => {
+router.get('/formate', async (req, res, next) => {
+  await formateController.list(req, res).catch((err: Error) => next(err));
+});
+
+router.get('/pruefidentifikatoren/:formatVersion', async (req, res, next) => {
   await formatVersionController
     .listPruefisByFormatVersion(req, res)
     .catch((err: Error) => next(err));
