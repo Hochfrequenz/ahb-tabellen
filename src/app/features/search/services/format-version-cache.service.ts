@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { AhbService } from '../../../core/api/services/ahb.service';
+import { FormatVersionsService } from '../../../core/api/services/format-versions.service';
 
 interface CachedFormatVersions {
   data: string[];
@@ -19,7 +19,7 @@ export class FormatVersionCacheService {
   private formatVersionsSubject = new BehaviorSubject<string[]>([]);
   public formatVersions$ = this.formatVersionsSubject.asObservable();
 
-  constructor(private ahbService: AhbService) {
+  constructor(private formatVersionsService: FormatVersionsService) {
     this.loadFromCache();
   }
 
@@ -78,7 +78,7 @@ export class FormatVersionCacheService {
    * Fetch format versions from API and cache them
    */
   private fetchFromApi(): Observable<string[]> {
-    return this.ahbService.getFormatVersions().pipe(
+    return this.formatVersionsService.getFormatVersions().pipe(
       tap((formatVersions: string[]) => {
         this.cacheData(formatVersions);
         this.formatVersionsSubject.next(formatVersions);
