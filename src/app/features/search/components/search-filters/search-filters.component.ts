@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { FormatVersionCacheService } from '../../services/format-version-cache.service';
+import { FormatCacheService } from '../../services/format-cache.service';
 
 @Component({
   selector: 'app-search-filters',
@@ -47,7 +48,13 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
       options: [], // Will be populated from API
       multiple: true,
     },
-    { key: 'format', label: 'Format', type: 'text' },
+    {
+      key: 'format',
+      label: 'Format',
+      type: 'select',
+      options: [], // Will be populated from API
+      multiple: true,
+    },
     { key: 'pruefidentifikator', label: 'Prüfidentifikator', type: 'text' },
     { key: 'description', label: 'Description', type: 'text' },
     { key: 'segmentgroup_key', label: 'Segment Group', type: 'text' },
@@ -61,7 +68,8 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private formatVersionCacheService: FormatVersionCacheService
+    private formatVersionCacheService: FormatVersionCacheService,
+    private formatCacheService: FormatCacheService
   ) {
     this.searchForm = this.fb.group({
       q: [''],
@@ -79,6 +87,8 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Load format versions from cache/API
     this.loadFormatVersions();
+    // Load formats from cache/API
+    this.loadFormats();
 
     // Global search query
     this.searchForm
@@ -128,6 +138,23 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
         error: error => {
           console.error('Failed to load format versions:', error);
           // Keep empty options array if loading fails
+        },
+      });
+  }
+
+  private loadFormats(): void {
+    this.formatCacheService
+      .getFormats()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: formats => {
+          const formatField = this.filterFields.find(field => field.key === 'format');
+          if (formatField) {
+            formatField.options = formats;
+          }
+        },
+        error: error => {
+          console.error('Failed to load formats:', error);
         },
       });
   }
