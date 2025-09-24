@@ -17,7 +17,7 @@ import { SearchQueryResponse } from '../models/search-query-response';
 
 
 /**
- * Server-side search across AHB lines (v_ahbtabellen)
+ * Find information in AHB documents
  */
 @Injectable({ providedIn: 'root' })
 export class SearchService extends BaseService {

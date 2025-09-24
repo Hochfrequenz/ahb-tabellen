@@ -11,7 +11,7 @@ export interface SearchItem {
    * inbound/outbound indicator
    */
   direction?: string;
-  format: string;
+  format?: string;
   format_version: string;
   line_ahb_status?: string;
   line_name?: string;

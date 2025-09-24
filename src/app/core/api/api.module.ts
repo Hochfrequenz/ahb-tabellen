@@ -8,9 +8,9 @@ import { ApiConfiguration, ApiConfigurationParams } from './api-configuration';
 
 import { AhbService } from './services/ahb.service';
 import { FormateService } from './services/formate.service';
+import { SearchService } from './services/search.service';
 import { FormatVersionsService } from './services/format-versions.service';
 import { PrufidentifikatorenService } from './services/prufidentifikatoren.service';
-import { SearchService } from './services/search.service';
 import { MaintenanceService } from './services/maintenance.service';
 
 /**
@@ -23,9 +23,9 @@ import { MaintenanceService } from './services/maintenance.service';
   providers: [
     AhbService,
     FormateService,
+    SearchService,
     FormatVersionsService,
     PrufidentifikatorenService,
-    SearchService,
     MaintenanceService,
     ApiConfiguration
   ],
