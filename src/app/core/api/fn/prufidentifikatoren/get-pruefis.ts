@@ -40,4 +40,4 @@ export function getPruefis(http: HttpClient, rootUrl: string, params: GetPruefis
   );
 }
 
-getPruefis.PATH = '/api/format-versions/{format-version}/pruefis';
+getPruefis.PATH = '/api/pruefidentifikatoren/{format-version}';
