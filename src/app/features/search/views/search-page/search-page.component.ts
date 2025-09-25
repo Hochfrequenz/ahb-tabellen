@@ -8,7 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subject, takeUntil } from 'rxjs';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
-import { SearchFilters } from '../../../../core/api/models';
+import { SearchFilters, SortRule } from '../../../../core/api/models';
 import { SearchService } from '../../services/search.service';
 import { SearchQueryResponse } from '../../../../core/api/models';
 import { SearchTableComponent } from '../../components/search-table/search-table.component';
@@ -70,7 +70,28 @@ export class SearchPageComponent implements OnInit, OnDestroy {
   }
 
   onSortChange(event: Sort): void {
-    const sort = event.direction ? [{ field: event.active, direction: event.direction }] : [];
+    const isSortableField = (value: string): value is SortRule['field'] => {
+      const allowed: SortRule['field'][] = [
+        'format_version',
+        'format',
+        'pruefidentifikator',
+        'description',
+        'segmentgroup_key',
+        'segment_code',
+        'data_element',
+        'qualifier',
+        'line_ahb_status',
+        'line_name',
+        'bedingung',
+        'direction',
+      ];
+      return allowed.includes(value as SortRule['field']);
+    };
+
+    const sort: SortRule[] =
+      event.direction && isSortableField(event.active)
+        ? [{ field: event.active, direction: event.direction }]
+        : [];
     this.searchService.updateSort(sort);
   }
 
