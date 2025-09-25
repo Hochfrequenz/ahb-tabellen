@@ -6,6 +6,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subject, takeUntil } from 'rxjs';
+import { PageEvent } from '@angular/material/paginator';
+import { Sort } from '@angular/material/sort';
+import { SearchFilters } from '../../../../core/api/models';
 import { SearchService } from '../../services/search.service';
 import { SearchQueryResponse } from '../../../../core/api/models';
 import { SearchTableComponent } from '../../components/search-table/search-table.component';
@@ -58,15 +61,15 @@ export class SearchPageComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  onPageChange(event: any): void {
+  onPageChange(event: PageEvent): void {
     this.searchService.updatePage(event.pageIndex + 1);
   }
 
-  onPageSizeChange(event: any): void {
+  onPageSizeChange(event: PageEvent): void {
     this.searchService.updatePageSize(event.pageSize);
   }
 
-  onSortChange(event: any): void {
+  onSortChange(event: Sort): void {
     const sort = event.direction ? [{ field: event.active, direction: event.direction }] : [];
     this.searchService.updateSort(sort);
   }
@@ -75,7 +78,7 @@ export class SearchPageComponent implements OnInit, OnDestroy {
     this.searchService.updateQuery(query);
   }
 
-  onFiltersChange(filters: any): void {
+  onFiltersChange(filters: SearchFilters): void {
     this.searchService.updateFilters(filters);
   }
 

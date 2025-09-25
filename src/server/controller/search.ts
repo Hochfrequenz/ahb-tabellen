@@ -30,7 +30,10 @@ export default class SearchController {
       const result = await this.repository.searchAhbLines({
         page,
         pageSize,
-        sort: sort.map((s: any) => ({ field: s.field, direction: s.direction })),
+        sort: sort.map((s: { field: string; direction?: 'asc' | 'desc' }) => ({
+          field: s.field,
+          direction: s.direction,
+        })),
         q,
         filters,
       });

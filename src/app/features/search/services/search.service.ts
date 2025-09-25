@@ -9,14 +9,19 @@ import {
   tap,
 } from 'rxjs';
 import { SearchService as ApiSearchService } from '../../../core/api/services/search.service';
-import { SearchQueryRequest, SearchQueryResponse, SortRule } from '../../../core/api/models';
+import {
+  SearchQueryRequest,
+  SearchQueryResponse,
+  SortRule,
+  SearchFilters,
+} from '../../../core/api/models';
 
 export interface SearchState {
   page: number;
   pageSize: number;
   sort: SortRule[];
   q: string;
-  filters: Partial<Record<string, any>>;
+  filters: SearchFilters;
 }
 
 @Injectable({
@@ -71,7 +76,7 @@ export class SearchService {
     this.updateState({ q, page: 1 });
   }
 
-  updateFilters(filters: Partial<Record<string, any>>): void {
+  updateFilters(filters: SearchFilters): void {
     this.updateState({ filters, page: 1 });
   }
 

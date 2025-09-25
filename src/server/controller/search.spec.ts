@@ -18,7 +18,7 @@ describe('SearchController', () => {
   beforeEach(() => {
     mockRepository = {
       searchAhbLines: jest.fn(),
-    } as any;
+    } as unknown as jest.Mocked<AHBRepository>;
 
     MockedAHBRepository.mockImplementation(() => mockRepository);
 

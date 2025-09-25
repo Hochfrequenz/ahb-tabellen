@@ -83,7 +83,7 @@ export class SearchTableComponent implements OnChanges {
     return displayNames[column] || column;
   }
 
-  formatCellValue(value: any): string {
+  formatCellValue(value: string | number | boolean | null | undefined): string {
     if (value === null || value === undefined) {
       return '-';
     }

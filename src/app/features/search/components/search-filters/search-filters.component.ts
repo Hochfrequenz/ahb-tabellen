@@ -8,6 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { SearchFilters } from '../../../../core/api/models/search-filters';
+import { FilterValue } from '../../../../core/api/models/filter-value';
 import { FormatVersionCacheService } from '../../services/format-version-cache.service';
 import { FormatCacheService } from '../../services/format-cache.service';
 
@@ -29,7 +31,7 @@ import { FormatCacheService } from '../../services/format-cache.service';
 })
 export class SearchFiltersComponent implements OnInit, OnDestroy {
   @Output() queryChange = new EventEmitter<string>();
-  @Output() filtersChange = new EventEmitter<Record<string, any>>();
+  @Output() filtersChange = new EventEmitter<SearchFilters>();
 
   private destroy$ = new Subject<void>();
   searchForm: FormGroup;
@@ -160,7 +162,7 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
   }
 
   private emitFilters(): void {
-    const filters: Record<string, any> = {};
+    const filters: SearchFilters = {};
 
     this.filterFields.forEach(field => {
       const value = this.searchForm.get(field.key)?.value;
@@ -170,15 +172,15 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
           : [];
         if (values.length > 0) {
           // For multi-select use 'in' operator with array of values
-          filters[field.key] = { in: values };
+          (filters as Record<string, FilterValue>)[field.key] = { in: values };
         }
       } else if (field.type === 'select') {
         if (typeof value === 'string' && value.trim()) {
-          filters[field.key] = { eq: value.trim() };
+          (filters as Record<string, FilterValue>)[field.key] = { eq: value.trim() };
         }
       } else {
         if (typeof value === 'string' && value.trim()) {
-          filters[field.key] = { contains: value.trim() };
+          (filters as Record<string, FilterValue>)[field.key] = { contains: value.trim() };
         }
       }
     });
@@ -194,7 +196,7 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
           acc[field.key] = field.multiple ? [] : '';
           return acc;
         },
-        {} as Record<string, any>
+        {} as Record<string, string | string[]>
       ),
     });
   }
