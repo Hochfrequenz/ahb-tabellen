@@ -188,37 +188,50 @@ export default class AHBRepository {
     const page = Math.max(payload.page || 1, 1);
     qb.skip((page - 1) * pageSize).take(pageSize);
 
+    interface AhbRawRow {
+      format_version: string;
+      format: string;
+      pruefidentifikator: string;
+      description: string | null;
+      segmentgroup_key: string | null;
+      segment_code: string | null;
+      data_element: string | null;
+      qualifier: string | null;
+      line_ahb_status: string | null;
+      line_name: string | null;
+      bedingung: string | null;
+      direction: string | null;
+    }
+
     const [rows, total] = await qb.getRawAndEntities().then(async () => {
-      const [items, count] = await qb
-        .getRawMany()
-        .then(async (rawItems: Array<Record<string, unknown>>) => {
-          const totalQb = AppDataSource.getRepository(AhbLine).createQueryBuilder('al');
-          // replicate where conditions for count
-          totalQb.setParameters(qb.getParameters());
-          totalQb.where(
-            qb.expressionMap.wheres.length
-              ? qb.expressionMap.wheres.map(w => w.condition).join(' AND ')
-              : '1=1'
-          );
-          const totalCount = await totalQb.getCount();
-          return [rawItems, totalCount] as [Array<Record<string, unknown>>, number];
-        });
-      return [items, count] as [Array<Record<string, unknown>>, number];
+      const [items, count] = await qb.getRawMany().then(async (rawItems: AhbRawRow[]) => {
+        const totalQb = AppDataSource.getRepository(AhbLine).createQueryBuilder('al');
+        // replicate where conditions for count
+        totalQb.setParameters(qb.getParameters());
+        totalQb.where(
+          qb.expressionMap.wheres.length
+            ? qb.expressionMap.wheres.map(w => w.condition).join(' AND ')
+            : '1=1'
+        );
+        const totalCount = await totalQb.getCount();
+        return [rawItems, totalCount] as [AhbRawRow[], number];
+      });
+      return [items, count] as [AhbRawRow[], number];
     });
 
-    const items = rows.map(r => ({
-      format_version: r['format_version'],
-      format: r['format'],
-      pruefidentifikator: r['pruefidentifikator'],
-      description: r['description'] ?? null,
-      segmentgroup_key: r['segmentgroup_key'] ?? null,
-      segment_code: r['segment_code'] ?? null,
-      data_element: r['data_element'] ?? null,
-      qualifier: r['qualifier'] ?? null,
-      line_ahb_status: r['line_ahb_status'] ?? null,
-      line_name: r['line_name'] ?? null,
-      bedingung: r['bedingung'] ?? null,
-      direction: r['direction'] ?? null,
+    const items = (rows as AhbRawRow[]).map(r => ({
+      format_version: r.format_version,
+      format: r.format,
+      pruefidentifikator: r.pruefidentifikator,
+      description: r.description ?? null,
+      segmentgroup_key: r.segmentgroup_key ?? null,
+      segment_code: r.segment_code ?? null,
+      data_element: r.data_element ?? null,
+      qualifier: r.qualifier ?? null,
+      line_ahb_status: r.line_ahb_status ?? null,
+      line_name: r.line_name ?? null,
+      bedingung: r.bedingung ?? null,
+      direction: r.direction ?? null,
     }));
 
     return { items, total, page, pageSize };
