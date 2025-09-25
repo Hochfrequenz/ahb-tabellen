@@ -5,17 +5,11 @@ import {
   combineLatest,
   debounceTime,
   distinctUntilChanged,
-  map,
   switchMap,
   tap,
 } from 'rxjs';
 import { SearchService as ApiSearchService } from '../../../core/api/services/search.service';
-import {
-  SearchQueryRequest,
-  SearchQueryResponse,
-  SearchItem,
-  SortRule,
-} from '../../../core/api/models';
+import { SearchQueryRequest, SearchQueryResponse, SortRule } from '../../../core/api/models';
 
 export interface SearchState {
   page: number;

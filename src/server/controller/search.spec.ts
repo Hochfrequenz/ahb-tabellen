@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import SearchController from './search';
 import AHBRepository from '../repository/ahb';
-import { ValidationError } from '../infrastructure/errors';
 
 // Mock the repository
 jest.mock('../repository/ahb');

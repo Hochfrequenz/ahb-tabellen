@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { InputSearchEnhancedComponent } from './shared/components/input-search-enhanced/input-search-enhanced.component';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
