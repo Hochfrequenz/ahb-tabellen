@@ -203,21 +203,18 @@ export default class AHBRepository {
       direction: string | null;
     }
 
-    const [rows, total] = await qb.getRawAndEntities().then(async () => {
-      const [items, count] = await qb.getRawMany().then(async (rawItems: AhbRawRow[]) => {
-        const totalQb = AppDataSource.getRepository(AhbLine).createQueryBuilder('al');
-        // replicate where conditions for count
-        totalQb.setParameters(qb.getParameters());
-        totalQb.where(
-          qb.expressionMap.wheres.length
-            ? qb.expressionMap.wheres.map(w => w.condition).join(' AND ')
-            : '1=1'
-        );
-        const totalCount = await totalQb.getCount();
-        return [rawItems, totalCount] as [AhbRawRow[], number];
-      });
-      return [items, count] as [AhbRawRow[], number];
-    });
+    const countQb = AppDataSource.getRepository(AhbLine).createQueryBuilder('al');
+    // replicate where conditions for count (without pagination)
+    countQb.setParameters(qb.getParameters());
+    if (qb.expressionMap.wheres.length > 0) {
+      countQb.where(qb.expressionMap.wheres.map(w => w.condition).join(' AND '));
+    } else {
+      countQb.where('1=1');
+    }
+
+    const rowsPromise = qb.getRawMany<AhbRawRow>();
+    const countPromise = countQb.getCount();
+    const [rows, total] = await Promise.all([rowsPromise, countPromise]);
 
     const items = (rows as AhbRawRow[]).map(r => ({
       format_version: r.format_version,
