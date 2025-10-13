@@ -128,11 +128,13 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
           );
           if (formatVersionField) {
             formatVersionField.options = formatVersions;
-            // Set default selection to second last entry if available
+            // Set default selection to current format version
             if (Array.isArray(formatVersions) && formatVersions.length >= 2) {
-              const secondLast = formatVersions[formatVersions.length - 2];
+              const currentFormatVersion = formatVersions[formatVersions.length - 2];
               // Avoid double emissions: set value without emitting, then emit once explicitly
-              this.searchForm.get('format_version')?.setValue([secondLast], { emitEvent: false });
+              this.searchForm
+                .get('format_version')
+                ?.setValue([currentFormatVersion], { emitEvent: false });
               this.emitFilters();
             }
           }
