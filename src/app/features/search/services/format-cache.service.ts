@@ -11,7 +11,7 @@ interface CachedFormats {
 
 @Injectable({ providedIn: 'root' })
 export class FormatCacheService {
-  private readonly CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+  private readonly CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
   private readonly CACHE_KEY = 'formats_cache';
 
   private formatsSubject = new BehaviorSubject<string[]>([]);
