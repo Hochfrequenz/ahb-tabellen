@@ -4,7 +4,7 @@
     <mat-form-field appearance="fill" class="search-field">
       <mat-label>Global Search</mat-label>
       <input matInput formControlName="q" placeholder="Search across all fields..." />
-      <mat-icon matSuffix>search</mat-icon>
+      <mat-icon matSuffix fontSet="mdi" fontIcon="mdi-magnify"></mat-icon>
     </mat-form-field>
   </div>
 
@@ -39,7 +39,7 @@
           *ngIf="searchForm.get(field.key)?.value"
           (click)="searchForm.get(field.key)?.setValue('')"
           matTooltip="Clear filter">
-          <mat-icon>clear</mat-icon>
+          <mat-icon fontSet="mdi" fontIcon="mdi-close"></mat-icon>
         </button>
       </mat-form-field>
     </div>
@@ -52,7 +52,7 @@
       color="warn"
       (click)="clearFilters()"
       [disabled]="getActiveFilterCount() === 0">
-      <mat-icon>clear_all</mat-icon>
+      <mat-icon fontSet="mdi" fontIcon="mdi-close-all"></mat-icon>
       Clear All Filters
       <span *ngIf="getActiveFilterCount() > 0" class="filter-count">
         ({{ getActiveFilterCount() }})
