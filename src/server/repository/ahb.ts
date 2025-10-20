@@ -90,7 +90,7 @@ export default class AHBRepository {
     // This prevents SQL injection by ensuring only whitelisted field names are used
     // All field names are validated against the allowedFields array before being used in queries
     const validateField = (field: string): string => {
-      if (!allowedFields.includes(field as any)) {
+      if (!(allowedFields as readonly string[]).includes(field)) {
         throw new Error(`Invalid field: ${field}`);
       }
       return field;
