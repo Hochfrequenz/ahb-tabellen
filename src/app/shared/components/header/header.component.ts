@@ -3,12 +3,19 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IconLogoComponent } from '../icon-logo/icon-logo.component';
 import { LoginButtonComponent } from '../login-button/login-button.component';
+import { FeatureSwitcherComponent } from '../feature-switcher/feature-switcher.component';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, IconLogoComponent, LoginButtonComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    IconLogoComponent,
+    LoginButtonComponent,
+    FeatureSwitcherComponent,
+  ],
   templateUrl: './header.component.html',
   animations: [
     trigger('expandCollapse', [

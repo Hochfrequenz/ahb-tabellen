@@ -3,7 +3,7 @@
     <a routerLink="/" title="Homepage" class="flex-none flex items-center">
       <app-icon-logo [size]="23" />
     </a>
-    <span class="text-xl flex items-center me-14">AHB-Tabellen</span>
+    <app-feature-switcher class="me-14"></app-feature-switcher>
 
     <!-- Desktop Search Form - Hidden on mobile -->
     <div class="hidden lg:flex flex-grow">
@@ -63,6 +63,11 @@
     [attr.aria-hidden]="!isMobileMenuOpen()"
     [style.pointer-events]="isMobileMenuOpen() ? 'auto' : 'none'">
     <div class="px-4 py-3 space-y-3">
+      <!-- Mobile Feature Switcher -->
+      <div class="w-full">
+        <app-feature-switcher></app-feature-switcher>
+      </div>
+
       <!-- Mobile Search Form -->
       <div class="w-full">
         <ng-content select="[slot=search-form-mobile]"></ng-content>
