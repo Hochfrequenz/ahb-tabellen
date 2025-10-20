@@ -12,12 +12,13 @@ interface FeatureOption {
 @Component({
   selector: 'app-feature-switcher',
   standalone: true,
-  imports: [CommonModule, MatSelectModule, MatFormFieldModule],
+  imports: [CommonModule],
   templateUrl: './feature-switcher.component.html',
   styleUrls: ['./feature-switcher.component.scss'],
 })
 export class FeatureSwitcherComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
+  isDropdownOpen = false;
 
   readonly features: FeatureOption[] = [
     { value: 'ahb', label: 'AHB-Tabellen', route: '/ahb' },
@@ -31,24 +32,38 @@ export class FeatureSwitcherComponent implements OnDestroy {
     this.destroy$.complete();
   }
 
-  onFeatureChange(selectedValue: string): void {
-    const selectedFeature = this.features.find(f => f.value === selectedValue);
-    if (selectedFeature) {
-      // Only navigate if we're not already on the target route
-      const currentUrl = this.router.url;
-      if (!currentUrl.startsWith(selectedFeature.route)) {
-        this.router.navigate([selectedFeature.route]);
-      }
+  toggleDropdown(): void {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  selectFeature(feature: FeatureOption): void {
+    this.isDropdownOpen = false;
+    const currentUrl = this.router.url;
+    if (!currentUrl.startsWith(feature.route)) {
+      this.router.navigate([feature.route]);
     }
   }
 
-  getCurrentFeatureValue(): string {
+  getCurrentFeatureLabel(): string {
     const currentUrl = this.router.url;
     if (currentUrl.startsWith('/search')) {
-      return 'search';
+      return 'Globale Suche';
     } else if (currentUrl.startsWith('/ahb')) {
-      return 'ahb';
+      return 'AHB-Tabellen';
     }
-    return 'ahb'; // default
+    return 'AHB-Tabellen'; // default
+  }
+
+  isFeatureSelected(feature: FeatureOption): boolean {
+    const currentUrl = this.router.url;
+    return currentUrl.startsWith(feature.route);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.feature-switcher')) {
+      this.isDropdownOpen = false;
+    }
   }
 }
