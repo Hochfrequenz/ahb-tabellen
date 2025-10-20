@@ -15,9 +15,7 @@
     color: var(--hf-weiches-schwarz, #333);
     margin-left: 4px;
     font-size: 0.75rem;
-    transition:
-      transform 0.2s ease,
-      opacity 0.2s ease;
+    transition: all 0.2s ease;
     opacity: 0;
 
     &.open {
