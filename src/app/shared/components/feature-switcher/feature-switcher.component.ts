@@ -1,7 +1,6 @@
-import { Component, OnDestroy, HostListener } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
 
 interface FeatureOption {
   value: string;
@@ -16,8 +15,7 @@ interface FeatureOption {
   templateUrl: './feature-switcher.component.html',
   styleUrls: ['./feature-switcher.component.scss'],
 })
-export class FeatureSwitcherComponent implements OnDestroy {
-  private destroy$ = new Subject<void>();
+export class FeatureSwitcherComponent {
   isDropdownOpen = false;
 
   readonly features: FeatureOption[] = [
@@ -26,11 +24,6 @@ export class FeatureSwitcherComponent implements OnDestroy {
   ];
 
   constructor(private router: Router) {}
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
 
   toggleDropdown(): void {
     this.isDropdownOpen = !this.isDropdownOpen;
