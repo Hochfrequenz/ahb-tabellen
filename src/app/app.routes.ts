@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
+import { SearchPageComponent } from './features/search/views/search-page/search-page.component';
 
 export const routes: Routes = [
   {
@@ -21,7 +22,7 @@ export const routes: Routes = [
   },
   {
     path: 'search',
-    loadChildren: async () => (await import('./features/search/search.routes')).SEARCH_ROUTES,
+    component: SearchPageComponent,
     canActivate: [AuthGuard],
   },
 ];
