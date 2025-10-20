@@ -1,4 +1,4 @@
-import { Component, HostListener, ElementRef, Inject } from '@angular/core';
+import { Component, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
