@@ -39,12 +39,7 @@ export class FeatureSwitcherComponent {
 
   getCurrentFeatureLabel(): string {
     const currentUrl = this.router.url;
-    if (currentUrl.startsWith('/search')) {
-      return 'Globale Suche';
-    } else if (currentUrl.startsWith('/ahb')) {
-      return 'AHB-Tabellen';
-    }
-    return 'AHB-Tabellen'; // default
+    return this.features.find(f => currentUrl.startsWith(f.route))?.label ?? this.features[0].label;
   }
 
   isFeatureSelected(feature: FeatureOption): boolean {
