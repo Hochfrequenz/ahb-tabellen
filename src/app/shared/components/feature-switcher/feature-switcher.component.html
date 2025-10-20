@@ -1,0 +1,11 @@
+<mat-form-field appearance="fill" class="feature-switcher">
+  <mat-select
+    [value]="getCurrentFeatureValue()"
+    (selectionChange)="onFeatureChange($event.value)"
+    [disableRipple]="true"
+    [disableOptionCentering]="true">
+    <mat-option *ngFor="let feature of features" [value]="feature.value">
+      {{ feature.label }}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
