@@ -272,14 +272,11 @@ export default class AHBRepository {
       direction: string | null;
     }
 
+    // Create count query builder and apply the same filters securely
+    // This prevents SQL injection by using TypeORM's parameterized query methods
+    // instead of directly accessing expressionMap.wheres
     const countQb = AppDataSource.getRepository(AhbLine).createQueryBuilder('al');
-    // replicate where conditions for count (without pagination)
-    countQb.setParameters(qb.getParameters());
-    if (qb.expressionMap.wheres.length > 0) {
-      countQb.where(qb.expressionMap.wheres.map(w => w.condition).join(' AND '));
-    } else {
-      countQb.where('1=1');
-    }
+    applyFilters(countQb, payload);
 
     const rowsPromise = qb.getRawMany<AhbRawRow>();
     const countPromise = countQb.getCount();
