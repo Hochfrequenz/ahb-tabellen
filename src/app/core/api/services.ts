@@ -4,6 +4,7 @@
 
 export { AhbService } from './services/ahb.service';
 export { FormateService } from './services/formate.service';
+export { SearchService } from './services/search.service';
 export { FormatVersionsService } from './services/format-versions.service';
 export { PrufidentifikatorenService } from './services/prufidentifikatoren.service';
 export { MaintenanceService } from './services/maintenance.service';

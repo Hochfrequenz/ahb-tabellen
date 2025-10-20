@@ -3,6 +3,7 @@ import AHBController from '../controller/ahb';
 import FormatVersionController from '../controller/formatVersion';
 import FormateController from '../controller/formate';
 import HealthController from '../controller/health';
+import SearchController from '../controller/search';
 
 const router: IRouter = Router();
 
@@ -10,6 +11,7 @@ const ahbController = new AHBController();
 const formatVersionController = new FormatVersionController();
 const formateController = new FormateController();
 const healthController = new HealthController();
+const searchController = new SearchController();
 
 router.get('/health', async (req, res, next) => {
   await healthController.check(req, res).catch((err: Error) => next(err));
@@ -17,6 +19,10 @@ router.get('/health', async (req, res, next) => {
 
 router.get('/ahb/:formatVersion/:pruefi', (req, res, next) => {
   ahbController.get(req, res, next);
+});
+
+router.post('/search/query', (req, res, next) => {
+  searchController.query(req, res, next);
 });
 
 router.get('/format-versions', async (req, res, next) => {

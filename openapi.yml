@@ -105,6 +105,27 @@ paths:
                     UTILMD,
                     UTILTS,
                   ]
+  /api/search/query:
+    post:
+      tags:
+        - search
+      summary: Query AHB lines with filters, sorting, pagination
+      operationId: searchAhbLines
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQueryRequest'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchQueryResponse'
+        '400':
+          description: invalid request
   /api/format-versions:
     get:
       tags:
@@ -167,6 +188,155 @@ paths:
 
 components:
   schemas:
+    SearchItem:
+      type: object
+      properties:
+        format_version:
+          type: string
+          example: 'FV2410'
+        format:
+          type: string
+          example: 'UTILMD'
+        pruefidentifikator:
+          type: string
+          example: '25007'
+        description:
+          type: string
+        segmentgroup_key:
+          type: string
+          example: 'SG6'
+        segment_code:
+          type: string
+          example: 'NAD'
+        data_element:
+          type: string
+          example: 'D_3035'
+        qualifier:
+          type: string
+        line_ahb_status:
+          type: string
+        line_name:
+          type: string
+        bedingung:
+          type: string
+        direction:
+          type: string
+          description: inbound/outbound indicator
+      required:
+        - format_version
+        - pruefidentifikator
+    SortRule:
+      type: object
+      properties:
+        field:
+          type: string
+          description: Sortable field name
+          enum:
+            [
+              format_version,
+              format,
+              pruefidentifikator,
+              description,
+              segmentgroup_key,
+              segment_code,
+              data_element,
+              qualifier,
+              line_ahb_status,
+              line_name,
+              bedingung,
+              direction,
+            ]
+        direction:
+          type: string
+          enum: [asc, desc]
+          default: asc
+      required:
+        - field
+    FilterValue:
+      type: object
+      description: One operator should be provided per field
+      properties:
+        eq:
+          type: string
+        neq:
+          type: string
+        contains:
+          type: string
+        startsWith:
+          type: string
+        endsWith:
+          type: string
+        in:
+          type: array
+          items:
+            type: string
+        isNull:
+          type: boolean
+        isNotNull:
+          type: boolean
+    SearchFilters:
+      type: object
+      properties:
+        format_version:
+          $ref: '#/components/schemas/FilterValue'
+        format:
+          $ref: '#/components/schemas/FilterValue'
+        pruefidentifikator:
+          $ref: '#/components/schemas/FilterValue'
+        description:
+          $ref: '#/components/schemas/FilterValue'
+        segmentgroup_key:
+          $ref: '#/components/schemas/FilterValue'
+        segment_code:
+          $ref: '#/components/schemas/FilterValue'
+        data_element:
+          $ref: '#/components/schemas/FilterValue'
+        qualifier:
+          $ref: '#/components/schemas/FilterValue'
+        line_ahb_status:
+          $ref: '#/components/schemas/FilterValue'
+        line_name:
+          $ref: '#/components/schemas/FilterValue'
+        bedingung:
+          $ref: '#/components/schemas/FilterValue'
+    SearchQueryRequest:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        pageSize:
+          type: integer
+          default: 25
+          description: Maximum 200
+        sort:
+          type: array
+          items:
+            $ref: '#/components/schemas/SortRule'
+        q:
+          type: string
+          description: Global case-insensitive search across the 11 listed fields
+        filters:
+          $ref: '#/components/schemas/SearchFilters'
+      required:
+        - page
+        - pageSize
+        - sort
+        - q
+    SearchQueryResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchItem'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
     Ahb:
       type: object
       properties:

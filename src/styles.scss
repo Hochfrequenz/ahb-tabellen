@@ -1,5 +1,17 @@
 @import '@mdi/font/css/materialdesignicons.css';
 
+/* Align MDI icons inside Angular Material form-field prefix/suffix */
+.mat-mdc-form-field .mat-mdc-form-field-icon-suffix .mat-icon.mdi,
+.mat-mdc-form-field .mat-mdc-form-field-icon-prefix .mat-icon.mdi {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 :root {
   /* copied from /assets/companystylesheet/css/hochfrequenz.css, because I didn't manage to import/include it properly */
   /* X [ERROR] Could not resolve "/assets/companystylesheet/css/hochfrequenz.css" */

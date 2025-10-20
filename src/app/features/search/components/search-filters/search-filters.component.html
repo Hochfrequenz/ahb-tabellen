@@ -1,0 +1,62 @@
+<div class="search-filters" [formGroup]="searchForm">
+  <!-- Global Search -->
+  <div class="global-search">
+    <mat-form-field appearance="fill" class="search-field">
+      <mat-label>Global Search</mat-label>
+      <input matInput formControlName="q" placeholder="Search across all fields..." />
+      <mat-icon matSuffix fontSet="mdi" fontIcon="mdi-magnify"></mat-icon>
+    </mat-form-field>
+  </div>
+
+  <!-- Individual Filters -->
+  <div class="filter-grid">
+    <div *ngFor="let field of filterFields" class="filter-field">
+      <mat-form-field appearance="fill" class="filter-input">
+        <mat-label>{{ field.label }}</mat-label>
+
+        <!-- Select dropdown for format_version -->
+        <mat-select
+          *ngIf="field.type === 'select'"
+          [formControlName]="field.key"
+          [placeholder]="'Select ' + field.label.toLowerCase()"
+          [multiple]="field.multiple">
+          <mat-option *ngIf="!field.multiple" value="">All {{ field.label }}</mat-option>
+          <mat-option *ngFor="let option of field.options" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-select>
+
+        <!-- Text input for other fields -->
+        <input
+          *ngIf="field.type === 'text'"
+          matInput
+          [formControlName]="field.key"
+          [placeholder]="'Filter by ' + field.label.toLowerCase()" />
+
+        <button
+          mat-icon-button
+          matSuffix
+          *ngIf="searchForm.get(field.key)?.value"
+          (click)="searchForm.get(field.key)?.setValue('')"
+          matTooltip="Clear filter">
+          <mat-icon fontSet="mdi" fontIcon="mdi-close"></mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Filter Actions -->
+  <div class="filter-actions">
+    <button
+      mat-button
+      color="warn"
+      (click)="clearFilters()"
+      [disabled]="getActiveFilterCount() === 0">
+      <mat-icon fontSet="mdi" fontIcon="mdi-close-all"></mat-icon>
+      Clear All Filters
+      <span *ngIf="getActiveFilterCount() > 0" class="filter-count">
+        ({{ getActiveFilterCount() }})
+      </span>
+    </button>
+  </div>
+</div>
