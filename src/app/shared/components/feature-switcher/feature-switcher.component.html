@@ -1,0 +1,27 @@
+<div
+  class="feature-switcher"
+  (click)="toggleDropdown()"
+  (keydown.enter)="toggleDropdown($event)"
+  (keydown.space)="toggleDropdown($event)"
+  tabindex="0"
+  role="button"
+  [attr.aria-expanded]="isDropdownOpen"
+  [attr.aria-haspopup]="true"
+  aria-label="Feature switcher">
+  <span class="feature-text">{{ getCurrentFeatureLabel() }}</span>
+  <span class="dropdown-arrow" [class.open]="isDropdownOpen">▼</span>
+
+  <div class="dropdown-menu" [class.open]="isDropdownOpen" role="menu">
+    <div
+      *ngFor="let feature of features"
+      class="dropdown-option"
+      (click)="selectFeature(feature, $event)"
+      (keydown.enter)="selectFeature(feature, $event)"
+      (keydown.space)="selectFeature(feature, $event)"
+      tabindex="0"
+      role="menuitem"
+      [class.selected]="isFeatureSelected(feature)">
+      {{ feature.label }}
+    </div>
+  </div>
+</div>

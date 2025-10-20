@@ -13,6 +13,9 @@ import { SearchService } from '../../services/search.service';
 import { SearchQueryResponse } from '../../../../core/api/models';
 import { SearchTableComponent } from '../../components/search-table/search-table.component';
 import { SearchFiltersComponent } from '../../components/search-filters/search-filters.component';
+import { HeaderComponent } from '../../../../shared/components/header/header.component';
+import { FooterComponent } from '../../../../shared/components/footer/footer.component';
+import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
 
 @Component({
   selector: 'app-search-page',
@@ -27,6 +30,9 @@ import { SearchFiltersComponent } from '../../components/search-filters/search-f
     MatProgressSpinnerModule,
     SearchTableComponent,
     SearchFiltersComponent,
+    HeaderComponent,
+    FooterComponent,
+    SolutionsFooterComponent,
   ],
   standalone: true,
 })
