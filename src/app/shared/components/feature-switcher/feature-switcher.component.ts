@@ -48,7 +48,11 @@ export class FeatureSwitcherComponent {
 
   getCurrentFeatureLabel(): string {
     const currentUrl = this.router.url;
-    return this.features.find(f => currentUrl.startsWith(f.route))?.label ?? this.features[0].label;
+    return (
+      this.features.find(f => currentUrl.startsWith(f.route))?.label ??
+      this.features[0]?.label ??
+      'Unknown Feature'
+    );
   }
 
   isFeatureSelected(feature: FeatureOption): boolean {
