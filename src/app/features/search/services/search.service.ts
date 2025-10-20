@@ -7,6 +7,8 @@ import {
   distinctUntilChanged,
   switchMap,
   tap,
+  catchError,
+  of,
 } from 'rxjs';
 import { SearchService as ApiSearchService } from '../../../core/api/services/search.service';
 import {
@@ -47,14 +49,22 @@ export class SearchService {
   public readonly searchResults$: Observable<SearchQueryResponse> = combineLatest([
     this.state$.pipe(debounceTime(300), distinctUntilChanged()),
   ]).pipe(
-    tap(() => this.loadingSubject.next(true)),
+    tap(() => {
+      this.loadingSubject.next(true);
+      this.errorSubject.next(null); // Clear any previous errors
+    }),
     switchMap(([state]) => this.performSearch(state)),
     tap(() => this.loadingSubject.next(false)),
-    tap({
-      error: error => {
-        this.loadingSubject.next(false);
-        this.errorSubject.next(error.message || 'Search failed');
-      },
+    catchError(error => {
+      this.loadingSubject.next(false);
+      this.errorSubject.next(error.message || 'Search failed');
+      // Return a fallback response to keep the stream alive
+      return of({
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 25,
+      } as SearchQueryResponse);
     })
   );
 
@@ -82,6 +92,10 @@ export class SearchService {
 
   clearFilters(): void {
     this.updateState({ filters: {}, page: 1 });
+  }
+
+  clearError(): void {
+    this.errorSubject.next(null);
   }
 
   private updateState(updates: Partial<SearchState>): void {
