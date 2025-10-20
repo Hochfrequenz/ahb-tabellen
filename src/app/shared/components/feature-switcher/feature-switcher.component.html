@@ -15,7 +15,7 @@
     <div
       *ngFor="let feature of features"
       class="dropdown-option"
-      (click)="selectFeature(feature)"
+      (click)="selectFeature(feature, $event)"
       (keydown.enter)="selectFeature(feature, $event)"
       (keydown.space)="selectFeature(feature, $event)"
       tabindex="0"
