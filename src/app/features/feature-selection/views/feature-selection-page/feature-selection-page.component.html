@@ -14,7 +14,11 @@
         <!-- AHB Tabellen Card -->
         <div
           (click)="onAhbClick()"
-          class="bg-hf-pastell-rose rounded-3xl p-6 md:p-8 cursor-pointer transition-all duration-300 hover:ring-4 hover:ring-black/10 hover:shadow-lg hover:scale-105">
+          (keydown.enter)="onAhbClick()"
+          (keydown.space)="onAhbClick()"
+          tabindex="0"
+          role="button"
+          class="bg-hf-pastell-rose rounded-3xl p-6 md:p-8 cursor-pointer transition-all duration-300 hover:ring-4 hover:ring-black/10 hover:shadow-lg hover:scale-105 focus:ring-4 focus:ring-black/10 focus:outline-none">
           <div class="flex flex-col items-center text-center">
             <div class="mb-4">
               <img
@@ -37,7 +41,11 @@
         <!-- Global Search Card -->
         <div
           (click)="onSearchClick()"
-          class="bg-hf-pastell-rose rounded-3xl p-6 md:p-8 cursor-pointer transition-all duration-300 hover:ring-4 hover:ring-black/10 hover:shadow-lg hover:scale-105">
+          (keydown.enter)="onSearchClick()"
+          (keydown.space)="onSearchClick()"
+          tabindex="0"
+          role="button"
+          class="bg-hf-pastell-rose rounded-3xl p-6 md:p-8 cursor-pointer transition-all duration-300 hover:ring-4 hover:ring-black/10 hover:shadow-lg hover:scale-105 focus:ring-4 focus:ring-black/10 focus:outline-none">
           <div class="flex flex-col items-center text-center">
             <div class="mb-4">
               <img
