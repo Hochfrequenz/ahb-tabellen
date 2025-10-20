@@ -97,6 +97,120 @@ export default class AHBRepository {
       return field;
     };
 
+    // Helper function to apply filters to a query builder
+    // This ensures consistent filtering logic between main query and count query
+    const applyFilters = (
+      queryBuilder: SelectQueryBuilder<AhbLine>,
+      payload: {
+        page: number;
+        pageSize: number;
+        sort: { field: string; direction?: 'asc' | 'desc' }[];
+        q: string;
+        filters?: Partial<
+          Record<
+            | 'format_version'
+            | 'format'
+            | 'pruefidentifikator'
+            | 'description'
+            | 'segmentgroup_key'
+            | 'segment_code'
+            | 'data_element'
+            | 'qualifier'
+            | 'line_ahb_status'
+            | 'line_name'
+            | 'bedingung',
+            {
+              eq?: string;
+              neq?: string;
+              contains?: string;
+              startsWith?: string;
+              endsWith?: string;
+              in?: string[];
+              isNull?: boolean;
+              isNotNull?: boolean;
+            }
+          >
+        >;
+      }
+    ) => {
+      // Filters (AND) - Using TypeORM's parameterized query methods
+      const filters = payload.filters ?? {};
+      Object.entries(filters).forEach(([field, value]) => {
+        if (!value) return;
+        if (!(allowedFields as readonly string[]).includes(field)) return;
+
+        const columnName = validateField(field);
+        const paramBase = `f_${field}`;
+
+        if (value.eq !== undefined) {
+          queryBuilder.andWhere(`al.${columnName} = :${paramBase}_eq`, {
+            [`${paramBase}_eq`]: value.eq,
+          });
+        }
+        if (value.neq !== undefined) {
+          queryBuilder.andWhere(
+            `(al.${columnName} IS NULL OR al.${columnName} != :${paramBase}_neq)`,
+            {
+              [`${paramBase}_neq`]: value.neq,
+            }
+          );
+        }
+        if (value.contains !== undefined) {
+          queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_contains`, {
+            [`${paramBase}_contains`]: `%${value.contains.toLowerCase()}%`,
+          });
+        }
+        if (value.startsWith !== undefined) {
+          queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_starts`, {
+            [`${paramBase}_starts`]: `${value.startsWith.toLowerCase()}%`,
+          });
+        }
+        if (value.endsWith !== undefined) {
+          queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_ends`, {
+            [`${paramBase}_ends`]: `%${value.endsWith.toLowerCase()}`,
+          });
+        }
+        if (value.in && value.in.length > 0) {
+          queryBuilder.andWhere(`al.${columnName} IN (:...${paramBase}_in)`, {
+            [`${paramBase}_in`]: value.in,
+          });
+        }
+        if (value.isNull) {
+          queryBuilder.andWhere(`al.${columnName} IS NULL`);
+        }
+        if (value.isNotNull) {
+          queryBuilder.andWhere(`al.${columnName} IS NOT NULL`);
+        }
+      });
+
+      // Global q across the 11 fields (case-insensitive LIKE) - Using TypeORM's parameterized methods
+      const q = (payload.q || '').trim().toLowerCase();
+      if (q.length > 0) {
+        const qFields = [
+          'format_version',
+          'format',
+          'pruefidentifikator',
+          'description',
+          'segmentgroup_key',
+          'segment_code',
+          'data_element',
+          'qualifier',
+          'line_ahb_status',
+          'line_name',
+          'bedingung',
+        ];
+
+        // Use TypeORM's parameterized query methods - validate each field
+        const orConditions = qFields.map((field, idx) => {
+          const columnName = validateField(field);
+          return `LOWER(al.${columnName}) LIKE :q${idx}`;
+        });
+
+        const params = Object.fromEntries(qFields.map((_, idx) => [`q${idx}`, `%${q}%`]));
+        queryBuilder.andWhere(`(${orConditions.join(' OR ')})`, params);
+      }
+    };
+
     const qb = AppDataSource.getRepository(AhbLine)
       .createQueryBuilder('al')
       .select([
