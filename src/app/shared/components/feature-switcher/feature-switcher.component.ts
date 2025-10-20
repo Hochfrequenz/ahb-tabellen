@@ -28,11 +28,17 @@ export class FeatureSwitcherComponent {
     private elementRef: ElementRef
   ) {}
 
-  toggleDropdown(): void {
+  toggleDropdown(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+    }
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
-  selectFeature(feature: FeatureOption): void {
+  selectFeature(feature: FeatureOption, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+    }
     this.isDropdownOpen = false;
     const currentUrl = this.router.url;
     if (!currentUrl.startsWith(feature.route)) {

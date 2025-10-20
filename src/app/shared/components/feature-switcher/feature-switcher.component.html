@@ -1,8 +1,8 @@
 <div
   class="feature-switcher"
   (click)="toggleDropdown()"
-  (keydown.enter)="toggleDropdown()"
-  (keydown.space)="toggleDropdown()"
+  (keydown.enter)="toggleDropdown($event)"
+  (keydown.space)="toggleDropdown($event)"
   tabindex="0"
   role="button"
   [attr.aria-expanded]="isDropdownOpen"
@@ -16,8 +16,8 @@
       *ngFor="let feature of features"
       class="dropdown-option"
       (click)="selectFeature(feature)"
-      (keydown.enter)="selectFeature(feature)"
-      (keydown.space)="selectFeature(feature)"
+      (keydown.enter)="selectFeature(feature, $event)"
+      (keydown.space)="selectFeature(feature, $event)"
       tabindex="0"
       role="menuitem"
       [class.selected]="isFeatureSelected(feature)">
