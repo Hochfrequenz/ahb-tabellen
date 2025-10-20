@@ -70,6 +70,7 @@ export default class AHBRepository {
       await AppDataSource.initialize();
     }
 
+    // Define allowed fields with their corresponding entity property names
     const allowedFields = [
       'format_version',
       'format',
@@ -84,6 +85,28 @@ export default class AHBRepository {
       'bedingung',
       'direction',
     ] as const;
+
+    // TypeORM's built-in column reference method for security
+    // This uses TypeORM's entity metadata to resolve column names safely
+    const getColumnReference = (field: string): string => {
+      // Validate field exists in allowed fields first
+      if (!allowedFields.includes(field as any)) {
+        throw new Error(`Invalid field: ${field}`);
+      }
+
+      // Get the entity metadata to access column information
+      // This prevents SQL injection by using TypeORM's built-in column resolution
+      const entityMetadata = AppDataSource.getRepository(AhbLine).metadata;
+      const column = entityMetadata.findColumnWithPropertyName(field);
+
+      if (!column) {
+        throw new Error(`Column not found for field: ${field}`);
+      }
+
+      // Return the properly quoted column name with table alias
+      // TypeORM handles the proper escaping and quoting of column names
+      return `al.${column.databaseName}`;
+    };
 
     const qb = AppDataSource.getRepository(AhbLine)
       .createQueryBuilder('al')
@@ -103,49 +126,52 @@ export default class AHBRepository {
         'al.sort_path as sort_path',
       ]);
 
-    // Filters (AND)
+    // Filters (AND) - Using TypeORM's secure column reference
     const filters = payload.filters ?? {};
     Object.entries(filters).forEach(([field, value]) => {
       if (!value) return;
       if (!(allowedFields as readonly string[]).includes(field)) return;
+
+      const columnRef = getColumnReference(field);
       const paramBase = `f_${field}`;
+
       if (value.eq !== undefined) {
-        qb.andWhere(`al.${field} = :${paramBase}_eq`, { [`${paramBase}_eq`]: value.eq });
+        qb.andWhere(`${columnRef} = :${paramBase}_eq`, { [`${paramBase}_eq`]: value.eq });
       }
       if (value.neq !== undefined) {
-        qb.andWhere(`(al.${field} IS NULL OR al.${field} != :${paramBase}_neq)`, {
+        qb.andWhere(`(${columnRef} IS NULL OR ${columnRef} != :${paramBase}_neq)`, {
           [`${paramBase}_neq`]: value.neq,
         });
       }
       if (value.contains !== undefined) {
-        qb.andWhere(`LOWER(al.${field}) LIKE :${paramBase}_contains`, {
+        qb.andWhere(`LOWER(${columnRef}) LIKE :${paramBase}_contains`, {
           [`${paramBase}_contains`]: `%${value.contains.toLowerCase()}%`,
         });
       }
       if (value.startsWith !== undefined) {
-        qb.andWhere(`LOWER(al.${field}) LIKE :${paramBase}_starts`, {
+        qb.andWhere(`LOWER(${columnRef}) LIKE :${paramBase}_starts`, {
           [`${paramBase}_starts`]: `${value.startsWith.toLowerCase()}%`,
         });
       }
       if (value.endsWith !== undefined) {
-        qb.andWhere(`LOWER(al.${field}) LIKE :${paramBase}_ends`, {
+        qb.andWhere(`LOWER(${columnRef}) LIKE :${paramBase}_ends`, {
           [`${paramBase}_ends`]: `%${value.endsWith.toLowerCase()}`,
         });
       }
       if (value.in && value.in.length > 0) {
-        qb.andWhere(`al.${field} IN (:...${paramBase}_in)`, {
+        qb.andWhere(`${columnRef} IN (:...${paramBase}_in)`, {
           [`${paramBase}_in`]: value.in,
         });
       }
       if (value.isNull) {
-        qb.andWhere(`al.${field} IS NULL`);
+        qb.andWhere(`${columnRef} IS NULL`);
       }
       if (value.isNotNull) {
-        qb.andWhere(`al.${field} IS NOT NULL`);
+        qb.andWhere(`${columnRef} IS NOT NULL`);
       }
     });
 
-    // Global q across the 11 fields (case-insensitive LIKE)
+    // Global q across the 11 fields (case-insensitive LIKE) - Using secure column reference
     const q = (payload.q || '').trim().toLowerCase();
     if (q.length > 0) {
       const qFields = [
@@ -161,12 +187,12 @@ export default class AHBRepository {
         'line_name',
         'bedingung',
       ];
-      const orClauses = qFields.map((f, idx) => `LOWER(al.${f}) LIKE :q${idx}`);
+      const orClauses = qFields.map((f, idx) => `LOWER(${getColumnReference(f)}) LIKE :q${idx}`);
       const params = Object.fromEntries(qFields.map((_, idx) => [`q${idx}`, `%${q}%`]));
       qb.andWhere(`(${orClauses.join(' OR ')})`, params);
     }
 
-    // Sorting (allowlist)
+    // Sorting (allowlist) - Using secure column reference
     const sortRules = Array.isArray(payload.sort) ? payload.sort : [];
     if (sortRules.length === 0) {
       qb.addOrderBy('al.sort_path', 'ASC');
@@ -174,9 +200,12 @@ export default class AHBRepository {
     } else {
       sortRules.forEach((rule, idx) => {
         if (!rule || !(allowedFields as readonly string[]).includes(rule.field)) return;
+
+        const columnRef = getColumnReference(rule.field);
         const dir = (rule.direction || 'asc').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-        if (idx === 0) qb.orderBy(`al.${rule.field}`, dir as 'ASC' | 'DESC');
-        else qb.addOrderBy(`al.${rule.field}`, dir as 'ASC' | 'DESC');
+
+        if (idx === 0) qb.orderBy(columnRef, dir as 'ASC' | 'DESC');
+        else qb.addOrderBy(columnRef, dir as 'ASC' | 'DESC');
       });
       // Always add stable sort fallback
       qb.addOrderBy('al.sort_path', 'ASC');
