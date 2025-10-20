@@ -3,6 +3,7 @@ import { NotFoundError } from '../infrastructure/errors';
 import { AppDataSource } from '../infrastructure/database';
 import { AhbLine, Anwendungshandbuch } from '../entities/ahb-line.entity';
 import { XlsxGeneratorService } from '../infrastructure/xlsx-generator.service';
+import { SelectQueryBuilder } from 'typeorm';
 
 export enum FileType {
   CSV = 'csv',
