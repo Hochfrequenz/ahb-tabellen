@@ -4,19 +4,7 @@
   margin: 0 auto;
 }
 
-.search-header {
-  margin-bottom: 16px;
-
-  h1 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 500;
-  }
-
-  .spacer {
-    flex: 1 1 auto;
-  }
-}
+// Header and footer now using inline styles for better visibility
 
 .search-content {
   display: flex;

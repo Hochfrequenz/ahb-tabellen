@@ -1,55 +1,83 @@
-<div class="search-page">
-  <mat-toolbar class="search-header">
-    <h1>AHB Globale Suche</h1>
-    <span class="spacer"></span>
-  </mat-toolbar>
+<div class="h-screen flex flex-col">
+  <!-- Fixed Main Header -->
+  <app-header class="flex-none">
+    <!-- Desktop projection -->
+    <div slot="search-form" class="flex-1">
+      <h1 class="text-xl font-medium text-hf-weiches-schwarz">AHB Globale Suche</h1>
+    </div>
+    <div slot="search" class="inline-block w-full md:w-96">
+      <!-- Search functionality can be added here if needed -->
+    </div>
 
-  <div class="search-content">
-    <!-- Search Filters -->
-    <mat-card class="filters-card">
-      <mat-card-header>
-        <mat-card-title>Suche & Filter</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <app-search-filters
-          (queryChange)="onQueryChange($event)"
-          (filtersChange)="onFiltersChange($event)">
-        </app-search-filters>
-      </mat-card-content>
-    </mat-card>
+    <!-- Mobile projection -->
+    <div slot="search-form-mobile" class="w-full">
+      <h1 class="text-xl font-medium text-hf-weiches-schwarz">AHB Globale Suche</h1>
+    </div>
+    <div slot="search-mobile" class="w-full">
+      <!-- Search functionality can be added here if needed -->
+    </div>
+  </app-header>
 
-    <!-- Search Results -->
-    <mat-card class="results-card">
-      <mat-card-header>
-        <mat-card-title>
-          Ergebnisse
-          <span *ngIf="searchResults" class="result-count">
-            ({{ searchResults.total }} items)
-          </span>
-        </mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div *ngIf="loading" class="loading-container">
-          <mat-spinner diameter="40"></mat-spinner>
-          <p>Searching...</p>
-        </div>
+  <!-- Scrollable Content -->
+  <div class="flex-1 overflow-auto bg-hf-pastell-rot">
+    <div class="search-page">
+      <div class="search-content">
+        <!-- Search Filters -->
+        <mat-card class="filters-card">
+          <mat-card-header>
+            <mat-card-title>Suche & Filter</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <app-search-filters
+              (queryChange)="onQueryChange($event)"
+              (filtersChange)="onFiltersChange($event)">
+            </app-search-filters>
+          </mat-card-content>
+        </mat-card>
 
-        <div *ngIf="error" class="error-container">
-          <mat-icon color="warn" fontSet="mdi" fontIcon="mdi-alert"></mat-icon>
-          <p>{{ error }}</p>
-        </div>
+        <!-- Search Results -->
+        <mat-card class="results-card">
+          <mat-card-header>
+            <mat-card-title>
+              Ergebnisse
+              <span *ngIf="searchResults" class="result-count">
+                ({{ searchResults.total }} items)
+              </span>
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div *ngIf="loading" class="loading-container">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>Searching...</p>
+            </div>
 
-        <app-search-table
-          *ngIf="searchResults && !loading && !error"
-          [data]="searchResults.items || []"
-          [totalItems]="searchResults.total || 0"
-          [page]="searchResults.page || 1"
-          [pageSize]="searchResults.pageSize || 25"
-          (pageChange)="onPageChange($event)"
-          (pageSizeChange)="onPageSizeChange($event)"
-          (sortChange)="onSortChange($event)">
-        </app-search-table>
-      </mat-card-content>
-    </mat-card>
+            <div *ngIf="error" class="error-container">
+              <mat-icon color="warn" fontSet="mdi" fontIcon="mdi-alert"></mat-icon>
+              <p>{{ error }}</p>
+            </div>
+
+            <app-search-table
+              *ngIf="searchResults && !loading && !error"
+              [data]="searchResults.items || []"
+              [totalItems]="searchResults.total || 0"
+              [page]="searchResults.page || 1"
+              [pageSize]="searchResults.pageSize || 25"
+              (pageChange)="onPageChange($event)"
+              (pageSizeChange)="onPageSizeChange($event)"
+              (sortChange)="onSortChange($event)">
+            </app-search-table>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Solutions footer inside scroll: visible only on small screens -->
+      <app-solutions-footer class="block md:hidden"></app-solutions-footer>
+    </div>
   </div>
+
+  <!-- Solutions footer for desktop/tablet: visible on md+ screens at bottom -->
+  <app-solutions-footer class="flex-none hidden md:block"></app-solutions-footer>
+
+  <!-- Fixed Footer -->
+  <app-footer class="flex-none" />
 </div>
