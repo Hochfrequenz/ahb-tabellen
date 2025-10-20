@@ -57,4 +57,24 @@ export class FeatureSwitcherComponent {
       this.isDropdownOpen = false;
     }
   }
+
+  @HostListener('keydown.escape', ['$event'])
+  onEscapeKey(event: KeyboardEvent): void {
+    if (this.isDropdownOpen) {
+      this.isDropdownOpen = false;
+      event.preventDefault();
+    }
+  }
+
+  @HostListener('keydown.arrowdown', ['$event'])
+  onArrowDown(event: KeyboardEvent): void {
+    if (this.isDropdownOpen) {
+      event.preventDefault();
+      // Focus first option if none is focused
+      const firstOption = this.elementRef.nativeElement.querySelector('.dropdown-option');
+      if (firstOption) {
+        (firstOption as HTMLElement).focus();
+      }
+    }
+  }
 }
