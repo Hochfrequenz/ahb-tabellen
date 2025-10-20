@@ -45,6 +45,55 @@ export class FormatVersionCacheService {
   }
 
   /**
+   * Get the current stable format version (second-to-last in the list)
+   * The last format version is typically a development/preview version,
+   * so the current stable version is the second-to-last one.
+   *
+   * @returns The current stable format version, or null if not available
+   */
+  getCurrentFormatVersion(): string | null {
+    const formatVersions = this.formatVersionsSubject.value;
+    if (Array.isArray(formatVersions) && formatVersions.length >= 2) {
+      return formatVersions[formatVersions.length - 2];
+    }
+    return null;
+  }
+
+  /**
+   * Get the latest format version (last in the list)
+   * This is typically a development/preview version.
+   *
+   * @returns The latest format version, or null if not available
+   */
+  getLatestFormatVersion(): string | null {
+    const formatVersions = this.formatVersionsSubject.value;
+    if (Array.isArray(formatVersions) && formatVersions.length > 0) {
+      return formatVersions[formatVersions.length - 1];
+    }
+    return null;
+  }
+
+  /**
+   * Check if a format version is the current stable version
+   *
+   * @param formatVersion The format version to check
+   * @returns True if the format version is the current stable version
+   */
+  isCurrentFormatVersion(formatVersion: string): boolean {
+    return this.getCurrentFormatVersion() === formatVersion;
+  }
+
+  /**
+   * Check if a format version is the latest version (development/preview)
+   *
+   * @param formatVersion The format version to check
+   * @returns True if the format version is the latest version
+   */
+  isLatestFormatVersion(formatVersion: string): boolean {
+    return this.getLatestFormatVersion() === formatVersion;
+  }
+
+  /**
    * Get cached data from localStorage
    */
   private getCachedData(): CachedFormatVersions | null {
