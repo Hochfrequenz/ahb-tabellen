@@ -3,6 +3,13 @@ import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
+    path: 'features',
+    loadChildren: async () =>
+      (await import('./features/feature-selection/feature-selection.routes'))
+        .FEATURE_SELECTION_ROUTES,
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'ahb',
     loadChildren: async () => (await import('./features/ahbs/ahb.routes')).AHB_ROUTES,
     canActivate: [AuthGuard],

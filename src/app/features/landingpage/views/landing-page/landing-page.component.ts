@@ -67,16 +67,16 @@ export class LandingPageComponent implements OnInit {
 
   onOpenClick() {
     if (!environment.isProduction || window.location.hostname === 'localhost') {
-      this.router.navigate(['/ahb']);
+      this.router.navigate(['/features']);
       return;
     }
 
     this.auth.isAuthenticated$.subscribe(isAuthenticated => {
       if (isAuthenticated) {
-        this.router.navigate(['/ahb']);
+        this.router.navigate(['/features']);
       } else {
         this.auth.loginWithRedirect({
-          appState: { target: '/ahb' },
+          appState: { target: '/features' },
         });
       }
     });
