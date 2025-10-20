@@ -128,9 +128,11 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
           );
           if (formatVersionField) {
             formatVersionField.options = formatVersions;
-            // Set default selection to current format version
-            if (Array.isArray(formatVersions) && formatVersions.length >= 2) {
-              const currentFormatVersion = formatVersions[formatVersions.length - 2];
+            // Set default selection to current stable format version
+            // The current stable version is the second-to-last in the list,
+            // as the last version is typically a development/preview version
+            const currentFormatVersion = this.formatVersionCacheService.getCurrentFormatVersion();
+            if (currentFormatVersion) {
               // Avoid double emissions: set value without emitting, then emit once explicitly
               this.searchForm
                 .get('format_version')
