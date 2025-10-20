@@ -1,11 +1,14 @@
-<mat-form-field appearance="fill" class="feature-switcher">
-  <mat-select
-    [value]="getCurrentFeatureValue()"
-    (selectionChange)="onFeatureChange($event.value)"
-    [disableRipple]="true"
-    [disableOptionCentering]="true">
-    <mat-option *ngFor="let feature of features" [value]="feature.value">
+<div class="feature-switcher" (click)="toggleDropdown()">
+  <span class="feature-text">{{ getCurrentFeatureLabel() }}</span>
+  <span class="dropdown-arrow" [class.open]="isDropdownOpen">▼</span>
+
+  <div class="dropdown-menu" [class.open]="isDropdownOpen">
+    <div
+      *ngFor="let feature of features"
+      class="dropdown-option"
+      (click)="selectFeature(feature)"
+      [class.selected]="isFeatureSelected(feature)">
       {{ feature.label }}
-    </mat-option>
-  </mat-select>
-</mat-form-field>
+    </div>
+  </div>
+</div>
