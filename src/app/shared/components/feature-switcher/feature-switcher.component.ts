@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, ElementRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -23,7 +23,10 @@ export class FeatureSwitcherComponent {
     { value: 'search', label: 'Globale Suche', route: '/search' },
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private elementRef: ElementRef
+  ) {}
 
   toggleDropdown(): void {
     this.isDropdownOpen = !this.isDropdownOpen;
@@ -50,7 +53,7 @@ export class FeatureSwitcherComponent {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
-    if (!target.closest('.feature-switcher')) {
+    if (!this.elementRef.nativeElement.contains(target)) {
       this.isDropdownOpen = false;
     }
   }
