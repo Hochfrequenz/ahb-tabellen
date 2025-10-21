@@ -20,7 +20,7 @@
           [formControlName]="field.key"
           [placeholder]="'Wähle ' + field.label.toLowerCase()"
           [multiple]="field.multiple">
-          <mat-option *ngIf="!field.multiple" value="">All {{ field.label }}</mat-option>
+          <mat-option *ngIf="!field.multiple" value="">Alle {{ field.label }}</mat-option>
           <mat-option *ngFor="let option of field.options" [value]="option">
             {{ option }}
           </mat-option>
