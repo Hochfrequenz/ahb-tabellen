@@ -156,17 +156,17 @@ export default class AHBRepository {
           );
         }
         if (value.contains !== undefined) {
-          queryBuilder.andWhere(`al.${columnName} LIKE :${paramBase}_contains`, {
+          queryBuilder.andWhere(`al.${columnName} COLLATE NOCASE LIKE :${paramBase}_contains`, {
             [`${paramBase}_contains`]: `%${value.contains.toLowerCase()}%`,
           });
         }
         if (value.startsWith !== undefined) {
-          queryBuilder.andWhere(`al.${columnName} LIKE :${paramBase}_starts`, {
+          queryBuilder.andWhere(`al.${columnName} COLLATE NOCASE LIKE :${paramBase}_starts`, {
             [`${paramBase}_starts`]: `${value.startsWith.toLowerCase()}%`,
           });
         }
         if (value.endsWith !== undefined) {
-          queryBuilder.andWhere(`al.${columnName} LIKE :${paramBase}_ends`, {
+          queryBuilder.andWhere(`al.${columnName} COLLATE NOCASE LIKE :${paramBase}_ends`, {
             [`${paramBase}_ends`]: `%${value.endsWith.toLowerCase()}`,
           });
         }
