@@ -18,7 +18,7 @@
         <mat-select
           *ngIf="field.type === 'select'"
           [formControlName]="field.key"
-          [placeholder]="'Select ' + field.label.toLowerCase()"
+          [placeholder]="'Wähle ' + field.label.toLowerCase()"
           [multiple]="field.multiple">
           <mat-option *ngIf="!field.multiple" value="">All {{ field.label }}</mat-option>
           <mat-option *ngFor="let option of field.options" [value]="option">
@@ -31,14 +31,14 @@
           *ngIf="field.type === 'text'"
           matInput
           [formControlName]="field.key"
-          [placeholder]="'Filter by ' + field.label.toLowerCase()" />
+          [placeholder]="'Filtern nach ' + field.label.toLowerCase()" />
 
         <button
           mat-icon-button
           matSuffix
           *ngIf="searchForm.get(field.key)?.value"
           (click)="searchForm.get(field.key)?.setValue('')"
-          matTooltip="Clear filter">
+          matTooltip="Filter zurücksetzenr">
           <mat-icon fontSet="mdi" fontIcon="mdi-close"></mat-icon>
         </button>
       </mat-form-field>
