@@ -1,4 +1,4 @@
-name: Deploy on Release or Pre-release
+name: Deploy on Version Tag
 
 env:
   REGISTRY: ghcr.io
@@ -8,27 +8,46 @@ env:
   BUILD_DATE: 'set by build_release_info step'
   COMMIT_ID: 'set by build_release_info step'
   VERSION_TAG: 'set by build_release_info step'
-  DOCKER_METADATA_OUTPUT_TAGS: 'set by metadata action'
-  DOCKER_METADATA_OUTPUT_LABELS: 'set by metadata action'
-  DIGEST: 'set by output of push step'
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
+  generate-changelog:
+    name: Generate changelog
+    runs-on: ubuntu-latest
+    outputs:
+      release_body: ${{ steps.git-cliff.outputs.content }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: --latest --github-repo ${{ github.repository }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
   deploy:
+    name: Deploy to Docker and Octopus Deploy
+    needs: generate-changelog
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
       attestations: write
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
+
       - name: Set build and release information
         id: build_release_info
         run: |
@@ -40,7 +59,7 @@ jobs:
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v3.4.0
+        uses: docker/login-action@v3.6.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -48,36 +67,49 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v5.7.0
+        uses: docker/metadata-action@v5.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
         id: push
-        uses: docker/build-push-action@v6.16.0
+        uses: docker/build-push-action@v6.18.0
         with:
           context: .
           push: true
-          tags: ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
-          labels: ${{ env.DOCKER_METADATA_OUTPUT_LABELS }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_DATE=${{ env.BUILD_DATE }}
             COMMIT_ID=${{ env.COMMIT_ID }}
             VERSION=${{ env.VERSION_TAG }}
 
-        # The build-push-action does not output the digest as environment variable only as output.
-        # But the output way is deprecated. So we need to set it manually
-        # https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
-        # I opened an issue in the build-push-action repository: https://github.com/docker/build-push-action/issues/1285
-      - name: Set DIGEST environment variable
-        run: echo "DIGEST=${{ steps.push.outputs.digest }}" >> $GITHUB_ENV
-
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          subject-digest: ${{ env.DIGEST }}
+          subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
+      - name: Publish GitHub Pre-release
+        if: ${{ contains(env.VERSION_TAG, '-') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION_TAG }}
+          name: 'Pre-release ${{ env.VERSION_TAG }}'
+          body: ${{ needs.generate-changelog.outputs.release_body }}
+          prerelease: true
+          draft: false
+
+      - name: Publish GitHub Release
+        if: ${{ !contains(env.VERSION_TAG, '-') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION_TAG }}
+          name: 'Release ${{ env.VERSION_TAG }}'
+          body: ${{ needs.generate-changelog.outputs.release_body }}
+          prerelease: false
+          draft: false
 
       - name: Login to Octopus Deploy 🐙
         uses: OctopusDeploy/login@v1
@@ -103,8 +135,3 @@ jobs:
           release_number: ${{ env.VERSION_TAG }}
           environments: |
             Staging
-
-      - name: Notify for Production Deployment Approval
-        if: ${{ github.event.release.prerelease == 'false' }}
-        run: |
-          echo "Release ${{ env.VERSION_TAG }} created. Awaiting manual approval for production deployment."

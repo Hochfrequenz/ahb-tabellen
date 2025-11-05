@@ -1,108 +1,110 @@
 <div class="relative bg-hf-pastell-rose">
-  <table class="table-auto w-full text-sm text-gray-500">
-    <thead #header>
-      <tr>
-        <th
-          scope="col"
-          class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase transp">
-          Segmentgruppe
-        </th>
-        <th
-          scope="col"
-          class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
-          Segmentname
-        </th>
-        <th
-          scope="col"
-          class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
-          Segment
-        </th>
-        <th
-          scope="col"
-          class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
-          Datenelement
-        </th>
-        <th
-          scope="col"
-          class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
-          Qualifier
-        </th>
-        <th
-          scope="col"
-          class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
-          Name
-        </th>
-        <th
-          scope="col"
-          class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
-          Pflichtfeld-Kennzeichen
-        </th>
-        <th
-          scope="col"
-          class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
-          Bedingung / Hinweis / Format
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (line of lines(); track line.index; let i = $index) {
-        <tr [class]="getRowClass(i)">
-          <td
-            class="px-6 py-4"
-            [class.font-bold]="isSegmentGroup(i)"
-            [innerHTML]="line.segment_group_key | highlight: highlight()"></td>
-          <td
-            class="px-6 py-4"
-            [class.font-bold]="isSegmentGroup(i)"
-            [innerHTML]="line.section_name | highlight: highlight()"></td>
-          <td
-            class="px-6 py-4"
-            [class.font-bold]="isSegmentGroup(i)"
-            [innerHTML]="line.segment_code | highlight: highlight()"></td>
-          <td class="px-6 py-4" [innerHTML]="line.data_element | highlight: highlight()"></td>
-          <td class="px-6 py-4">
-            @if (generateEbdDeepLink(line.value_pool_entry) !== null) {
-              <a
-                [href]="generateEbdDeepLink(line.value_pool_entry)"
-                target="_blank"
-                class="hover:underline font-bold text-hf-dunkel-blau flex flex-row gap-1 items-center">
-                <span [innerHTML]="line.value_pool_entry | highlight: highlight()"></span>
-                <app-icon-link />
-              </a>
-            } @else {
-              <span [innerHTML]="line.value_pool_entry | highlight: highlight()"></span>
-            }
-          </td>
-          <td class="px-6 py-4" [innerHTML]="line.name | highlight: highlight()"></td>
-          <td class="px-6 py-4">
-            @if (line.ahb_expression.includes('[')) {
-              <a
-                [href]="generateBedingungsbaumDeepLink(line.ahb_expression)"
-                target="_blank"
-                class="hover:underline font-bold text-hf-dunkel-gelb flex flex-row gap-1 items-center">
-                {{ line.ahb_expression }} <app-icon-link />
-              </a>
-            } @else {
-              {{ line.ahb_expression }}
-            }
-          </td>
-          <td class="px-6 py-4 conditions-column">
-            @if (line.conditions) {
-              @for (
-                condition of addConditionLineBreaks(getDisplayText(line.conditions, i));
-                track $index
-              ) {
-                <div [innerHTML]="condition | highlight: highlight()"></div>
-              }
-              @if (shouldShowToggle(line.conditions)) {
-                <button (click)="toggleExpand(i)" class="text-hf-dunkel-rose text-sm mt-1">
-                  {{ isExpanded(i) ? 'weniger anzeigen' : 'mehr anzeigen' }}
-                </button>
-              }
-            }
-          </td>
+  <div class="overflow-x-auto">
+    <table class="table-auto w-full text-sm text-gray-500">
+      <thead #header>
+        <tr>
+          <th
+            scope="col"
+            class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase transp">
+            Segmentgruppe
+          </th>
+          <th
+            scope="col"
+            class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
+            Segmentname
+          </th>
+          <th
+            scope="col"
+            class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
+            Segment
+          </th>
+          <th
+            scope="col"
+            class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
+            Datenelement
+          </th>
+          <th
+            scope="col"
+            class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
+            Qualifier
+          </th>
+          <th
+            scope="col"
+            class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
+            Name
+          </th>
+          <th
+            scope="col"
+            class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
+            Pflichtfeld-Kennzeichen
+          </th>
+          <th
+            scope="col"
+            class="sticky top-0 bg-hf-weiss-rose px-6 py-3 text-left text-xs text-gray-700 uppercase">
+            Bedingung / Hinweis / Format
+          </th>
         </tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @for (line of lines(); track line.index; let i = $index) {
+          <tr [class]="getRowClass(i)">
+            <td
+              class="px-6 py-4"
+              [class.font-bold]="isSegmentGroup(i)"
+              [innerHTML]="line.segment_group_key | highlight: highlight()"></td>
+            <td
+              class="px-6 py-4"
+              [class.font-bold]="isSegmentGroup(i)"
+              [innerHTML]="line.section_name | highlight: highlight()"></td>
+            <td
+              class="px-6 py-4"
+              [class.font-bold]="isSegmentGroup(i)"
+              [innerHTML]="line.segment_code | highlight: highlight()"></td>
+            <td class="px-6 py-4" [innerHTML]="line.data_element | highlight: highlight()"></td>
+            <td class="px-6 py-4">
+              @if (generateEbdDeepLink(line.value_pool_entry) !== null) {
+                <a
+                  [href]="generateEbdDeepLink(line.value_pool_entry)"
+                  target="_blank"
+                  class="hover:underline font-bold text-hf-dunkel-blau flex flex-row gap-1 items-center">
+                  <span [innerHTML]="line.value_pool_entry | highlight: highlight()"></span>
+                  <app-icon-link />
+                </a>
+              } @else {
+                <span [innerHTML]="line.value_pool_entry | highlight: highlight()"></span>
+              }
+            </td>
+            <td class="px-6 py-4" [innerHTML]="line.name | highlight: highlight()"></td>
+            <td class="px-6 py-4">
+              @if (line.ahb_expression.includes('[')) {
+                <a
+                  [href]="generateBedingungsbaumDeepLink(line.ahb_expression)"
+                  target="_blank"
+                  class="hover:underline font-bold text-hf-dunkel-gelb flex flex-row gap-1 items-center">
+                  {{ line.ahb_expression }} <app-icon-link />
+                </a>
+              } @else {
+                {{ line.ahb_expression }}
+              }
+            </td>
+            <td class="px-6 py-4 conditions-column">
+              @if (line.conditions) {
+                @for (
+                  condition of addConditionLineBreaks(getDisplayText(line.conditions, i));
+                  track $index
+                ) {
+                  <div [innerHTML]="condition | highlight: highlight()"></div>
+                }
+                @if (shouldShowToggle(line.conditions)) {
+                  <button (click)="toggleExpand(i)" class="text-hf-dunkel-rose text-sm mt-1">
+                    {{ isExpanded(i) ? 'weniger anzeigen' : 'mehr anzeigen' }}
+                  </button>
+                }
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
 </div>

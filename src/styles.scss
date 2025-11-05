@@ -1,4 +1,17 @@
 @import '@mdi/font/css/materialdesignicons.css';
+
+/* Align MDI icons inside Angular Material form-field prefix/suffix */
+.mat-mdc-form-field .mat-mdc-form-field-icon-suffix .mat-icon.mdi,
+.mat-mdc-form-field .mat-mdc-form-field-icon-prefix .mat-icon.mdi {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 :root {
   /* copied from /assets/companystylesheet/css/hochfrequenz.css, because I didn't manage to import/include it properly */
   /* X [ERROR] Could not resolve "/assets/companystylesheet/css/hochfrequenz.css" */
@@ -82,6 +95,7 @@
 body {
   font-family: 'Roboto', sans-serif;
 }
+
 #solutions a {
   color: white;
   text-decoration: none;
@@ -90,6 +104,9 @@ body {
   border-radius: 9999px;
   /* each button has their own background-color */
   transition: background-color 0.3s;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
 #solutions a.ahbesser {
@@ -106,4 +123,22 @@ body {
 
 #solutions a.entscheidungsbaum {
   background-color: var(--grell-blau);
+}
+
+/* Essential responsive improvements - minimal changes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Ensure table can scroll horizontally on mobile */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
 }

@@ -6,7 +6,7 @@ import {
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { AhbService } from '../../../../core/api';
+import { FormatVersionsService } from '../../../../core/api';
 import { Observable, map, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
@@ -30,11 +30,11 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
 
   public onChange?: (formatVersion: string | null) => void;
 
-  constructor(private readonly ahbService: AhbService) {}
+  constructor(private readonly formatVersionsService: FormatVersionsService) {}
 
   ngOnInit(): void {
     this.control.disable();
-    this.formatVersions$ = this.ahbService.getFormatVersions().pipe(
+    this.formatVersions$ = this.formatVersionsService.getFormatVersions().pipe(
       map(versions =>
         versions.map(v => ({
           value: v,
@@ -72,6 +72,7 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
       [new Date('2024-09-30T22:00:00Z'), 'FV2404'],
       [new Date('2025-06-05T22:00:00Z'), 'FV2410'],
       [new Date('2025-09-30T22:00:00Z'), 'FV2504'],
+      [new Date('2026-03-31T22:00:00Z'), 'FV2510'],
     ];
 
     for (const [thresholdDate, version] of formatVersionThresholds) {
@@ -114,6 +115,7 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
       FV2410: 'Oktober 2024 (FV2410)',
       FV2504: 'Juni 2025 (FV2504)',
       FV2510: 'Oktober 2025 (FV2510)',
+      FV2604: 'April 2026 (FV2604)',
     };
     return mapping[formatVersion] || formatVersion;
   }

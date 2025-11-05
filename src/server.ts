@@ -10,6 +10,7 @@ import { AppDataSource } from './server/infrastructure/database';
 import 'reflect-metadata';
 
 const server = express();
+server.use(express.json());
 server.use(
   cors({
     origin: [

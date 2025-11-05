@@ -1,4 +1,7 @@
 config:
+  pulumi:template: container-azure-python
+  azure-native:location: germanywestcentral
+  azure-native:subscriptionId: 1cdc65f0-62d2-4770-be11-9ec1da950c81
   ahb-tabellen:appPath: app
   ahb-tabellen:bedingungsbaumBaseUrl: https://bedingungsbaum.hochfrequenz.de
   ahb-tabellen:ebdBaseUrl: https://ebd.hochfrequenz.de
@@ -9,11 +12,8 @@ config:
     secure: AAABAKDpxgOPRYBk2KIdX7mlihB3y/nJDFZQsK2/2Mf88W8XnEeC4JbZSsDwPfvq0vZjnHa/x3iU6Kt2V1ww8jO3YiXKAswf
   ahb-tabellen:imageName: ghcr.io/hochfrequenz/ahb-tabellen
   ahb-tabellen:imageTag: v0.7.5
-  ahb-tabellen:location: germanywestcentral
   ahb-tabellen:memory: "2"
   ahb-tabellen:websitesContainerStartTimeLimit: "300"
-  azure-native:location: germanywestcentral
-  pulumi:template: container-azure-python
   ahb-tabellen:ohDearHealthCheckSecret:
     secure: AAABAHVhi8bu62ZujXIZQcHtU5USavOgn5rciI24E5ahGg3CPqt3mnRktu1uovTS
   ahb-tabellen:db_7z_archive_password:

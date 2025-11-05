@@ -7,6 +7,8 @@ import {
   signal,
   computed,
 } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Title } from '@angular/platform-browser';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
@@ -16,12 +18,14 @@ import { Ahb, AhbService } from '../../../../core/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Observable, Subject, of } from 'rxjs';
-import { map, shareReplay, catchError, takeUntil, distinctUntilChanged } from 'rxjs/operators';
+import { map, shareReplay, catchError, takeUntil, distinctUntilChanged, tap } from 'rxjs/operators';
 import { AhbSearchFormHeaderComponent } from '../../components/ahb-search-form-header/ahb-search-form-header.component';
 import { InputSearchEnhancedComponent } from '../../../../shared/components/input-search-enhanced/input-search-enhanced.component';
 import { ExportButtonComponent } from '../../components/export-button/export-button.component';
 import { IconCopyUrlComponent } from '../../../../shared/components/icon-copy-url/icon-copy-url.component';
 import { FallbackPageComponent } from '../../../../shared/components/fallback-page/fallback-page.component';
+import { DvgwFallbackPageComponent } from '../../../../shared/components/dvgw-fallback-page/dvgw-fallback-page.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-ahb-page',
@@ -39,6 +43,7 @@ import { FallbackPageComponent } from '../../../../shared/components/fallback-pa
     ExportButtonComponent,
     IconCopyUrlComponent,
     FallbackPageComponent,
+    DvgwFallbackPageComponent,
   ],
   templateUrl: './ahb-page.component.html',
 })
@@ -48,6 +53,18 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   pruefi = signal<string>('');
   searchQuery = signal<string | undefined>('');
   edifactFormat = computed(() => this.getEdifactFormat(this.pruefi()));
+
+  private readonly mehrMinderMengenMeldungSLP = '70095';
+  private readonly mehrMinderMengenMeldungRLM = '70096';
+
+  // Computed properties for fallback pages
+  isDvgwPruefi = computed(() => {
+    const currentPruefi = this.pruefi();
+    return (
+      currentPruefi === this.mehrMinderMengenMeldungSLP ||
+      currentPruefi === this.mehrMinderMengenMeldungRLM
+    );
+  });
 
   // View references
   table = viewChild(AhbTableComponent);
@@ -63,10 +80,13 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   constructor(
     private readonly ahbService: AhbService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly http: HttpClient,
+    private readonly title: Title
   ) {}
 
   ngOnInit() {
+    this.triggerWarmupIfNeeded();
     // Handle route parameters
     this.route.params.pipe(takeUntil(this.destroy$), distinctUntilChanged()).subscribe(params => {
       const formatVersion = params['formatVersion'];
@@ -76,6 +96,7 @@ export class AhbPageComponent implements OnInit, OnDestroy {
         this.formatVersion.set(formatVersion);
         this.pruefi.set(pruefi);
         this.loadAhbData(formatVersion, pruefi);
+        this.updateTitle({ pruefi, formatVersion });
       }
     });
 
@@ -99,12 +120,29 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   private loadAhbData(formatVersion: string, pruefi: string) {
     this.errorOccurred = false;
 
+    // Check if this is a DVGW Prüfidentifikator
+    if (this.isDvgwPruefi()) {
+      this.errorOccurred = true;
+      this.ahb$ = of({} as Ahb);
+      this.lines$ = of([]);
+      return;
+    }
+
     this.ahb$ = this.ahbService
       .getAhb$Json({
         'format-version': formatVersion,
         pruefi: pruefi,
       })
       .pipe(
+        tap(ahb => {
+          if (ahb && (ahb as Ahb).meta) {
+            this.updateTitle({
+              pruefi,
+              formatVersion,
+              description: (ahb as Ahb).meta.description,
+            });
+          }
+        }),
         shareReplay(1),
         catchError(error => {
           if (error.status === 404) {
@@ -127,6 +165,19 @@ export class AhbPageComponent implements OnInit, OnDestroy {
 
   triggerSearch(query: string | undefined) {
     if (!query) return;
+  }
+
+  private updateTitle(params: {
+    pruefi: string;
+    formatVersion: string;
+    description?: string;
+  }): void {
+    const { pruefi, formatVersion, description } = params;
+    const appName = 'AHB Tabellen';
+    const base = description ? `${pruefi} – ${description}` : `${pruefi}`;
+    const suffix = formatVersion;
+    const full = [base, suffix, appName].filter(Boolean).join(' | ');
+    this.title.setTitle(full);
   }
 
   scrollToElement(element: HTMLElement, offsetY: number): void {
@@ -192,6 +243,26 @@ export class AhbPageComponent implements OnInit, OnDestroy {
 
     const key = pruefi.substring(0, 2);
     return mapping[key];
+  }
+
+  private triggerWarmupIfNeeded(): void {
+    try {
+      const storageKey = 'ahbicht-functions-warmup-triggered';
+      if (sessionStorage.getItem(storageKey)) {
+        return;
+      }
+      const warmupUrl = environment.warmupUrl;
+      if (!warmupUrl) {
+        return;
+      }
+      // Fire-and-forget; ignore result and errors
+      this.http
+        .get(warmupUrl, { responseType: 'text' })
+        .pipe(catchError(() => of(null)))
+        .subscribe(() => sessionStorage.setItem(storageKey, 'true'));
+    } catch {
+      // Access to sessionStorage can fail in some browsers modes; ignore
+    }
   }
 
   // splitting meta.direction into sender and empfaenger

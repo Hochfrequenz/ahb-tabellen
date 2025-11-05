@@ -1,4 +1,7 @@
 config:
+  pulumi:template: container-azure-python
+  azure-native:location: germanywestcentral
+  azure-native:subscriptionId: 1cdc65f0-62d2-4770-be11-9ec1da950c81
   ahb-tabellen:appPath: app
   ahb-tabellen:bedingungsbaumBaseUrl: https://bedingungsbaum.stage.hochfrequenz.de
   ahb-tabellen:ebdBaseUrl: https://ebd.stage.hochfrequenz.de
@@ -8,11 +11,9 @@ config:
   ahb-tabellen:ghcr_token:
     secure: AAABAEg7fEk2P91sxA8mlsQ5AueGPcKpU5H8jCLGvH82HsWD1NkdQLT69wDwMfdI7Nc+jSdwJC4Wx/ym4m3HUMGxgeK9RJt0
   ahb-tabellen:imageName: ghcr.io/hochfrequenz/ahb-tabellen
-  ahb-tabellen:imageTag: v0.7.5
+  ahb-tabellen:imageTag: v1.4.0-rc02
   ahb-tabellen:memory: "2"
   ahb-tabellen:websitesContainerStartTimeLimit: "300"
-  azure-native:location: germanywestcentral
-  pulumi:template: container-azure-python
   ahb-tabellen:ohDearHealthCheckSecret:
     secure: AAABAMlO2g+61udj5KO4b16Pg2ESsCmCAdj2LIvT77mrZdHkCZeANgSQz+0aBbkW
   ahb-tabellen:db_7z_archive_password:
