@@ -6,7 +6,7 @@
     class="w-full min-w-[1200px]">
     <!-- Format Version Column -->
     <ng-container matColumnDef="format_version">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Format Version</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Formatversion</mat-header-cell>
       <mat-cell *matCellDef="let row">{{ formatCellValue(row.format_version) }}</mat-cell>
     </ng-container>
 
@@ -40,7 +40,7 @@
 
     <!-- Description Column -->
     <ng-container matColumnDef="description">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Description</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Beschreibung</mat-header-cell>
       <mat-cell *matCellDef="let row" class="max-w-[200px] break-words whitespace-pre-wrap">{{
         formatCellValue(row.description)
       }}</mat-cell>
@@ -48,13 +48,13 @@
 
     <!-- Segment Group Column -->
     <ng-container matColumnDef="segmentgroup_key">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Segment Group</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Segmentgruppe</mat-header-cell>
       <mat-cell *matCellDef="let row">{{ formatCellValue(row.segmentgroup_key) }}</mat-cell>
     </ng-container>
 
     <!-- Segment Code Column -->
     <ng-container matColumnDef="segment_code">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Segment Code</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Segmentcode</mat-header-cell>
       <mat-cell *matCellDef="let row">{{ formatCellValue(row.segment_code) }}</mat-cell>
     </ng-container>
 
@@ -72,7 +72,7 @@
 
     <!-- AHB Status Column -->
     <ng-container matColumnDef="line_ahb_status">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>AHB Status</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef mat-sort-header>AHB-Status</mat-header-cell>
       <mat-cell *matCellDef="let row" class="max-w-[150px] break-words">{{
         formatCellValue(row.line_ahb_status)
       }}</mat-cell>
@@ -80,7 +80,7 @@
 
     <!-- Line Name Column -->
     <ng-container matColumnDef="line_name">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Line Name</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Zeilenname</mat-header-cell>
       <mat-cell *matCellDef="let row" class="max-w-[200px] break-words whitespace-pre-wrap">{{
         formatCellValue(row.line_name)
       }}</mat-cell>
@@ -96,7 +96,7 @@
 
     <!-- Direction Column -->
     <ng-container matColumnDef="direction">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Direction</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Richtung</mat-header-cell>
       <mat-cell *matCellDef="let row">{{ formatCellValue(row.direction) }}</mat-cell>
     </ng-container>
 
