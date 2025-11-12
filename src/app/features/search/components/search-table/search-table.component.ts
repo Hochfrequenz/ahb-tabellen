@@ -90,6 +90,17 @@ export class SearchTableComponent implements OnChanges {
     return String(value);
   }
 
+  formatDataElement(value: string | null | undefined): string {
+    if (value === null || value === undefined) {
+      return '-';
+    }
+    // Remove "D_" prefix if present
+    if (value.startsWith('D_')) {
+      return value.substring(2);
+    }
+    return value;
+  }
+
   onPruefidentifikatorClick(item: SearchItem): void {
     if (item.format_version && item.pruefidentifikator) {
       const url = this.router
