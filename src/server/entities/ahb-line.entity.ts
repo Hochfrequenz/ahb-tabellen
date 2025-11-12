@@ -21,9 +21,15 @@ export class Anwendungshandbuch {
   edifact_format_version?: string;
 }
 
+/**
+ * Represents a communication direction in an Anwendungshandbuch (AHB).
+ * @property sender - The sending party/role
+ * @property empfaenger - The receiving party/role (German for "receiver")
+ * @example
+ * const richtung: Kommunikationsrichtung = { sender: "MSB", empfaenger: "NB" };
+ */
 export type Kommunikationsrichtung = { sender: string; empfaenger: string };
 // see https://github.com/Hochfrequenz/xml-fundamend-python/blob/7ce62e72c95534f55ac36d6f43b4e405651c4dea/src/fundamend/models/kommunikationsrichtung.py#L7-L13
-@Entity({ name: 'v_ahbtabellen', synchronize: false })
 export class AhbLine {
   @PrimaryColumn({ type: 'varchar', length: 32 })
   id!: string;
