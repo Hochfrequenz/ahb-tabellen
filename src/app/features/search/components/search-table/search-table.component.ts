@@ -67,18 +67,18 @@ export class SearchTableComponent implements OnChanges {
 
   getColumnDisplayName(column: string): string {
     const displayNames: Record<string, string> = {
-      format_version: 'Format Version',
+      format_version: 'Formatversion',
       format: 'Format',
       pruefidentifikator: 'Prüfidentifikator',
-      description: 'Description',
-      segmentgroup_key: 'Segment Group',
-      segment_code: 'Segment Code',
-      data_element: 'Data Element',
+      description: 'Beschreibung',
+      segmentgroup_key: 'Segmentgruppe',
+      segment_code: 'Segmentcode',
+      data_element: 'Datenelement',
       qualifier: 'Qualifier',
-      line_ahb_status: 'AHB Status',
-      line_name: 'Line Name',
+      line_ahb_status: 'AHB-Status',
+      line_name: 'Zeilenname',
       bedingung: 'Bedingung',
-      direction: 'Direction',
+      direction: 'Richtung',
     };
     return displayNames[column] || column;
   }
