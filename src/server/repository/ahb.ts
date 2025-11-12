@@ -312,7 +312,8 @@ export default class AHBRepository {
   }
 
   private unfoldDirectionsLines(directions?: Kommunikationsrichtung[]): string {
-    if (!directions || directions.length === 0) return '';
+    if (!directions || directions.length === 0)
+      return 'MSCONS-Nachrichten können von verschiedenen Marktrollen gesendet und empfangen werden.';
     return directions.map(d => `${d.sender} → ${d.empfaenger}`).join(', ');
   }
   private mapMetaInformation(line: AhbLine, ahb: Anwendungshandbuch): Ahb['meta'] {
