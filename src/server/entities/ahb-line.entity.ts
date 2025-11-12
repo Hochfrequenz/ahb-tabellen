@@ -20,6 +20,9 @@ export class Anwendungshandbuch {
   @Column({ type: 'varchar', nullable: true })
   edifact_format_version?: string;
 }
+
+export type Kommunikationsrichtung = { sender: string; empfaenger: string };
+// see https://github.com/Hochfrequenz/xml-fundamend-python/blob/7ce62e72c95534f55ac36d6f43b4e405651c4dea/src/fundamend/models/kommunikationsrichtung.py#L7-L13
 @Entity({ name: 'v_ahbtabellen', synchronize: false })
 export class AhbLine {
   @PrimaryColumn({ type: 'varchar', length: 32 })
@@ -43,8 +46,8 @@ export class AhbLine {
   @Column({ type: 'varchar', nullable: true })
   id_path?: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  direction?: string;
+  @Column({ type: 'simple-json', nullable: true })
+  direction?: Kommunikationsrichtung[];
 
   @Column({ type: 'varchar', nullable: true })
   description?: string;
