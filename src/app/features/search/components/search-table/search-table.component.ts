@@ -101,14 +101,16 @@ export class SearchTableComponent implements OnChanges {
     return value;
   }
 
-  formatDirection(direction: any): string {
-    if (!direction) return '-';
+  formatDirection(direction: any): string[] {
+    if (!direction) return ['-'];
     try {
       const directions = typeof direction === 'string' ? JSON.parse(direction) : direction;
-      if (!Array.isArray(directions) || directions.length === 0) return '-';
-      return directions.map((d: { sender: string; empfaenger: string }) => `${d.sender} → ${d.empfaenger}`).join(', ');
+      if (!Array.isArray(directions) || directions.length === 0) return ['-'];
+      return directions.map(
+        (d: { sender: string; empfaenger: string }) => `${d.sender} → ${d.empfaenger}`
+      );
     } catch {
-      return String(direction);
+      return [String(direction)];
     }
   }
 
