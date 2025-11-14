@@ -32,10 +32,14 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
       addOrderBy: jest.fn().mockReturnThis(),
       offset: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
       getRawMany: jest.fn().mockResolvedValue([]),
       getCount: jest.fn().mockResolvedValue(0),
+      getOne: jest.fn().mockResolvedValue(null),
       setParameter: jest.fn().mockReturnThis(),
       createQueryBuilder: jest.fn().mockReturnThis(),
+      clone: jest.fn().mockReturnThis(),
     } as unknown as jest.Mocked<SelectQueryBuilder<AhbLine>>;
 
     // Create mock repository
