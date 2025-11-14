@@ -30,6 +30,8 @@ export class Anwendungshandbuch {
  */
 export type Kommunikationsrichtung = { sender: string; empfaenger: string };
 // see https://github.com/Hochfrequenz/xml-fundamend-python/blob/7ce62e72c95534f55ac36d6f43b4e405651c4dea/src/fundamend/models/kommunikationsrichtung.py#L7-L13
+
+@Entity({ name: 'v_ahbtabellen', synchronize: false })
 export class AhbLine {
   @PrimaryColumn({ type: 'varchar', length: 32 })
   id!: string;
