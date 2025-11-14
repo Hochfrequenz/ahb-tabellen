@@ -264,20 +264,4 @@ export class AhbPageComponent implements OnInit, OnDestroy {
       // Access to sessionStorage can fail in some browsers modes; ignore
     }
   }
-
-  // splitting meta.direction into sender and empfaenger
-  getSenderEmpfaenger(direction: string | null): {
-    sender: string;
-    empfaenger: string;
-  } {
-    if (!direction) {
-      return {
-        sender: 'MSCONS-Nachrichten können von verschiedenen Marktrollen gesendet werden.',
-        empfaenger: 'MSCONS-Nachrichten können von verschiedenen Marktrollen empfangen werden.',
-      };
-    }
-
-    const [sender, empfaenger] = direction.split(' an ').map(part => part.trim());
-    return { sender, empfaenger: empfaenger || '' };
-  }
 }

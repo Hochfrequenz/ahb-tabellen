@@ -1,7 +1,7 @@
 import { Ahb } from '../../app/core/api/models';
 import { NotFoundError } from '../infrastructure/errors';
 import { AppDataSource } from '../infrastructure/database';
-import { AhbLine, Anwendungshandbuch } from '../entities/ahb-line.entity';
+import { AhbLine, Anwendungshandbuch, Kommunikationsrichtung } from '../entities/ahb-line.entity';
 import { XlsxGeneratorService } from '../infrastructure/xlsx-generator.service';
 import { SelectQueryBuilder } from 'typeorm';
 
@@ -311,10 +311,15 @@ export default class AHBRepository {
     }
   }
 
+  private unfoldDirectionsLines(directions?: Kommunikationsrichtung[]): string {
+    if (!directions || directions.length === 0)
+      return 'MSCONS-Nachrichten können von verschiedenen Marktrollen gesendet und empfangen werden.';
+    return directions.map(d => `${d.sender} → ${d.empfaenger}`).join(', ');
+  }
   private mapMetaInformation(line: AhbLine, ahb: Anwendungshandbuch): Ahb['meta'] {
     return {
       description: line.description || '',
-      direction: line.direction || '',
+      direction: this.unfoldDirectionsLines(line.direction),
       pruefidentifikator: line.pruefidentifikator,
       versionsnummer: ahb.versionsnummer,
       veroeffentlichungsdatum: ahb.veroeffentlichungsdatum,

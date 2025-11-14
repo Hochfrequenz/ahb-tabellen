@@ -54,10 +54,8 @@
           </h3>
           <p class="text-[20px] mb-5">{{ ahb.meta.description }}</p>
           <p class="text-[14px]">
-            <span class="font-bold">Sender:</span>
-            {{ getSenderEmpfaenger(ahb.meta.direction).sender }}<br />
-            <span class="font-bold">Empfänger:</span>
-            {{ getSenderEmpfaenger(ahb.meta.direction).empfaenger }}
+            <span class="font-bold">Kommunikationsrichtungen:</span>
+            {{ ahb.meta.direction }}
           </p>
           <p class="text-[14px]">
             <span class="font-bold">Version:</span>
