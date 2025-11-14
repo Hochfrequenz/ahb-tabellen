@@ -215,19 +215,32 @@ describe('SearchFiltersComponent', () => {
 
   describe('format loading', () => {
     it('should handle format version loading error gracefully', () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
       mockFormatVersionCacheService.getFormatVersions.mockReturnValue(
         throwError(() => new Error('Network error'))
       );
 
       expect(() => component.ngOnInit()).not.toThrow();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to load format versions:',
+        expect.any(Error)
+      );
+
+      consoleErrorSpy.mockRestore();
     });
 
     it('should handle format loading error gracefully', () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
       mockFormatCacheService.getFormats.mockReturnValue(
         throwError(() => new Error('Network error'))
       );
 
       expect(() => component.ngOnInit()).not.toThrow();
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to load formats:', expect.any(Error));
+
+      consoleErrorSpy.mockRestore();
     });
   });
 });
