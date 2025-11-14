@@ -189,6 +189,26 @@ export default class AHBRepository {
         }
       });
 
+      // Special handling for sender filter (JSON field)
+      if (filters.sender?.in && filters.sender.in.length > 0) {
+        const senderConditions = filters.sender.in.map((sender, idx) => {
+          const paramName = `sender_${idx}`;
+          queryBuilder.setParameter(paramName, `%"sender": "${sender}"%`);
+          return `al.direction LIKE :${paramName}`;
+        });
+        queryBuilder.andWhere(`(${senderConditions.join(' OR ')})`);
+      }
+
+      // Special handling for empfaenger filter (JSON field)
+      if (filters.empfaenger?.in && filters.empfaenger.in.length > 0) {
+        const empfaengerConditions = filters.empfaenger.in.map((empfaenger, idx) => {
+          const paramName = `empfaenger_${idx}`;
+          queryBuilder.setParameter(paramName, `%"empfaenger": "${empfaenger}"%`);
+          return `al.direction LIKE :${paramName}`;
+        });
+        queryBuilder.andWhere(`(${empfaengerConditions.join(' OR ')})`);
+      }
+
       // Global q across the 11 fields (case-insensitive LIKE) - Using TypeORM's parameterized methods
       const q = (payload.q || '').trim().toLowerCase();
       if (q.length > 0) {
