@@ -1,0 +1,20 @@
+meta {
+  name: Get All Pruefis From Formatversion
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{host}}/api/pruefidentifikatoren/FV2510
+  body: none
+  auth: inherit
+}
+
+headers {
+  Accept: application/json
+}
+
+settings {
+  encodeUrl: false
+  timeout: 0
+}
