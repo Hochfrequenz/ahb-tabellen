@@ -299,6 +299,10 @@ components:
           $ref: '#/components/schemas/FilterValue'
         bedingung:
           $ref: '#/components/schemas/FilterValue'
+        sender:
+          $ref: '#/components/schemas/FilterValue'
+        empfaenger:
+          $ref: '#/components/schemas/FilterValue'
     SearchQueryRequest:
       type: object
       properties:

@@ -7,6 +7,7 @@ export interface SearchFilters {
   bedingung?: FilterValue;
   data_element?: FilterValue;
   description?: FilterValue;
+  empfaenger?: FilterValue;
   format?: FilterValue;
   format_version?: FilterValue;
   line_ahb_status?: FilterValue;
@@ -15,4 +16,5 @@ export interface SearchFilters {
   qualifier?: FilterValue;
   segment_code?: FilterValue;
   segmentgroup_key?: FilterValue;
+  sender?: FilterValue;
 }
