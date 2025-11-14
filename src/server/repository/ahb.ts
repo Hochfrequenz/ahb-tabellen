@@ -35,7 +35,9 @@ export default class AHBRepository {
         | 'qualifier'
         | 'line_ahb_status'
         | 'line_name'
-        | 'bedingung',
+        | 'bedingung'
+        | 'sender'
+        | 'empfaenger',
         {
           eq?: string;
           neq?: string;
@@ -118,7 +120,9 @@ export default class AHBRepository {
             | 'qualifier'
             | 'line_ahb_status'
             | 'line_name'
-            | 'bedingung',
+            | 'bedingung'
+            | 'sender'
+            | 'empfaenger',
             {
               eq?: string;
               neq?: string;
@@ -137,6 +141,8 @@ export default class AHBRepository {
       const filters = payload.filters ?? {};
       Object.entries(filters).forEach(([field, value]) => {
         if (!value) return;
+        // Skip sender and empfaenger as they need special handling
+        if (field === 'sender' || field === 'empfaenger') return;
         if (!(allowedFields as readonly string[]).includes(field)) return;
 
         const columnName = validateField(field);
