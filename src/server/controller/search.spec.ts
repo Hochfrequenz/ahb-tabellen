@@ -176,5 +176,141 @@ describe('SearchController', () => {
         },
       });
     });
+
+    it('should handle sender filter', async () => {
+      mockReq.body = {
+        page: 1,
+        pageSize: 25,
+        sort: [{ field: 'format_version', direction: 'asc' }],
+        q: '',
+        filters: {
+          sender: { in: ['LF', 'MSB'] },
+        },
+      };
+
+      mockRepository.searchAhbLines.mockResolvedValue({
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 25,
+      });
+
+      await searchController.query(mockReq as Request, mockRes as Response, mockNext);
+
+      expect(mockRepository.searchAhbLines).toHaveBeenCalledWith({
+        page: 1,
+        pageSize: 25,
+        sort: [{ field: 'format_version', direction: 'asc' }],
+        q: '',
+        filters: {
+          sender: { in: ['LF', 'MSB'] },
+        },
+      });
+      expect(mockStatus).toHaveBeenCalledWith(200);
+    });
+
+    it('should handle empfaenger filter', async () => {
+      mockReq.body = {
+        page: 1,
+        pageSize: 25,
+        sort: [{ field: 'format_version', direction: 'asc' }],
+        q: '',
+        filters: {
+          empfaenger: { in: ['NB', 'ESA'] },
+        },
+      };
+
+      mockRepository.searchAhbLines.mockResolvedValue({
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 25,
+      });
+
+      await searchController.query(mockReq as Request, mockRes as Response, mockNext);
+
+      expect(mockRepository.searchAhbLines).toHaveBeenCalledWith({
+        page: 1,
+        pageSize: 25,
+        sort: [{ field: 'format_version', direction: 'asc' }],
+        q: '',
+        filters: {
+          empfaenger: { in: ['NB', 'ESA'] },
+        },
+      });
+      expect(mockStatus).toHaveBeenCalledWith(200);
+    });
+
+    it('should handle both sender and empfaenger filters', async () => {
+      mockReq.body = {
+        page: 1,
+        pageSize: 25,
+        sort: [{ field: 'format_version', direction: 'asc' }],
+        q: '',
+        filters: {
+          sender: { in: ['LF'] },
+          empfaenger: { in: ['MSB', 'NB'] },
+        },
+      };
+
+      mockRepository.searchAhbLines.mockResolvedValue({
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 25,
+      });
+
+      await searchController.query(mockReq as Request, mockRes as Response, mockNext);
+
+      expect(mockRepository.searchAhbLines).toHaveBeenCalledWith({
+        page: 1,
+        pageSize: 25,
+        sort: [{ field: 'format_version', direction: 'asc' }],
+        q: '',
+        filters: {
+          sender: { in: ['LF'] },
+          empfaenger: { in: ['MSB', 'NB'] },
+        },
+      });
+      expect(mockStatus).toHaveBeenCalledWith(200);
+    });
+
+    it('should handle sender and empfaenger with other filters', async () => {
+      mockReq.body = {
+        page: 1,
+        pageSize: 25,
+        sort: [{ field: 'format_version', direction: 'asc' }],
+        q: 'test',
+        filters: {
+          format_version: { in: ['FV2510'] },
+          sender: { in: ['LF'] },
+          empfaenger: { in: ['MSB'] },
+          segment_code: { contains: 'NAD' },
+        },
+      };
+
+      mockRepository.searchAhbLines.mockResolvedValue({
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 25,
+      });
+
+      await searchController.query(mockReq as Request, mockRes as Response, mockNext);
+
+      expect(mockRepository.searchAhbLines).toHaveBeenCalledWith({
+        page: 1,
+        pageSize: 25,
+        sort: [{ field: 'format_version', direction: 'asc' }],
+        q: 'test',
+        filters: {
+          format_version: { in: ['FV2510'] },
+          sender: { in: ['LF'] },
+          empfaenger: { in: ['MSB'] },
+          segment_code: { contains: 'NAD' },
+        },
+      });
+      expect(mockStatus).toHaveBeenCalledWith(200);
+    });
   });
 });
