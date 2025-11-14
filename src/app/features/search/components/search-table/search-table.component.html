@@ -96,8 +96,10 @@
 
     <!-- Direction Column -->
     <ng-container matColumnDef="direction">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Richtung</mat-header-cell>
-      <mat-cell *matCellDef="let row" class="flex flex-col">
+      <mat-header-cell *matHeaderCellDef mat-sort-header class="text-left"
+        >Richtung</mat-header-cell
+      >
+      <mat-cell *matCellDef="let row" class="flex flex-col items-start text-left">
         @for (dir of formatDirection(row.direction); track $index) {
           <div>{{ dir }}</div>
         }
