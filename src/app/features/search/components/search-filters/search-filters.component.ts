@@ -66,6 +66,20 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
     { key: 'line_ahb_status', label: "AHB Status (z.B. 'Muss [2061]')", type: 'text' },
     { key: 'line_name', label: 'Zeilenname', type: 'text' },
     { key: 'bedingung', label: 'Bedingung', type: 'text' },
+    {
+      key: 'sender',
+      label: 'Sender',
+      type: 'select',
+      options: ['LF', 'MSB', 'MSBN', 'MSBA', 'NB', 'LFA', 'LFN', 'ESA'],
+      multiple: true,
+    },
+    {
+      key: 'empfaenger',
+      label: 'Empfänger',
+      type: 'select',
+      options: ['LF', 'MSB', 'MSBN', 'MSBA', 'NB', 'LFA', 'LFN', 'ESA'],
+      multiple: true,
+    },
   ];
 
   constructor(
