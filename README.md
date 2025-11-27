@@ -186,9 +186,10 @@ The source XML files must be paid for, so they are not publicly available, which
 To update the database with new AHB data:
 
 1. Access the private [xml-migs-and-ahbs repository](https://github.com/Hochfrequenz/xml-migs-and-ahbs/)
-2. [create a new release](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases/new) there
-3. after a few minutes, download the `ahb_<commithash>.db.encrypted.7z ` from the release artifacts
-4. copy the encrypted 7z file to [`/src/server/data/ahb.db.encrypted.7z`](/src/server/data/ahb.db.encrypted.7z) (and overwrite the previous file)
+2. If necessary, update the XML files by **manually** downloading them from the bdew-mako.de website because their API exists but is PITA. Commit the files to a feature branch and fix all the errors found by the CI before squashing to main.
+3. [create a new release](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases/new) in the xml-migs-and-ahbs repository
+4. after a few minutes, download the `ahb_<commithash>.db.encrypted.7z ` from the release artifacts
+5. copy the encrypted 7z file to [`/src/server/data/ahb.db.encrypted.7z`](/src/server/data/ahb.db.encrypted.7z) (and overwrite the previous file)
 
 ### Security
 
