@@ -176,43 +176,25 @@ To deploy to the production environment:
 The `ahb.db` file is a SQLite database that contains AHB (Anwendungshandbuch) data for the energy industry.
 This database serves as the primary data source for the AHB Tabellen application.
 
-### Database Structure
+The database is created using the [fundamend](https://github.com/Hochfrequenz/xml-fundamend-python/) Python package, which processes XML files containing AHB specifications.
 
-- **File**: `ahb.db`
-- **Type**: SQLite database
-- **Purpose**: Stores AHB data in a structured format for efficient querying and retrieval
-- **Location**: `src/server/data/ahb.db.encrypted.7z` (encrypted and compressed)
-
-### Data Source and Generation
-
-#### Creation/Update Process
-
-The database is created using the [fundament](https://github.com/Hochfrequenz/xml-fundamend-python/) Python package, which processes XML files containing AHB specifications.
-
-#### Source Repository
-
-The database generation script is located in the private repository:
-
-- **Repository**: [xml-migs-and-ahbs](https://github.com/Hochfrequenz/xml-migs-and-ahbs)
-- **Script**: `load_ahbs_into_sqlitedb.py`
-- **Access**: Private repository - only accessible to Hochfrequenz organization members
-
-#### Why Private?
-
+The [database generation script](https://github.com/Hochfrequenz/xml-migs-and-ahbs/blob/main/load_ahbs_into_sqlitedb.py) is located in a private repository that contains all the raw XML files from `bdew-mako.de`:
 The source XML files must be paid for, so they are not publicly available, which is why the repository is private.
 
 ### Maintenance
 
 To update the database with new AHB data:
 
-1. Access the private xml-migs-and-ahbs repository
-2. Run the `load_ahbs_into_sqlitedb.py` script
-3. Replace the existing `ahb.db.encrypted.7z` file with the new version
-4. Deploy the updated application
+1. Access the private [xml-migs-and-ahbs repository](https://github.com/Hochfrequenz/xml-migs-and-ahbs/)
+2. [create a new release](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases/new) there
+3. after a few minutes, download the `ahb_<commithash>.db.encrypted.7z ` from the release artifacts
+4. copy the encrypted 7z file to [`/src/server/data/ahb.db.encrypted.7z`](/src/server/data/ahb.db.encrypted.7z) (and overwrite the previous file)
 
 ### Security
 
-The database file is stored in an encrypted and compressed format (`ahb.db.encrypted.7z`) to protect sensitive data during storage and transmission. The password for decryption can be found in the Hochfrequenz 1Password vault.
+The database file is stored in an encrypted and compressed format (`ahb.db.encrypted.7z`) to protect sensitive data during storage and transmission.
+The password for decryption can be found in the Hochfrequenz 1Password vault and the GitHub organization wide secrets.
+For local testing it is sufficient to download the unencrypted `ahb_<commithash>.db.7z` fron the release artifacts, un7zip it and place it next to the encrypted db as `ahb.db`.
 
 ## 🔗 Links
 
