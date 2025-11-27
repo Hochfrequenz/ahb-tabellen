@@ -1,14 +1,36 @@
 <div class="h-screen flex flex-col">
   <!-- Fixed Main Header -->
   <app-header class="flex-none">
+    <!-- Desktop projection -->
     <app-ahb-search-form-header
-      class="flex-1 hidden md:inline"
+      slot="search-form"
+      class="flex-1"
       [formatVersion]="formatVersion()"
       [pruefi]="pruefi()"
       (formatVersionChange)="onFormatVersionChange($event)"
       (pruefiChange)="onPruefiChange($event)" />
     <app-input-search-enhanced
+      slot="search"
       class="inline-block w-full md:w-96"
+      [searchQuery]="searchQuery()"
+      (searchQueryChange)="onSearchQueryChange($event)"
+      (keyupEnter)="onNextClick()"
+      (nextClick)="onNextClick()"
+      (previousClick)="onPreviousClick()"
+      [selectedPosition]="(table()?.markIndex() ?? 0) + 1"
+      [totalResults]="table()?.markElements()?.length" />
+
+    <!-- Mobile projection -->
+    <app-ahb-search-form-header
+      slot="search-form-mobile"
+      class="w-full"
+      [formatVersion]="formatVersion()"
+      [pruefi]="pruefi()"
+      (formatVersionChange)="onFormatVersionChange($event)"
+      (pruefiChange)="onPruefiChange($event)" />
+    <app-input-search-enhanced
+      slot="search-mobile"
+      class="w-full"
       [searchQuery]="searchQuery()"
       (searchQueryChange)="onSearchQueryChange($event)"
       (keyupEnter)="onNextClick()"
@@ -32,10 +54,18 @@
           </h3>
           <p class="text-[20px] mb-5">{{ ahb.meta.description }}</p>
           <p class="text-[14px]">
-            <span class="font-bold">Sender:</span>
-            {{ getSenderEmpfaenger(ahb.meta.direction).sender }}<br />
-            <span class="font-bold">Empfänger:</span>
-            {{ getSenderEmpfaenger(ahb.meta.direction).empfaenger }}
+            <span class="font-bold">Kommunikationsrichtungen:</span>
+            {{ ahb.meta.direction }}
+          </p>
+          <p class="text-[14px]">
+            <span class="font-bold">Version:</span>
+            <!-- naming is not consistent at bdew. In XML it is 'versionsnummer', in the AHB pdf documents it is 'version' -->
+            {{ ahb.meta.versionsnummer }}
+          </p>
+          <p class="text-[14px]">
+            <span class="font-bold">Publikationsdatum:</span>
+            <!-- naming is not consistent at bdew. In XML it is 'veroeffentlichungsdatum', in the AHB pdf documents it is 'publikationsdatum' -->
+            {{ ahb.meta.veroeffentlichungsdatum | date: 'dd.MM.yyyy' }}
           </p>
           <p class="text-[14px]">
             <span class="font-bold"> Format: </span>
@@ -64,16 +94,28 @@
         <p class="text-xl">AHB-Tabelle wird geladen ...</p>
       </div>
     }
+
+    <!-- Solutions footer inside scroll: visible only on small screens -->
+    <app-solutions-footer class="block md:hidden"></app-solutions-footer>
   </div>
 
   <div *ngIf="errorOccurred" class="flex-1 flex items-center justify-center">
+    <!-- Show DVGW fallback page for specific Prüfidentifikatoren -->
+    <app-dvgw-fallback-page
+      *ngIf="isDvgwPruefi()"
+      class="w-11/12 max-w-4xl"></app-dvgw-fallback-page>
+
+    <!-- Show regular fallback page for other cases -->
     <app-fallback-page
-      class="w-1/2"
+      *ngIf="!isDvgwPruefi()"
+      class="w-11/12 max-w-4xl"
       [pruefi]="pruefi()"
       [formatVersion]="formatVersion()"></app-fallback-page>
   </div>
 
+  <!-- Solutions footer for desktop/tablet: visible on md+ screens at bottom -->
+  <app-solutions-footer class="flex-none hidden md:block"></app-solutions-footer>
+
   <!-- Fixed Footer -->
-  <app-solutions-footer class="flex-none"></app-solutions-footer>
   <app-footer class="flex-none" />
 </div>

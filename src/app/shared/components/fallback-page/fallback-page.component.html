@@ -1,7 +1,24 @@
-<div class="text-center p-5 bg-hf-grell-rose text-hf-weiches-schwarz rounded-lg">
-  <p>
-    Für den Prüfidentifikator <span class="font-bold">{{ pruefi }}</span> in der Formatversion
-    <span class="font-bold">{{ formatVersion }}</span> konnten keine Daten gefunden werden.
-  </p>
-  <p>Bitte überprüfen Sie die Eingaben.</p>
+<div class="text-center p-8 bg-hf-grell-rose text-hf-weiches-schwarz rounded-lg max-w-4xl mx-auto">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold mb-4 text-hf-weiches-schwarz">Keine Daten gefunden</h2>
+    <div class="w-16 h-1 bg-hf-weiches-schwarz mx-auto mb-6"></div>
+  </div>
+
+  <div class="text-lg leading-relaxed">
+    <p class="mb-4">
+      Für den Prüfidentifikator <span class="font-bold">{{ pruefi }}</span> in der Formatversion
+      <span class="font-bold">{{ formatVersion }}</span> konnten keine Daten gefunden werden.
+    </p>
+
+    <div class="bg-white bg-opacity-50 p-4 rounded-lg border-l-4 border-hf-weiches-schwarz">
+      <p class="text-sm text-hf-weiches-schwarz">
+        Bei fehlenden Daten einfach das Kontaktformular im Footer nutzen oder
+        <a
+          href="https://github.com/Hochfrequenz/ahb-tabellen/issues/new"
+          title="erfordert einen Github Account"
+          >ein Fehlerticket öffnen.</a
+        >.
+      </p>
+    </div>
+  </div>
 </div>

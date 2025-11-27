@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AhbTableComponent } from '../../components/ahb-table/ahb-table.component';
 import { signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 describe('AhbPageComponent', () => {
   let mockRouter: { navigate: jest.Mock };
@@ -52,6 +53,12 @@ describe('AhbPageComponent', () => {
       .provide({
         provide: Router,
         useValue: mockRouter,
+      })
+      .provide({
+        provide: HttpClient,
+        useValue: {
+          get: jest.fn(() => of('')),
+        },
       });
   });
 
@@ -63,54 +70,6 @@ describe('AhbPageComponent', () => {
     const html = ngMocks.formatHtml(fixture);
     expect(html).toContain('<app-header');
     expect(html).toContain('Anwendungshandbuch 123');
-  });
-
-  it('should split sender and empfaenger without "an" keyword', () => {
-    const fixture = MockRender(AhbPageComponent, {
-      formatVersion: 'FV123',
-      pruefi: '123',
-    });
-    const component = fixture.point.componentInstance;
-
-    const testDirection = 'ABC an XYZ';
-    const result = component.getSenderEmpfaenger(testDirection);
-
-    expect(result.sender).toBe('ABC');
-    expect(result.empfaenger).toBe('XYZ');
-    expect(result.sender).not.toContain(' an ');
-    expect(result.empfaenger).not.toContain(' an ');
-  });
-
-  it('should handle direction without empfaenger', () => {
-    const fixture = MockRender(AhbPageComponent, {
-      formatVersion: 'FV123',
-      pruefi: '123',
-    });
-    const component = fixture.point.componentInstance;
-
-    const testDirection = 'ABC';
-    const result = component.getSenderEmpfaenger(testDirection);
-
-    expect(result.sender).toBe('ABC');
-    expect(result.empfaenger).toBe('');
-  });
-
-  it('should handle empty direction', () => {
-    const fixture = MockRender(AhbPageComponent, {
-      formatVersion: 'FV123',
-      pruefi: '123',
-    });
-    const component = fixture.point.componentInstance;
-
-    const testDirection = '';
-    const result = component.getSenderEmpfaenger(testDirection);
-
-    expect(result.sender).toBe(
-      'MSCONS-Nachrichten können von verschiedenen Marktrollen gesendet werden.'
-    );
-    expect(result.empfaenger).toBe(
-      'MSCONS-Nachrichten können von verschiedenen Marktrollen empfangen werden.'
-    );
   });
 
   it('should refresh table and redirect URL upon formatversion change', () => {

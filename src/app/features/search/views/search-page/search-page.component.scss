@@ -1,0 +1,55 @@
+.search-page {
+  padding: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// Header and footer now using inline styles for better visibility
+
+.search-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filters-card,
+.results-card {
+  mat-card-header {
+    padding-bottom: 8px;
+  }
+}
+
+.result-count {
+  font-size: 14px;
+  font-weight: normal;
+  color: rgba(0, 0, 0, 0.6);
+  margin-left: 8px;
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+.error-container {
+  mat-icon {
+    color: #f44336;
+  }
+}

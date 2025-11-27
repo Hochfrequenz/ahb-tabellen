@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: AHB Tabellen API Documentation
+  title: AHB-Tabellen API Documentation
   description: >
     This is the description for the API of the ahb-tabellen web application.
 
@@ -22,6 +22,16 @@ servers:
 tags:
   - name: ahb
     description: Everything about AHB documents
+  - name: formate
+    description: EDIFACT formats like UTILMD, MSCONS etc
+  - name: search
+    description: Find information in AHB documents
+  - name: format-versions
+    description: EDIFACT format versions e.g. `FV2510`
+  - name: prüfidentifikatoren
+    description: Prüfidentifikatoren which is defined by edi@energy, e.g. 55001
+  - name: maintenance
+    description: Endpoints which have mainly a technical focus
 paths:
   /api/ahb/{format-version}/{pruefi}:
     get:
@@ -66,13 +76,60 @@ paths:
               schema:
                 type: string
                 format: binary
-      security:
-        - ahb_tabellen_auth:
-            - read:ahb
+  /api/formate:
+    get:
+      tags:
+        - formate
+      summary: Get a list of all available formate
+      operationId: getFormate
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Format'
+                example:
+                  [
+                    CONTRL,
+                    MSCONS,
+                    ORDERS,
+                    ORDRSP,
+                    PARTIN,
+                    PRICAT,
+                    QUOTES,
+                    REMADV,
+                    REQOTE,
+                    UTILMD,
+                    UTILTS,
+                  ]
+  /api/search/query:
+    post:
+      tags:
+        - search
+      summary: Query AHB lines with filters, sorting, pagination
+      operationId: searchAhbLines
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQueryRequest'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchQueryResponse'
+        '400':
+          description: invalid request
   /api/format-versions:
     get:
       tags:
-        - ahb
+        - format-versions
       summary: Get a list of all available format versions
       operationId: getFormatVersions
       responses:
@@ -85,10 +142,10 @@ paths:
                 items:
                   type: string
                 example: [FV2310, FV2404, FV2410]
-  /api/format-versions/{format-version}/pruefis:
+  /api/pruefidentifikatoren/{format-version}:
     get:
       tags:
-        - ahb
+        - prüfidentifikatoren
       summary: Get a list of all available Pruefidentifikators for a given format version
       operationId: getPruefis
       parameters:
@@ -120,6 +177,7 @@ paths:
       tags:
         - maintenance
       summary: Get the current version of the AHB-Tabellen application
+      operationId: getVersion
       responses:
         '200':
           description: successful operation
@@ -130,6 +188,155 @@ paths:
 
 components:
   schemas:
+    SearchItem:
+      type: object
+      properties:
+        format_version:
+          type: string
+          example: 'FV2410'
+        format:
+          type: string
+          example: 'UTILMD'
+        pruefidentifikator:
+          type: string
+          example: '25007'
+        description:
+          type: string
+        segmentgroup_key:
+          type: string
+          example: 'SG6'
+        segment_code:
+          type: string
+          example: 'NAD'
+        data_element:
+          type: string
+          example: 'D_3035'
+        qualifier:
+          type: string
+        line_ahb_status:
+          type: string
+        line_name:
+          type: string
+        bedingung:
+          type: string
+        direction:
+          type: string
+          description: inbound/outbound indicator
+      required:
+        - format_version
+        - pruefidentifikator
+    SortRule:
+      type: object
+      properties:
+        field:
+          type: string
+          description: Sortable field name
+          enum:
+            [
+              format_version,
+              format,
+              pruefidentifikator,
+              description,
+              segmentgroup_key,
+              segment_code,
+              data_element,
+              qualifier,
+              line_ahb_status,
+              line_name,
+              bedingung,
+              direction,
+            ]
+        direction:
+          type: string
+          enum: [asc, desc]
+          default: asc
+      required:
+        - field
+    FilterValue:
+      type: object
+      description: One operator should be provided per field
+      properties:
+        eq:
+          type: string
+        neq:
+          type: string
+        contains:
+          type: string
+        startsWith:
+          type: string
+        endsWith:
+          type: string
+        in:
+          type: array
+          items:
+            type: string
+        isNull:
+          type: boolean
+        isNotNull:
+          type: boolean
+    SearchFilters:
+      type: object
+      properties:
+        format_version:
+          $ref: '#/components/schemas/FilterValue'
+        format:
+          $ref: '#/components/schemas/FilterValue'
+        pruefidentifikator:
+          $ref: '#/components/schemas/FilterValue'
+        description:
+          $ref: '#/components/schemas/FilterValue'
+        segmentgroup_key:
+          $ref: '#/components/schemas/FilterValue'
+        segment_code:
+          $ref: '#/components/schemas/FilterValue'
+        data_element:
+          $ref: '#/components/schemas/FilterValue'
+        qualifier:
+          $ref: '#/components/schemas/FilterValue'
+        line_ahb_status:
+          $ref: '#/components/schemas/FilterValue'
+        line_name:
+          $ref: '#/components/schemas/FilterValue'
+        bedingung:
+          $ref: '#/components/schemas/FilterValue'
+    SearchQueryRequest:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        pageSize:
+          type: integer
+          default: 25
+          description: Maximum 200
+        sort:
+          type: array
+          items:
+            $ref: '#/components/schemas/SortRule'
+        q:
+          type: string
+          description: Global case-insensitive search across the 11 listed fields
+        filters:
+          $ref: '#/components/schemas/SearchFilters'
+      required:
+        - page
+        - pageSize
+        - sort
+        - q
+    SearchQueryResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchItem'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
     Ahb:
       type: object
       properties:
@@ -194,15 +401,27 @@ components:
             pruefidentifikator:
               type: string
               example: '25007'
+            versionsnummer:
+              type: string
+              example: '2.1c'
+            veroeffentlichungsdatum:
+              type: string
+              example: '2025-04-17'
           required:
             - description
             - direction
             - pruefidentifikator
+            - versionsnummer
+            - veroeffentlichungsdatum
       required:
         - lines
         - meta
     FormatVersion:
       type: string
+      example: 'FV2510'
+    Format:
+      type: string
+      example: 'UTILMD'
     Version:
       type: object
       properties:
@@ -221,11 +440,3 @@ components:
         buildBranch:
           type: string
           example: 'main'
-  securitySchemes:
-    ahb_tabellen_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
-          scopes:
-            read:ahb: read your ahb

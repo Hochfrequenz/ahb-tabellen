@@ -1,0 +1,18 @@
+# Code owners for files typically changed by Dependabot
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-file-location
+
+# npm manifests at repo root
+/package.json @TommyBom @ohenning @Hochfrequenz/frontend-developers-review-team
+/package-lock.json @TommyBom @ohenning @Hochfrequenz/frontend-developers-review-team
+
+# npm manifests for the nested companystylesheet package
+/src/assets/companystylesheet/package.json @TommyBom @ohenning @Hochfrequenz/frontend-developers-review-team
+/src/assets/companystylesheet/package-lock.json @TommyBom @ohenning @Hochfrequenz/frontend-developers-review-team
+
+# GitHub Actions workflows
+/.github/workflows/** @hf-krechan
+
+# Docker files
+/Dockerfile @Hochfrequenz/frontend-developers-review-team
+/docker-compose.yaml @Hochfrequenz/frontend-developers-review-team
+

@@ -6,7 +6,7 @@ import {
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { AhbService } from '../../../../core/api';
+import { PrufidentifikatorenService } from '../../../../core/api';
 import { CommonModule } from '@angular/common';
 import { BehaviorSubject, Observable, combineLatest, map, tap } from 'rxjs';
 
@@ -51,7 +51,7 @@ export class PruefiInputComponent implements ControlValueAccessor {
 
   public onChange?: (pruefi: string | null) => void;
 
-  constructor(private readonly ahbService: AhbService) {
+  constructor(private readonly prufidentifikatorenService: PrufidentifikatorenService) {
     effect(() => {
       const formatVersion = this.formatVersion();
       if (!formatVersion) {
@@ -59,7 +59,7 @@ export class PruefiInputComponent implements ControlValueAccessor {
         return;
       }
       this.control.disable();
-      this.ahbService
+      this.prufidentifikatorenService
         .getPruefis({
           'format-version': formatVersion,
         })

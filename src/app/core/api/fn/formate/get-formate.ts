@@ -8,13 +8,13 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { Version } from '../../models/version';
+import { Format } from '../../models/format';
 
-export interface VersionGet$Params {
+export interface GetFormate$Params {
 }
 
-export function versionGet(http: HttpClient, rootUrl: string, params?: VersionGet$Params, context?: HttpContext): Observable<StrictHttpResponse<Version>> {
-  const rb = new RequestBuilder(rootUrl, versionGet.PATH, 'get');
+export function getFormate(http: HttpClient, rootUrl: string, params?: GetFormate$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<Format>>> {
+  const rb = new RequestBuilder(rootUrl, getFormate.PATH, 'get');
   if (params) {
   }
 
@@ -23,9 +23,9 @@ export function versionGet(http: HttpClient, rootUrl: string, params?: VersionGe
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Version>;
+      return r as StrictHttpResponse<Array<Format>>;
     })
   );
 }
 
-versionGet.PATH = '/version';
+getFormate.PATH = '/api/formate';

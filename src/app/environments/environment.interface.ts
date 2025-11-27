@@ -7,4 +7,5 @@ export interface EnvironmentInterface {
   auth0Domain: string;
   auth0ClientId: string;
   baseUrl: string;
+  warmupUrl?: string;
 }
