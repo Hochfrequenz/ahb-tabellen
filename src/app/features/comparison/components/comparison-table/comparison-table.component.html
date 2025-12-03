@@ -45,7 +45,9 @@
             <td
               class="px-3 py-2 border-l border-gray-200"
               [class.font-bold]="isSegmentGroup(line)"
-              [class]="getCellDiffClass(getSegmentGroupKey(line, 'old'), getSegmentGroupKey(line, 'new'))">
+              [class]="
+                getCellDiffClass(getSegmentGroupKey(line, 'old'), getSegmentGroupKey(line, 'new'))
+              ">
               {{ getSegmentGroupKey(line, 'old') || '-' }}
             </td>
             <td
@@ -79,7 +81,9 @@
             <td
               class="px-3 py-2 border-l border-gray-200"
               [class.font-bold]="isSegmentGroup(line)"
-              [class]="getCellDiffClass(getSegmentGroupKey(line, 'new'), getSegmentGroupKey(line, 'old'))">
+              [class]="
+                getCellDiffClass(getSegmentGroupKey(line, 'new'), getSegmentGroupKey(line, 'old'))
+              ">
               {{ getSegmentGroupKey(line, 'new') || '-' }}
             </td>
             <td

@@ -258,8 +258,12 @@ export default class AhbDiffRepository {
     const descriptionRows: { description: string | null; format_version: string }[] =
       await AppDataSource.query(descriptionQuery, [pruefi, formatVersionA, formatVersionB]);
 
-    const descriptionA = descriptionRows.find(r => r.format_version === formatVersionA)?.description;
-    const descriptionB = descriptionRows.find(r => r.format_version === formatVersionB)?.description;
+    const descriptionA = descriptionRows.find(
+      r => r.format_version === formatVersionA
+    )?.description;
+    const descriptionB = descriptionRows.find(
+      r => r.format_version === formatVersionB
+    )?.description;
 
     return {
       lines,
