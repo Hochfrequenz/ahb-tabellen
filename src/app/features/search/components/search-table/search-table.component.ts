@@ -101,7 +101,9 @@ export class SearchTableComponent implements OnChanges {
     return value;
   }
 
-  formatDirection(direction: any): string[] {
+  formatDirection(
+    direction: string | { sender: string; empfaenger: string }[] | null | undefined
+  ): string[] {
     if (!direction) return ['-'];
     try {
       const directions = typeof direction === 'string' ? JSON.parse(direction) : direction;

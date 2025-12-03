@@ -18,7 +18,7 @@ jest.mock('../infrastructure/xlsx-generator.service');
 describe('AHBRepository - Sender and Empfaenger Filters', () => {
   let repository: AHBRepository;
   let mockQueryBuilder: jest.Mocked<SelectQueryBuilder<AhbLine>>;
-  let mockRepository: any;
+  let mockRepository: { createQueryBuilder: jest.Mock };
 
   beforeEach(() => {
     // Create mock query builder
@@ -101,8 +101,6 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
     });
 
     it('should handle empty sender array', async () => {
-      const setParameterCallsBefore = mockQueryBuilder.setParameter.mock.calls.length;
-
       await repository.searchAhbLines({
         page: 1,
         pageSize: 25,

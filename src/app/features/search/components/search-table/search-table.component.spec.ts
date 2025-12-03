@@ -142,7 +142,9 @@ describe('SearchTableComponent', () => {
         pruefidentifikator: '11001',
       };
       const mockUrl = '/ahb/FV2510/11001';
-      mockRouter.createUrlTree.mockReturnValue({ toString: () => mockUrl } as any);
+      mockRouter.createUrlTree.mockReturnValue({ toString: () => mockUrl } as ReturnType<
+        Router['createUrlTree']
+      >);
 
       component.onPruefidentifikatorClick(item);
 
