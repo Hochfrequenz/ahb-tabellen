@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -31,8 +31,6 @@ export class ComparisonLandingPageComponent implements OnInit {
   formatVersionNew = signal<string>('');
   formatVersions = signal<string[]>([]);
 
-  formatVersionForPruefiInput = computed(() => this.formatVersionNew() || this.formatVersionOld());
-
   constructor(
     private readonly router: Router,
     private readonly title: Title,
@@ -61,18 +59,22 @@ export class ComparisonLandingPageComponent implements OnInit {
   }
 
   onVersionOldChange(version: string): void {
-    if (version > this.formatVersionNew()) {
+    if (version >= this.formatVersionNew()) {
+      // Swap: user selected old >= new, so swap them
+      const previousNew = this.formatVersionNew();
       this.formatVersionNew.set(version);
-      this.formatVersionOld.set(this.formatVersionNew());
+      this.formatVersionOld.set(previousNew);
     } else {
       this.formatVersionOld.set(version);
     }
   }
 
   onVersionNewChange(version: string): void {
-    if (version < this.formatVersionOld()) {
+    if (version <= this.formatVersionOld()) {
+      // Swap: user selected new <= old, so swap them
+      const previousOld = this.formatVersionOld();
       this.formatVersionOld.set(version);
-      this.formatVersionNew.set(this.formatVersionOld());
+      this.formatVersionNew.set(previousOld);
     } else {
       this.formatVersionNew.set(version);
     }
