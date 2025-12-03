@@ -1,15 +1,20 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
+import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-comparison-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconLinkComponent],
   templateUrl: './comparison-table.component.html',
 })
 export class ComparisonTableComponent {
   @Input() lines: AhbDiffLine[] = [];
+  @Input() formatVersionOld = '';
+  @Input() formatVersionNew = '';
+  @Input() pruefi = '';
 
   getRowClass(line: AhbDiffLine): string {
     const baseClass = 'border-b border-gray-200';
@@ -89,5 +94,54 @@ export class ComparisonTableComponent {
 
   getAhbStatus(line: AhbDiffLine, side: 'old' | 'new'): string {
     return this.getSide(line, side)?.line_ahb_status ?? '';
+  }
+
+  generateBedingungsbaumDeepLink(expression: string, formatVersion: string): string | null {
+    if (!expression || !expression.includes('[')) {
+      return null;
+    }
+    const encodedExpression = encodeURIComponent(expression);
+    return `${environment.bedingungsbaumBaseUrl}/tree/?format=${this.getFormat(this.pruefi)}&format_version=${formatVersion}&expression=${encodedExpression}`;
+  }
+
+  generateEbdDeepLink(qualifier: string | null | undefined, formatVersion: string): string | null {
+    if (!qualifier || qualifier.trim().length === 0) {
+      return null;
+    }
+    const regex = /^.*\b(?<ebd_key>E_\d+)\b.*$/;
+    const match = qualifier.match(regex);
+    if (!match?.groups) {
+      return null;
+    }
+    const ebdKey = match.groups['ebd_key']!;
+    return `${environment.ebdBaseUrl}/ebd/?formatversion=${formatVersion}&ebd=${ebdKey}`;
+  }
+
+  private getFormat(pruefi: string): string {
+    const mapping: { [key: string]: string } = {
+      '99': 'APERAK',
+      '29': 'COMDIS',
+      '21': 'IFTSTA',
+      '23': 'INSRPT',
+      '31': 'INVOIC',
+      '13': 'MSCONS',
+      '39': 'ORDCHG',
+      '17': 'ORDERS',
+      '19': 'ORDRSP',
+      '27': 'PRICAT',
+      '15': 'QUOTES',
+      '33': 'REMADV',
+      '35': 'REQOTE',
+      '37': 'PARTIN',
+      '11': 'UTILMD',
+      '25': 'UTILTS',
+      '91': 'CONTRL',
+      '92': 'APERAK',
+      '44': 'UTILMDG',
+      '55': 'UTILMDS',
+    };
+
+    const key = pruefi.substring(0, 2);
+    return mapping[key] || '';
   }
 }

@@ -71,7 +71,11 @@
     } @else {
       @if (diff$ | async; as diff) {
         @if (diff.lines && diff.lines.length > 0) {
-          <app-comparison-table [lines]="diff.lines" />
+          <app-comparison-table
+            [lines]="diff.lines"
+            [formatVersionOld]="formatVersionOld()"
+            [formatVersionNew]="formatVersionNew()"
+            [pruefi]="pruefi()" />
         } @else {
           <div class="text-center py-12 text-gray-500">
             Bitte wählen Sie zwei Formatversionen zum Vergleichen aus.

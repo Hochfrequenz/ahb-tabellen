@@ -64,7 +64,17 @@
             <td
               class="px-3 py-2"
               [class]="getCellDiffClass(getQualifier(line, 'old'), getQualifier(line, 'new'))">
-              {{ getQualifier(line, 'old') || '-' }}
+              @if (generateEbdDeepLink(getQualifier(line, 'old'), formatVersionOld); as ebdLink) {
+                <a
+                  [href]="ebdLink"
+                  target="_blank"
+                  class="hover:underline font-bold text-hf-dunkel-blau flex flex-row gap-1 items-center">
+                  <span>{{ getQualifier(line, 'old') }}</span>
+                  <app-icon-link />
+                </a>
+              } @else {
+                {{ getQualifier(line, 'old') || '-' }}
+              }
             </td>
             <td
               class="px-3 py-2"
@@ -74,7 +84,20 @@
             <td
               class="px-3 py-2"
               [class]="getCellDiffClass(getAhbStatus(line, 'old'), getAhbStatus(line, 'new'))">
-              {{ getAhbStatus(line, 'old') || '-' }}
+              @if (
+                generateBedingungsbaumDeepLink(getAhbStatus(line, 'old'), formatVersionOld);
+                as treeLink
+              ) {
+                <a
+                  [href]="treeLink"
+                  target="_blank"
+                  class="hover:underline font-bold text-hf-dunkel-gelb flex flex-row gap-1 items-center">
+                  <span>{{ getAhbStatus(line, 'old') }}</span>
+                  <app-icon-link />
+                </a>
+              } @else {
+                {{ getAhbStatus(line, 'old') || '-' }}
+              }
             </td>
 
             <!-- New version columns (version A = new) -->
@@ -100,7 +123,17 @@
             <td
               class="px-3 py-2"
               [class]="getCellDiffClass(getQualifier(line, 'new'), getQualifier(line, 'old'))">
-              {{ getQualifier(line, 'new') || '-' }}
+              @if (generateEbdDeepLink(getQualifier(line, 'new'), formatVersionNew); as ebdLink) {
+                <a
+                  [href]="ebdLink"
+                  target="_blank"
+                  class="hover:underline font-bold text-hf-dunkel-blau flex flex-row gap-1 items-center">
+                  <span>{{ getQualifier(line, 'new') }}</span>
+                  <app-icon-link />
+                </a>
+              } @else {
+                {{ getQualifier(line, 'new') || '-' }}
+              }
             </td>
             <td
               class="px-3 py-2"
@@ -110,7 +143,20 @@
             <td
               class="px-3 py-2"
               [class]="getCellDiffClass(getAhbStatus(line, 'new'), getAhbStatus(line, 'old'))">
-              {{ getAhbStatus(line, 'new') || '-' }}
+              @if (
+                generateBedingungsbaumDeepLink(getAhbStatus(line, 'new'), formatVersionNew);
+                as treeLink
+              ) {
+                <a
+                  [href]="treeLink"
+                  target="_blank"
+                  class="hover:underline font-bold text-hf-dunkel-gelb flex flex-row gap-1 items-center">
+                  <span>{{ getAhbStatus(line, 'new') }}</span>
+                  <app-icon-link />
+                </a>
+              } @else {
+                {{ getAhbStatus(line, 'new') || '-' }}
+              }
             </td>
           </tr>
         }
