@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { PrufidentifikatorenService } from '../../../../core/api';
 import { CommonModule } from '@angular/common';
-import { BehaviorSubject, Observable, combineLatest, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, finalize, map } from 'rxjs';
 
 interface PruefiOption {
   pruefidentifikator: string;
@@ -56,6 +56,7 @@ export class PruefiInputComponent implements ControlValueAccessor {
       const formatVersion = this.formatVersion();
       if (!formatVersion) {
         this.allPruefis$.next([]);
+        this.control.enable();
         return;
       }
       this.control.disable();
@@ -63,14 +64,19 @@ export class PruefiInputComponent implements ControlValueAccessor {
         .getPruefis({
           'format-version': formatVersion,
         })
-        .pipe(tap(() => this.control.enable()))
-        .subscribe(pruefis => {
-          this.allPruefis$.next(
-            pruefis.map(p => ({
-              pruefidentifikator: p.pruefidentifikator || '',
-              name: p.name || '',
-            }))
-          );
+        .pipe(finalize(() => this.control.enable()))
+        .subscribe({
+          next: pruefis => {
+            this.allPruefis$.next(
+              pruefis.map(p => ({
+                pruefidentifikator: p.pruefidentifikator || '',
+                name: p.name || '',
+              }))
+            );
+          },
+          error: () => {
+            this.allPruefis$.next([]);
+          },
         });
     });
   }

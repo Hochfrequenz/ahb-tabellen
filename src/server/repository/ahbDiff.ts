@@ -1,6 +1,5 @@
 import { NotFoundError } from '../infrastructure/errors';
 import { AppDataSource } from '../infrastructure/database';
-import { logger } from '../infrastructure/logger';
 
 export interface AhbDiffSide {
   segmentgroup_key?: string | null;
@@ -195,7 +194,7 @@ export default class AhbDiffRepository {
       formatVersionA,
     ]);
     const diffQueryMs = performance.now() - diffQueryStart;
-    logger.info(
+    console.log(
       `[AhbDiff] Main diff query: ${diffQueryMs.toFixed(1)}ms, rows=${rawRows.length}, pruefi=${pruefi}, fvA=${formatVersionA}, fvB=${formatVersionB}`
     );
 
@@ -265,7 +264,7 @@ export default class AhbDiffRepository {
     const descriptionRows: { description: string | null; format_version: string }[] =
       await AppDataSource.query(descriptionQuery, [pruefi, formatVersionA, formatVersionB]);
     const descQueryMs = performance.now() - descQueryStart;
-    logger.info(`[AhbDiff] Description query: ${descQueryMs.toFixed(1)}ms, pruefi=${pruefi}`);
+    console.log(`[AhbDiff] Description query: ${descQueryMs.toFixed(1)}ms, pruefi=${pruefi}`);
 
     const descriptionA = descriptionRows.find(
       r => r.format_version === formatVersionA
