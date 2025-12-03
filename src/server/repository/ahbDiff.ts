@@ -63,21 +63,33 @@ export default class AhbDiffRepository {
       await AppDataSource.initialize();
     }
 
-    // Three-part query using UNION ALL:
-    // 1. Modified/Unchanged: from v_ahb_diff joined with v_ahbtabellen on both sides
-    // 2. Deleted: rows in old version but NOT in new version
-    // 3. Added: rows in new version but NOT in old version
+    // Optimized query using CTEs to materialize old/new versions once
+    // Then uses FULL OUTER JOIN logic (LEFT JOIN + UNION for deleted)
+    // to compute diff_status based on presence and content comparison
     //
-    // Parameters order: formatVersionA, formatVersionB, pruefi, pruefi (for part 1)
-    //                   pruefi, formatVersionB, pruefi, formatVersionA (for part 2 - deleted)
-    //                   pruefi, formatVersionA, pruefi, formatVersionB (for part 3 - added)
+    // Parameters: pruefi, formatVersionB (old), pruefi, formatVersionA (new)
     const query = `
+      WITH old_version AS (
+        SELECT * FROM v_ahbtabellen
+        WHERE pruefidentifikator = ? AND format_version = ?
+      ),
+      new_version AS (
+        SELECT * FROM v_ahbtabellen
+        WHERE pruefidentifikator = ? AND format_version = ?
+      )
       SELECT * FROM (
-        -- Part 1: Modified/Unchanged from v_ahb_diff
+        -- Main join: added, modified, unchanged (new LEFT JOIN old)
         SELECT
-          d.diff_status,
-          d.id_path,
-          d.sort_path,
+          CASE
+            WHEN old_tbl.id_path IS NULL THEN 'added'
+            WHEN old_tbl.line_ahb_status != new_tbl.line_ahb_status
+              OR old_tbl.bedingung != new_tbl.bedingung
+              OR old_tbl.line_name != new_tbl.line_name
+            THEN 'modified'
+            ELSE 'unchanged'
+          END AS diff_status,
+          COALESCE(new_tbl.id_path, old_tbl.id_path) AS id_path,
+          COALESCE(new_tbl.sort_path, old_tbl.sort_path) AS sort_path,
           old_tbl.segmentgroup_key AS old_segmentgroup_key,
           old_tbl.segment_code AS old_segment_code,
           old_tbl.data_element AS old_data_element,
@@ -94,23 +106,12 @@ export default class AhbDiffRepository {
           new_tbl.line_name AS new_line_name,
           new_tbl.line_type AS new_line_type,
           new_tbl.bedingung AS new_bedingung
-        FROM v_ahb_diff d
-        LEFT JOIN v_ahbtabellen old_tbl
-          ON d.id_path = old_tbl.id_path
-          AND d.pruefidentifikator_b = old_tbl.pruefidentifikator
-          AND d.format_version_b = old_tbl.format_version
-        LEFT JOIN v_ahbtabellen new_tbl
-          ON d.id_path = new_tbl.id_path
-          AND d.pruefidentifikator_a = new_tbl.pruefidentifikator
-          AND d.format_version_a = new_tbl.format_version
-        WHERE d.format_version_a = ?
-          AND d.format_version_b = ?
-          AND d.pruefidentifikator_a = ?
-          AND d.pruefidentifikator_b = ?
+        FROM new_version new_tbl
+        LEFT JOIN old_version old_tbl ON new_tbl.id_path = old_tbl.id_path
 
         UNION ALL
 
-        -- Part 2: Deleted - rows in old version (B) but NOT in new version (A)
+        -- Deleted rows (in old but not in new)
         SELECT
           'deleted' AS diff_status,
           old_tbl.id_path,
@@ -131,67 +132,20 @@ export default class AhbDiffRepository {
           NULL AS new_line_name,
           NULL AS new_line_type,
           NULL AS new_bedingung
-        FROM v_ahbtabellen old_tbl
-        LEFT JOIN v_ahbtabellen new_tbl
-          ON old_tbl.id_path = new_tbl.id_path
-          AND new_tbl.pruefidentifikator = ?
-          AND new_tbl.format_version = ?
-        WHERE old_tbl.pruefidentifikator = ?
-          AND old_tbl.format_version = ?
-          AND new_tbl.id_path IS NULL
-
-        UNION ALL
-
-        -- Part 3: Added - rows in new version (A) but NOT in old version (B)
-        SELECT
-          'added' AS diff_status,
-          new_tbl.id_path,
-          new_tbl.sort_path,
-          NULL AS old_segmentgroup_key,
-          NULL AS old_segment_code,
-          NULL AS old_data_element,
-          NULL AS old_qualifier,
-          NULL AS old_line_ahb_status,
-          NULL AS old_line_name,
-          NULL AS old_line_type,
-          NULL AS old_bedingung,
-          new_tbl.segmentgroup_key AS new_segmentgroup_key,
-          new_tbl.segment_code AS new_segment_code,
-          new_tbl.data_element AS new_data_element,
-          new_tbl.qualifier AS new_qualifier,
-          new_tbl.line_ahb_status AS new_line_ahb_status,
-          new_tbl.line_name AS new_line_name,
-          new_tbl.line_type AS new_line_type,
-          new_tbl.bedingung AS new_bedingung
-        FROM v_ahbtabellen new_tbl
-        LEFT JOIN v_ahbtabellen old_tbl
-          ON new_tbl.id_path = old_tbl.id_path
-          AND old_tbl.pruefidentifikator = ?
-          AND old_tbl.format_version = ?
-        WHERE new_tbl.pruefidentifikator = ?
-          AND new_tbl.format_version = ?
-          AND old_tbl.id_path IS NULL
+        FROM old_version old_tbl
+        LEFT JOIN new_version new_tbl ON old_tbl.id_path = new_tbl.id_path
+        WHERE new_tbl.id_path IS NULL
       ) combined
       ORDER BY combined.sort_path ASC
     `;
 
     const diffQueryStart = performance.now();
     const rawRows: RawDiffRow[] = await AppDataSource.query(query, [
-      // Part 1: v_ahb_diff
-      formatVersionA,
-      formatVersionB,
+      // CTE parameters
       pruefi,
+      formatVersionB, // old version
       pruefi,
-      // Part 2: Deleted (old exists, new doesn't)
-      pruefi,
-      formatVersionA,
-      pruefi,
-      formatVersionB,
-      // Part 3: Added (new exists, old doesn't)
-      pruefi,
-      formatVersionB,
-      pruefi,
-      formatVersionA,
+      formatVersionA, // new version
     ]);
     const diffQueryMs = performance.now() - diffQueryStart;
     console.log(
