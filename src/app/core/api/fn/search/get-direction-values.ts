@@ -8,13 +8,13 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { RichtungValues } from '../../models/richtung-values';
+import { DirectionValues } from '../../models/direction-values';
 
-export interface GetRichtungValues$Params {
+export interface GetDirectionValues$Params {
 }
 
-export function getRichtungValues(http: HttpClient, rootUrl: string, params?: GetRichtungValues$Params, context?: HttpContext): Observable<StrictHttpResponse<RichtungValues>> {
-  const rb = new RequestBuilder(rootUrl, getRichtungValues.PATH, 'get');
+export function getDirectionValues(http: HttpClient, rootUrl: string, params?: GetDirectionValues$Params, context?: HttpContext): Observable<StrictHttpResponse<DirectionValues>> {
+  const rb = new RequestBuilder(rootUrl, getDirectionValues.PATH, 'get');
   if (params) {
   }
 
@@ -23,9 +23,9 @@ export function getRichtungValues(http: HttpClient, rootUrl: string, params?: Ge
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<RichtungValues>;
+      return r as StrictHttpResponse<DirectionValues>;
     })
   );
 }
 
-getRichtungValues.PATH = '/api/richtung-values';
+getDirectionValues.PATH = '/api/direction-values';

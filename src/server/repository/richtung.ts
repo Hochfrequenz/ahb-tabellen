@@ -1,14 +1,14 @@
 import { AppDataSource } from '../infrastructure/database';
 
-export interface RichtungValues {
+export interface DirectionValues {
   sender: string[];
   empfaenger: string[];
 }
 
 export default class RichtungRepository {
-  private cachedValues: RichtungValues | null = null;
+  private cachedValues: DirectionValues | null = null;
 
-  public async getDistinctValues(): Promise<RichtungValues> {
+  public async getDistinctValues(): Promise<DirectionValues> {
     if (this.cachedValues) {
       return this.cachedValues;
     }

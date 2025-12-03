@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { SearchService } from '../../../core/api/services/search.service';
-import { RichtungValues } from '../../../core/api/models/richtung-values';
+import { DirectionValues } from '../../../core/api/models/direction-values';
 
-interface CachedRichtungValues {
-  data: RichtungValues;
+interface CachedDirectionValues {
+  data: DirectionValues;
   timestamp: number;
   expiresAt: number;
 }
@@ -17,7 +17,7 @@ export class RichtungCacheService {
   private readonly CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
   private readonly CACHE_KEY = 'richtung_values_cache';
 
-  private richtungValuesSubject = new BehaviorSubject<RichtungValues>({
+  private richtungValuesSubject = new BehaviorSubject<DirectionValues>({
     sender: [],
     empfaenger: [],
   });
@@ -27,7 +27,7 @@ export class RichtungCacheService {
     this.loadFromCache();
   }
 
-  getRichtungValues(): Observable<RichtungValues> {
+  getRichtungValues(): Observable<DirectionValues> {
     const cached = this.getCachedData();
 
     if (cached && this.isCacheValid(cached)) {
@@ -38,11 +38,11 @@ export class RichtungCacheService {
     return this.fetchFromApi();
   }
 
-  refreshRichtungValues(): Observable<RichtungValues> {
+  refreshRichtungValues(): Observable<DirectionValues> {
     return this.fetchFromApi();
   }
 
-  private getCachedData(): CachedRichtungValues | null {
+  private getCachedData(): CachedDirectionValues | null {
     try {
       const cached = localStorage.getItem(this.CACHE_KEY);
       return cached ? JSON.parse(cached) : null;
@@ -51,7 +51,7 @@ export class RichtungCacheService {
     }
   }
 
-  private isCacheValid(cached: CachedRichtungValues): boolean {
+  private isCacheValid(cached: CachedDirectionValues): boolean {
     return Date.now() < cached.expiresAt;
   }
 
@@ -62,14 +62,14 @@ export class RichtungCacheService {
     }
   }
 
-  private fetchFromApi(): Observable<RichtungValues> {
-    return this.searchService.getRichtungValues().pipe(
-      tap((richtungValues: RichtungValues) => {
-        this.cacheData(richtungValues);
-        this.richtungValuesSubject.next(richtungValues);
+  private fetchFromApi(): Observable<DirectionValues> {
+    return this.searchService.getDirectionValues().pipe(
+      tap((directionValues: DirectionValues) => {
+        this.cacheData(directionValues);
+        this.richtungValuesSubject.next(directionValues);
       }),
       catchError(error => {
-        console.error('Failed to fetch richtung values:', error);
+        console.error('Failed to fetch direction values:', error);
         const cached = this.getCachedData();
         if (cached) {
           this.richtungValuesSubject.next(cached.data);
@@ -80,9 +80,9 @@ export class RichtungCacheService {
     );
   }
 
-  private cacheData(data: RichtungValues): void {
+  private cacheData(data: DirectionValues): void {
     const now = Date.now();
-    const cacheData: CachedRichtungValues = {
+    const cacheData: CachedDirectionValues = {
       data,
       timestamp: now,
       expiresAt: now + this.CACHE_DURATION_MS,
