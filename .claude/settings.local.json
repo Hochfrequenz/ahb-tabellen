@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run server:lint:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run format:check:*)",
+      "Bash(npm run ng:lint:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
