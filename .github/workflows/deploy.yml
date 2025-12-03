@@ -4,15 +4,15 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   PROJECT_NAME: ahb-tabellen
-  OCTOPUS_SPACE: Default
-  BUILD_DATE: 'set by build_release_info step'
-  COMMIT_ID: 'set by build_release_info step'
-  VERSION_TAG: 'set by build_release_info step'
+  BUILD_DATE: "set by build_release_info step"
+  COMMIT_ID: "set by build_release_info step"
+  VERSION_TAG: "set by build_release_info step"
+  DOCKER_TAG: "set by extract-tag step"
 
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
 jobs:
   generate-changelog:
@@ -33,15 +33,20 @@ jobs:
           config: cliff.toml
           args: --latest --github-repo ${{ github.repository }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-  deploy:
-    name: Deploy to Docker and Octopus Deploy
+
+  build-stage:
+    name: Build Stage Docker Image
     needs: generate-changelog
     runs-on: ubuntu-latest
+    if: ${{ contains(github.ref_name, '-') }}
     permissions:
-      contents: write
+      contents: read
       packages: write
       attestations: write
       id-token: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      docker-tag: ${{ steps.extract-tag.outputs.tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -70,8 +75,23 @@ jobs:
         uses: docker/metadata-action@v5.10.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}.{{patch}}
+            type=raw,value=${{ env.VERSION_TAG }}
 
-      - name: Build and push Docker image
+      - name: Extract Docker Tag from JSON
+        id: extract-tag
+        run: |
+          FULL_TAG=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags[0]')
+          DOCKER_TAG=$(echo "$FULL_TAG" | cut -d':' -f2)
+          echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
+          echo "Extracted Docker tag: $DOCKER_TAG"
+
+      - name: Build and push Docker image for Stage
         id: push
         uses: docker/build-push-action@v6.18.0
         with:
@@ -91,12 +111,103 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
+  build-production:
+    name: Build Production Docker Image
+    needs: generate-changelog
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.ref_name, '-') }}
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      docker-tag: ${{ steps.extract-tag.outputs.tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Set build and release information
+        id: build_release_info
+        run: |
+          BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          COMMIT_ID=$(git rev-parse HEAD)
+          VERSION_TAG=${GITHUB_REF#refs/tags/}
+          echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
+          echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5.10.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}.{{patch}}
+            type=raw,value=${{ env.VERSION_TAG }}
+            type=raw,value=latest
+
+      - name: Extract Docker Tag from JSON
+        id: extract-tag
+        run: |
+          FULL_TAG=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags[0]')
+          DOCKER_TAG=$(echo "$FULL_TAG" | cut -d':' -f2)
+          echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
+          echo "Extracted Docker tag: $DOCKER_TAG"
+
+      - name: Build and push Docker image for Production
+        id: push
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUILD_DATE=${{ env.BUILD_DATE }}
+            COMMIT_ID=${{ env.COMMIT_ID }}
+            VERSION=${{ env.VERSION_TAG }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [generate-changelog, build-stage, build-production]
+    if: always() && needs.generate-changelog.result == 'success' && (needs.build-stage.result == 'success' || needs.build-stage.result == 'skipped') && (needs.build-production.result == 'success' || needs.build-production.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Set version tag
+        run: |
+          VERSION_TAG=${GITHUB_REF#refs/tags/}
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+
       - name: Publish GitHub Pre-release
         if: ${{ contains(env.VERSION_TAG, '-') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
-          name: 'Pre-release ${{ env.VERSION_TAG }}'
+          name: "Pre-release ${{ env.VERSION_TAG }}"
           body: ${{ needs.generate-changelog.outputs.release_body }}
           prerelease: true
           draft: false
@@ -106,32 +217,75 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
-          name: 'Release ${{ env.VERSION_TAG }}'
+          name: "Release ${{ env.VERSION_TAG }}"
           body: ${{ needs.generate-changelog.outputs.release_body }}
           prerelease: false
           draft: false
 
-      - name: Login to Octopus Deploy 🐙
-        uses: OctopusDeploy/login@v1
-        with:
-          server: https://hochfrequenz.octopus.app
-          service_account_id: 990f3f62-2e3f-4b1e-9569-d5a6817a2c80
+  deploy-stage:
+    name: Deploy to Stage
+    needs: [build-stage]
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.ref_name, '-') }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-      - name: Create a release in Octopus Deploy 🐙
-        uses: OctopusDeploy/create-release-action@v3
+      - name: Install Pulumi CLI
+        uses: pulumi/actions@v5
         with:
-          space: ${{ env.OCTOPUS_SPACE }}
-          project: ${{ env.PROJECT_NAME }}
-          release_number: ${{ env.VERSION_TAG }}
-          git_ref: ${{ github.ref }}
-          git_commit: ${{ github.sha }}
-          release_notes: 'Release created from GitHub Actions. Version: ${{ env.VERSION_TAG }}'
+          pulumi-version: latest
 
-      - name: Deploy a release in Octopus Deploy 🐙
-        uses: OctopusDeploy/deploy-release-action@v3
+      - name: Azure Login
+        uses: azure/login@v1
         with:
-          space: ${{ env.OCTOPUS_SPACE }}
-          project: ${{ env.PROJECT_NAME }}
-          release_number: ${{ env.VERSION_TAG }}
-          environments: |
-            Staging
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Stage
+        working-directory: pulumi
+        run: |
+          pulumi login
+          pulumi stack select dev
+          pulumi config set imageTag ${{ needs.build-stage.outputs.docker-tag }}
+          pulumi up --yes
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+  deploy-production:
+    name: Deploy to Production
+    needs: [build-production]
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.ref_name, '-') }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Pulumi CLI
+        uses: pulumi/actions@v5
+        with:
+          pulumi-version: latest
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Production
+        working-directory: pulumi
+        run: |
+          pulumi login
+          pulumi stack select prod
+          pulumi config set imageTag ${{ needs.build-production.outputs.docker-tag }}
+          pulumi up --yes
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
