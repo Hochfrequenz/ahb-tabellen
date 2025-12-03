@@ -1,3 +1,15 @@
+/**
+ * AHB Diff Repository
+ *
+ * Note: This repository uses raw SQL instead of TypeORM's query builder because:
+ * 1. The existing v_ahb_diff entity has a different schema (segmentgroup_name_a, segment_id_a, etc.)
+ *    than what the API expects (segmentgroup_key, segment_code, line_ahb_status, etc.)
+ * 2. The v_ahbtabellen view provides the exact field names needed by the frontend
+ * 3. The CTE-based query efficiently computes diffs in a single database round-trip
+ * 4. Refactoring to use the entity would require changes across the entire stack
+ *
+ * The raw SQL uses parameterized queries to prevent SQL injection.
+ */
 import { NotFoundError } from '../infrastructure/errors';
 import { AppDataSource } from '../infrastructure/database';
 
