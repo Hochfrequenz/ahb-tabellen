@@ -4,6 +4,7 @@ import FormatVersionController from '../controller/formatVersion';
 import FormateController from '../controller/formate';
 import HealthController from '../controller/health';
 import SearchController from '../controller/search';
+import RichtungController from '../controller/richtung';
 
 const router: IRouter = Router();
 
@@ -12,6 +13,7 @@ const formatVersionController = new FormatVersionController();
 const formateController = new FormateController();
 const healthController = new HealthController();
 const searchController = new SearchController();
+const richtungController = new RichtungController();
 
 router.get('/health', async (req, res, next) => {
   await healthController.check(req, res).catch((err: Error) => next(err));
@@ -31,6 +33,10 @@ router.get('/format-versions', async (req, res, next) => {
 
 router.get('/formate', async (req, res, next) => {
   await formateController.list(req, res).catch((err: Error) => next(err));
+});
+
+router.get('/richtung-values', async (req, res, next) => {
+  await richtungController.list(req, res).catch((err: Error) => next(err));
 });
 
 router.get('/pruefidentifikatoren/:formatVersion', async (req, res, next) => {

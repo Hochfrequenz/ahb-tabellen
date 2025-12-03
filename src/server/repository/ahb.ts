@@ -4,6 +4,7 @@ import { AppDataSource } from '../infrastructure/database';
 import { AhbLine, Anwendungshandbuch, Kommunikationsrichtung } from '../entities/ahb-line.entity';
 import { XlsxGeneratorService } from '../infrastructure/xlsx-generator.service';
 import { SelectQueryBuilder } from 'typeorm';
+import RichtungRepository from './richtung';
 
 export enum FileType {
   CSV = 'csv',
@@ -13,9 +14,11 @@ export enum FileType {
 
 export default class AHBRepository {
   private xlsxGenerator: XlsxGeneratorService;
+  private richtungRepository: RichtungRepository;
 
   constructor() {
     this.xlsxGenerator = new XlsxGeneratorService();
+    this.richtungRepository = new RichtungRepository();
   }
 
   public async searchAhbLines(payload: {
@@ -88,7 +91,9 @@ export default class AHBRepository {
       'direction',
     ] as const;
 
-    const allowedRichtungValues = ['LF', 'MSB', 'MSBN', 'MSBA', 'NB', 'LFA', 'LFN', 'ESA'] as const;
+    const richtungValues = await this.richtungRepository.getDistinctValues();
+    const allowedSenderValues = richtungValues.sender;
+    const allowedEmpfaengerValues = richtungValues.empfaenger;
 
     // Helper function to validate field names for TypeORM query builder methods
     // This prevents SQL injection by ensuring only whitelisted field names are used
@@ -191,9 +196,7 @@ export default class AHBRepository {
       });
 
       if (filters.sender?.in && filters.sender.in.length > 0) {
-        const validSenders = filters.sender.in.filter(s =>
-          (allowedRichtungValues as readonly string[]).includes(s)
-        );
+        const validSenders = filters.sender.in.filter(s => allowedSenderValues.includes(s));
         if (validSenders.length > 0) {
           const senderConditions = validSenders.map((sender, idx) => {
             const paramName = `sender_${idx}`;
@@ -206,7 +209,7 @@ export default class AHBRepository {
 
       if (filters.empfaenger?.in && filters.empfaenger.in.length > 0) {
         const validEmpfaenger = filters.empfaenger.in.filter(e =>
-          (allowedRichtungValues as readonly string[]).includes(e)
+          allowedEmpfaengerValues.includes(e)
         );
         if (validEmpfaenger.length > 0) {
           const empfaengerConditions = validEmpfaenger.map((empfaenger, idx) => {

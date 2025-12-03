@@ -12,6 +12,7 @@ import { SearchFilters } from '../../../../core/api/models/search-filters';
 import { FilterValue } from '../../../../core/api/models/filter-value';
 import { FormatVersionCacheService } from '../../services/format-version-cache.service';
 import { FormatCacheService } from '../../services/format-cache.service';
+import { RichtungCacheService } from '../../services/richtung-cache.service';
 
 @Component({
   selector: 'app-search-filters',
@@ -70,14 +71,14 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
       key: 'sender',
       label: 'Sender',
       type: 'select',
-      options: ['LF', 'MSB', 'MSBN', 'MSBA', 'NB', 'LFA', 'LFN', 'ESA'],
+      options: [],
       multiple: true,
     },
     {
       key: 'empfaenger',
       label: 'Empfänger',
       type: 'select',
-      options: ['LF', 'MSB', 'MSBN', 'MSBA', 'NB', 'LFA', 'LFN', 'ESA'],
+      options: [],
       multiple: true,
     },
   ];
@@ -85,7 +86,8 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private formatVersionCacheService: FormatVersionCacheService,
-    private formatCacheService: FormatCacheService
+    private formatCacheService: FormatCacheService,
+    private richtungCacheService: RichtungCacheService
   ) {
     this.searchForm = this.fb.group({
       q: [''],
@@ -101,10 +103,9 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Load format versions from cache/API
     this.loadFormatVersions();
-    // Load formats from cache/API
     this.loadFormats();
+    this.loadRichtungValues();
 
     // Global search query
     this.searchForm
@@ -175,6 +176,27 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
         },
         error: error => {
           console.error('Failed to load formats:', error);
+        },
+      });
+  }
+
+  private loadRichtungValues(): void {
+    this.richtungCacheService
+      .getRichtungValues()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: richtungValues => {
+          const senderField = this.filterFields.find(field => field.key === 'sender');
+          if (senderField) {
+            senderField.options = richtungValues.sender;
+          }
+          const empfaengerField = this.filterFields.find(field => field.key === 'empfaenger');
+          if (empfaengerField) {
+            empfaengerField.options = richtungValues.empfaenger;
+          }
+        },
+        error: error => {
+          console.error('Failed to load richtung values:', error);
         },
       });
   }

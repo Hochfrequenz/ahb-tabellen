@@ -11,6 +11,9 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
+import { getRichtungValues } from '../fn/search/get-richtung-values';
+import { GetRichtungValues$Params } from '../fn/search/get-richtung-values';
+import { RichtungValues } from '../models/richtung-values';
 import { searchAhbLines } from '../fn/search/search-ahb-lines';
 import { SearchAhbLines$Params } from '../fn/search/search-ahb-lines';
 import { SearchQueryResponse } from '../models/search-query-response';
@@ -55,6 +58,39 @@ export class SearchService extends BaseService {
   searchAhbLines(params: SearchAhbLines$Params, context?: HttpContext): Observable<SearchQueryResponse> {
     return this.searchAhbLines$Response(params, context).pipe(
       map((r: StrictHttpResponse<SearchQueryResponse>): SearchQueryResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `getRichtungValues()` */
+  static readonly GetRichtungValuesPath = '/api/richtung-values';
+
+  /**
+   * Get distinct sender and empfaenger values from the database.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getRichtungValues()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getRichtungValues$Response(params?: GetRichtungValues$Params, context?: HttpContext): Observable<StrictHttpResponse<RichtungValues>> {
+    return getRichtungValues(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get distinct sender and empfaenger values from the database.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getRichtungValues$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getRichtungValues(params?: GetRichtungValues$Params, context?: HttpContext): Observable<RichtungValues> {
+    return this.getRichtungValues$Response(params, context).pipe(
+      map((r: StrictHttpResponse<RichtungValues>): RichtungValues => r.body)
     );
   }
 

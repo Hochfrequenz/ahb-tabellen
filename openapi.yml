@@ -142,6 +142,19 @@ paths:
                 items:
                   type: string
                 example: [FV2310, FV2404, FV2410]
+  /api/richtung-values:
+    get:
+      tags:
+        - search
+      summary: Get distinct sender and empfaenger values from the database
+      operationId: getRichtungValues
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RichtungValues'
   /api/pruefidentifikatoren/{format-version}:
     get:
       tags:
@@ -444,3 +457,19 @@ components:
         buildBranch:
           type: string
           example: 'main'
+    RichtungValues:
+      type: object
+      properties:
+        sender:
+          type: array
+          items:
+            type: string
+          example: ['LF', 'MSB', 'NB']
+        empfaenger:
+          type: array
+          items:
+            type: string
+          example: ['LF', 'MSB', 'NB']
+      required:
+        - sender
+        - empfaenger

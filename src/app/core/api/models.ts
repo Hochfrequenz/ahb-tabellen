@@ -6,6 +6,7 @@ export type { Ahb } from './models/ahb';
 export type { FilterValue } from './models/filter-value';
 export type { Format } from './models/format';
 export type { FormatVersion } from './models/format-version';
+export type { RichtungValues } from './models/richtung-values';
 export type { SearchFilters } from './models/search-filters';
 export type { SearchItem } from './models/search-item';
 export type { SearchQueryRequest } from './models/search-query-request';
