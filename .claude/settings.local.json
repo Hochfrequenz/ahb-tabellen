@@ -5,7 +5,9 @@
       "Bash(npm run format:*)",
       "Bash(npm run format:check:*)",
       "Bash(npm run ng:lint:*)",
-      "Bash(npm run server:lint:check:*)"
+      "Bash(npm run server:lint:check:*)",
+      "Bash(sqlite3:*)",
+      "Bash(npm run ng-openapi-gen:*)"
     ],
     "deny": [],
     "ask": []
