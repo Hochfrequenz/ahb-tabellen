@@ -35,7 +35,7 @@ router.get('/formate', async (req, res, next) => {
   await formateController.list(req, res).catch((err: Error) => next(err));
 });
 
-router.get('/richtung-values', async (req, res, next) => {
+router.get('/direction-values', async (req, res, next) => {
   await richtungController.list(req, res).catch((err: Error) => next(err));
 });
 
