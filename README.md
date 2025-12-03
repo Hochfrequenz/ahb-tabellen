@@ -169,6 +169,34 @@ To deploy to the production environment:
 3. A manual approval step in [Octopus Deploy](https://hochfrequenz.octopus.app) will be required
 4. After approval, the application will be deployed to [ahb-tabellen.hochfrequenz.de](https://ahb-tabellen.hochfrequenz.de)
 
+## Update the database
+
+### Overview
+
+The `ahb.db` file is a SQLite database that contains AHB (Anwendungshandbuch) data for the energy industry.
+This database serves as the primary data source for the AHB Tabellen application.
+
+The database is created using the [fundamend](https://github.com/Hochfrequenz/xml-fundamend-python/) Python package, which processes XML files containing AHB specifications.
+
+The [database generation script](https://github.com/Hochfrequenz/xml-migs-and-ahbs/blob/main/load_ahbs_into_sqlitedb.py) is located in a private repository that contains all the raw XML files from `bdew-mako.de`:
+The source XML files must be paid for, so they are not publicly available, which is why the repository is private.
+
+### Maintenance
+
+To update the database with new AHB data:
+
+1. Access the private [xml-migs-and-ahbs repository](https://github.com/Hochfrequenz/xml-migs-and-ahbs/)
+2. If necessary, update the XML files by **manually** downloading them from the bdew-mako.de website because their API exists but is PITA. Commit the files to a feature branch and fix all the errors found by the CI before squashing to main.
+3. [create a new release](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases/new) in the xml-migs-and-ahbs repository
+4. after a few minutes, download the `ahb_<commithash>.db.encrypted.7z ` from the release artifacts
+5. copy the encrypted 7z file to [`/src/server/data/ahb.db.encrypted.7z`](/src/server/data/ahb.db.encrypted.7z) (and overwrite the previous file)
+
+### Security
+
+The database file is stored in an encrypted and compressed format (`ahb.db.encrypted.7z`) to protect sensitive data during storage and transmission.
+The password for decryption can be found in the Hochfrequenz 1Password vault and the GitHub organization wide secrets.
+For local testing it is sufficient to download the unencrypted `ahb_<commithash>.db.7z` fron the release artifacts, un7zip it and place it next to the encrypted db as `ahb.db`.
+
 ## 🔗 Links
 
 - Generate machine-readable files from AHB documents with [KohlrAHBi](https://github.com/Hochfrequenz/kohlrahbi) 🥬.
