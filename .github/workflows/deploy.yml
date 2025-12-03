@@ -227,6 +227,7 @@ jobs:
     needs: [build-stage]
     runs-on: ubuntu-latest
     if: ${{ contains(github.ref_name, '-') }}
+    environment: stage
     permissions:
       contents: read
       id-token: write
@@ -261,6 +262,7 @@ jobs:
     needs: [build-production]
     runs-on: ubuntu-latest
     if: ${{ !contains(github.ref_name, '-') }}
+    environment: production
     permissions:
       contents: read
       id-token: write
