@@ -8,7 +8,10 @@
       "Bash(npm run server:lint:check:*)",
       "Bash(sqlite3:*)",
       "Bash(npm run ng-openapi-gen:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(node -e:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

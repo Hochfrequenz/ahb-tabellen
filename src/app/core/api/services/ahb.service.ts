@@ -12,12 +12,15 @@ import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
 import { Ahb } from '../models/ahb';
+import { AhbDiff } from '../models/ahb-diff';
 import { getAhb$Csv } from '../fn/ahb/get-ahb-csv';
 import { GetAhb$Csv$Params } from '../fn/ahb/get-ahb-csv';
 import { getAhb$Json } from '../fn/ahb/get-ahb-json';
 import { GetAhb$Json$Params } from '../fn/ahb/get-ahb-json';
 import { getAhb$VndOpenxmlformatsOfficedocumentSpreadsheetmlSheet } from '../fn/ahb/get-ahb-vnd-openxmlformats-officedocument-spreadsheetml-sheet';
 import { GetAhb$VndOpenxmlformatsOfficedocumentSpreadsheetmlSheet$Params } from '../fn/ahb/get-ahb-vnd-openxmlformats-officedocument-spreadsheetml-sheet';
+import { getAhbDiff } from '../fn/ahb/get-ahb-diff';
+import { GetAhbDiff$Params } from '../fn/ahb/get-ahb-diff';
 
 
 /**
@@ -119,6 +122,39 @@ export class AhbService extends BaseService {
   getAhb$Csv(params: GetAhb$Csv$Params, context?: HttpContext): Observable<Blob> {
     return this.getAhb$Csv$Response(params, context).pipe(
       map((r: StrictHttpResponse<Blob>): Blob => r.body)
+    );
+  }
+
+  /** Path part for operation `getAhbDiff()` */
+  static readonly GetAhbDiffPath = '/api/ahb-diff/{pruefi}';
+
+  /**
+   * Get a diff comparison between two format versions of the same Pruefidentifikator.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getAhbDiff()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAhbDiff$Response(params: GetAhbDiff$Params, context?: HttpContext): Observable<StrictHttpResponse<AhbDiff>> {
+    return getAhbDiff(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get a diff comparison between two format versions of the same Pruefidentifikator.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getAhbDiff$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAhbDiff(params: GetAhbDiff$Params, context?: HttpContext): Observable<AhbDiff> {
+    return this.getAhbDiff$Response(params, context).pipe(
+      map((r: StrictHttpResponse<AhbDiff>): AhbDiff => r.body)
     );
   }
 

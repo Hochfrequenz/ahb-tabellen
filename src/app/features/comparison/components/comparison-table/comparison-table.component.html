@@ -1,0 +1,116 @@
+<div class="relative bg-hf-pastell-rose">
+  <div class="overflow-x-auto">
+    <table class="table-auto w-full text-sm text-gray-500">
+      <thead>
+        <tr class="bg-gray-100 border-b-2 border-gray-300">
+          <th class="px-2 py-3 text-center text-xs text-gray-600 uppercase w-10">Diff</th>
+          <th
+            colspan="6"
+            class="px-3 py-3 text-center text-xs text-gray-600 uppercase bg-red-50 border-l border-gray-300">
+            Alte Version
+          </th>
+          <th
+            colspan="6"
+            class="px-3 py-3 text-center text-xs text-gray-600 uppercase bg-green-50 border-l border-gray-300">
+            Neue Version
+          </th>
+        </tr>
+        <tr class="bg-gray-50 border-b border-gray-200 text-xs">
+          <th class="px-2 py-2"></th>
+          <!-- Old version columns -->
+          <th class="px-3 py-2 text-left bg-red-50 border-l border-gray-300">Segmentgruppe</th>
+          <th class="px-3 py-2 text-left bg-red-50">Segment</th>
+          <th class="px-3 py-2 text-left bg-red-50">Datenelement</th>
+          <th class="px-3 py-2 text-left bg-red-50">Qualifier</th>
+          <th class="px-3 py-2 text-left bg-red-50">Name</th>
+          <th class="px-3 py-2 text-left bg-red-50">Status</th>
+          <!-- New version columns -->
+          <th class="px-3 py-2 text-left bg-green-50 border-l border-gray-300">Segmentgruppe</th>
+          <th class="px-3 py-2 text-left bg-green-50">Segment</th>
+          <th class="px-3 py-2 text-left bg-green-50">Datenelement</th>
+          <th class="px-3 py-2 text-left bg-green-50">Qualifier</th>
+          <th class="px-3 py-2 text-left bg-green-50">Name</th>
+          <th class="px-3 py-2 text-left bg-green-50">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of lines; track line.id_path) {
+          <tr [class]="getRowClass(line)">
+            <!-- Diff status indicator -->
+            <td class="px-2 py-2 text-center" [class]="getDiffStatusClass(line.diff_status)">
+              {{ getDiffStatusLabel(line.diff_status) }}
+            </td>
+
+            <!-- Old version columns (version B = old) -->
+            <td
+              class="px-3 py-2 border-l border-gray-200"
+              [class.font-bold]="isSegmentGroup(line)"
+              [class]="getCellDiffClass(getSegmentGroupKey(line, 'old'), getSegmentGroupKey(line, 'new'))">
+              {{ getSegmentGroupKey(line, 'old') || '-' }}
+            </td>
+            <td
+              class="px-3 py-2"
+              [class.font-bold]="isSegmentGroup(line)"
+              [class]="getCellDiffClass(getSegmentCode(line, 'old'), getSegmentCode(line, 'new'))">
+              {{ getSegmentCode(line, 'old') || '-' }}
+            </td>
+            <td
+              class="px-3 py-2"
+              [class]="getCellDiffClass(getDataElement(line, 'old'), getDataElement(line, 'new'))">
+              {{ getDataElement(line, 'old') || '-' }}
+            </td>
+            <td
+              class="px-3 py-2"
+              [class]="getCellDiffClass(getQualifier(line, 'old'), getQualifier(line, 'new'))">
+              {{ getQualifier(line, 'old') || '-' }}
+            </td>
+            <td
+              class="px-3 py-2"
+              [class]="getCellDiffClass(getName(line, 'old'), getName(line, 'new'))">
+              {{ getName(line, 'old') || '-' }}
+            </td>
+            <td
+              class="px-3 py-2"
+              [class]="getCellDiffClass(getAhbStatus(line, 'old'), getAhbStatus(line, 'new'))">
+              {{ getAhbStatus(line, 'old') || '-' }}
+            </td>
+
+            <!-- New version columns (version A = new) -->
+            <td
+              class="px-3 py-2 border-l border-gray-200"
+              [class.font-bold]="isSegmentGroup(line)"
+              [class]="getCellDiffClass(getSegmentGroupKey(line, 'new'), getSegmentGroupKey(line, 'old'))">
+              {{ getSegmentGroupKey(line, 'new') || '-' }}
+            </td>
+            <td
+              class="px-3 py-2"
+              [class.font-bold]="isSegmentGroup(line)"
+              [class]="getCellDiffClass(getSegmentCode(line, 'new'), getSegmentCode(line, 'old'))">
+              {{ getSegmentCode(line, 'new') || '-' }}
+            </td>
+            <td
+              class="px-3 py-2"
+              [class]="getCellDiffClass(getDataElement(line, 'new'), getDataElement(line, 'old'))">
+              {{ getDataElement(line, 'new') || '-' }}
+            </td>
+            <td
+              class="px-3 py-2"
+              [class]="getCellDiffClass(getQualifier(line, 'new'), getQualifier(line, 'old'))">
+              {{ getQualifier(line, 'new') || '-' }}
+            </td>
+            <td
+              class="px-3 py-2"
+              [class]="getCellDiffClass(getName(line, 'new'), getName(line, 'old'))">
+              {{ getName(line, 'new') || '-' }}
+            </td>
+            <td
+              class="px-3 py-2"
+              [class]="getCellDiffClass(getAhbStatus(line, 'new'), getAhbStatus(line, 'old'))">
+              {{ getAhbStatus(line, 'new') || '-' }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

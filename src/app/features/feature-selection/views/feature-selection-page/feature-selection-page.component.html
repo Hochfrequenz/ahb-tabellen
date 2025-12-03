@@ -1,6 +1,6 @@
 <div class="min-h-screen flex flex-col">
   <section class="bg-hf-grell-rose flex-grow flex items-center justify-center px-4 py-8">
-    <div class="w-full max-w-4xl">
+    <div class="w-full max-w-6xl">
       <div class="text-center mb-8">
         <h1 class="text-3xl md:text-4xl text-hf-weiches-schwarz mb-4">
           Willkommen bei AHB-Tabellen
@@ -10,7 +10,7 @@
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
         <!-- AHB Tabellen Card -->
         <div
           (click)="onAhbClick()"
@@ -58,6 +58,33 @@
             </h2>
             <p class="text-hf-weiches-schwarz text-sm md:text-base opacity-80 leading-relaxed">
               Mittels der globalen Suche schnell die benötigten Informationen aus den AHBs finden.
+            </p>
+            <div class="mt-4 text-xs md:text-sm text-hf-weiches-schwarz opacity-60">
+              Klicken zum Öffnen →
+            </div>
+          </div>
+        </div>
+
+        <!-- AHB Comparison Card -->
+        <div
+          (click)="onComparisonClick()"
+          (keydown.enter)="onComparisonClick()"
+          (keydown.space)="onComparisonClick()"
+          tabindex="0"
+          role="button"
+          class="bg-hf-pastell-rose rounded-3xl p-6 md:p-8 cursor-pointer transition-all duration-300 hover:ring-4 hover:ring-black/10 hover:shadow-lg hover:scale-105 focus:ring-4 focus:ring-black/10 focus:outline-none">
+          <div class="flex flex-col items-center text-center">
+            <div class="mb-4">
+              <img
+                src="assets/companystylesheet/icons/glossar_links.svg"
+                alt="AHB Vergleich Icon"
+                class="w-12 h-12 md:w-16 md:h-16" />
+            </div>
+            <h2 class="text-xl md:text-2xl text-hf-weiches-schwarz font-semibold mb-3">
+              AHB Vergleich
+            </h2>
+            <p class="text-hf-weiches-schwarz text-sm md:text-base opacity-80 leading-relaxed">
+              AHBs zwischen zwei Formatversionen vergleichen und Änderungen visualisieren.
             </p>
             <div class="mt-4 text-xs md:text-sm text-hf-weiches-schwarz opacity-60">
               Klicken zum Öffnen →

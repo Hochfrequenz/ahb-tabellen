@@ -1,0 +1,88 @@
+<div class="min-h-screen flex flex-col bg-hf-pastell-rose">
+  <app-header class="flex-none" />
+
+  <main class="flex-1 container mx-auto px-4 md:px-6 py-8 md:py-16">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="text-2xl md:text-3xl font-bold text-hf-weiches-schwarz mb-6 text-center">
+        AHB Vergleich
+      </h1>
+
+      <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
+        <div class="flex flex-col md:flex-row gap-4">
+          <!-- Old Version Select -->
+          <div class="flex flex-col items-start mt-2 flex-1">
+            <select
+              id="format-version-old-select"
+              class="inline-block border-2 border-white rounded-lg bg-hf-pastell-rose py-3 ps-3 pe-8 focus:outline-0 w-full"
+              [value]="formatVersionOld()"
+              (change)="onVersionOldChange($any($event.target).value)">
+              @for (fv of formatVersions(); track fv) {
+                <option [value]="fv">{{ fv }}</option>
+              }
+            </select>
+            <label
+              for="format-version-old-select"
+              class="ml-3 -mt-14 text-xs inline-block text-slate-500 text-[12px] bg-white px-1">
+              Alte Version
+            </label>
+          </div>
+
+          <!-- New Version Select -->
+          <div class="flex flex-col items-start mt-2 flex-1">
+            <select
+              id="format-version-new-select"
+              class="inline-block border-2 border-white rounded-lg bg-hf-pastell-rose py-3 ps-3 pe-8 focus:outline-0 w-full"
+              [value]="formatVersionNew()"
+              (change)="onVersionNewChange($any($event.target).value)">
+              @for (fv of formatVersions(); track fv) {
+                <option [value]="fv">{{ fv }}</option>
+              }
+            </select>
+            <label
+              for="format-version-new-select"
+              class="ml-3 -mt-14 text-xs inline-block text-slate-500 text-[12px] bg-white px-1">
+              Neue Version
+            </label>
+          </div>
+
+          <!-- Pruefi Input -->
+          <div class="flex-1">
+            <app-pruefi-input
+              class="w-full"
+              [formatVersion]="formatVersionForPruefiInput()"
+              [formControl]="pruefiControl" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg p-4 md:p-6 shadow-sm">
+        <div class="flex items-start space-x-3">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6 text-hf-dunkel-rose flex-shrink-0 mt-0.5">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+          </svg>
+          <div>
+            <p class="text-sm md:text-base text-hf-weiches-schwarz font-medium">
+              AHBs zwischen Formatversionen vergleichen
+            </p>
+            <p class="text-sm text-hf-weiches-schwarz mt-1 opacity-75">
+              Wählen Sie zwei Formatversionen aus und geben Sie einen Prüfidentifikator ein, um die
+              Änderungen zwischen den Versionen zu visualisieren.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <app-solutions-footer />
+  <app-footer />
+</div>

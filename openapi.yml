@@ -155,6 +155,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RichtungValues'
+  /api/ahb-diff/{pruefi}:
+    get:
+      tags:
+        - ahb
+      summary: Get a diff comparison between two format versions of the same Pruefidentifikator
+      operationId: getAhbDiff
+      parameters:
+        - name: pruefi
+          in: path
+          description: Pruefidentifikator to compare
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{5}$'
+            example: '55014'
+        - name: format-version-a
+          in: query
+          description: First format version (typically newer)
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+        - name: format-version-b
+          in: query
+          description: Second format version (typically older)
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AhbDiff'
+        '404':
+          description: Pruefidentifikator not found in one or both format versions
   /api/pruefidentifikatoren/{format-version}:
     get:
       tags:
@@ -473,3 +509,91 @@ components:
       required:
         - sender
         - empfaenger
+    AhbDiff:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/AhbDiffLine'
+        meta:
+          type: object
+          properties:
+            pruefidentifikator:
+              type: string
+              example: '55014'
+            format_version_a:
+              type: string
+              example: 'FV2504'
+            format_version_b:
+              type: string
+              example: 'FV2410'
+            description_a:
+              type: string
+              nullable: true
+              description: Description of the Pruefidentifikator in version A (new)
+            description_b:
+              type: string
+              nullable: true
+              description: Description of the Pruefidentifikator in version B (old)
+          required:
+            - pruefidentifikator
+            - format_version_a
+            - format_version_b
+      required:
+        - lines
+        - meta
+    AhbDiffLine:
+      type: object
+      description: A line in the AHB diff comparison, containing data from both versions joined from v_ahbtabellen
+      properties:
+        diff_status:
+          type: string
+          enum: [unchanged, modified, added, deleted]
+          description: The diff status from v_ahb_diff
+        id_path:
+          type: string
+          description: The id_path from v_ahb_diff used to join with v_ahbtabellen
+        sort_path:
+          type: string
+          description: The sort_path for ordering
+        old:
+          $ref: '#/components/schemas/AhbDiffSide'
+          description: Data from v_ahbtabellen for the old (B) version
+          nullable: true
+        new:
+          $ref: '#/components/schemas/AhbDiffSide'
+          description: Data from v_ahbtabellen for the new (A) version
+          nullable: true
+      required:
+        - diff_status
+        - id_path
+        - sort_path
+    AhbDiffSide:
+      type: object
+      description: AHB line data from v_ahbtabellen for one side of the comparison
+      properties:
+        segmentgroup_key:
+          type: string
+          nullable: true
+        segment_code:
+          type: string
+          nullable: true
+        data_element:
+          type: string
+          nullable: true
+        qualifier:
+          type: string
+          nullable: true
+        line_ahb_status:
+          type: string
+          nullable: true
+        line_name:
+          type: string
+          nullable: true
+        line_type:
+          type: string
+          nullable: true
+        bedingung:
+          type: string
+          nullable: true

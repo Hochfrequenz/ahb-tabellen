@@ -18,4 +18,8 @@ export class FeatureSelectionPageComponent {
   onSearchClick() {
     this.router.navigate(['/search']);
   }
+
+  onComparisonClick() {
+    this.router.navigate(['/comparison']);
+  }
 }
