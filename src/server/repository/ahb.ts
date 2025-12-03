@@ -73,7 +73,6 @@ export default class AHBRepository {
       await AppDataSource.initialize();
     }
 
-    // Define allowed fields with their corresponding entity property names
     const allowedFields = [
       'format_version',
       'format',
@@ -88,6 +87,8 @@ export default class AHBRepository {
       'bedingung',
       'direction',
     ] as const;
+
+    const allowedRichtungValues = ['LF', 'MSB', 'MSBN', 'MSBA', 'NB', 'LFA', 'LFN', 'ESA'] as const;
 
     // Helper function to validate field names for TypeORM query builder methods
     // This prevents SQL injection by ensuring only whitelisted field names are used
@@ -189,24 +190,32 @@ export default class AHBRepository {
         }
       });
 
-      // Special handling for sender filter (JSON field)
       if (filters.sender?.in && filters.sender.in.length > 0) {
-        const senderConditions = filters.sender.in.map((sender, idx) => {
-          const paramName = `sender_${idx}`;
-          queryBuilder.setParameter(paramName, `%"sender": "${sender}"%`);
-          return `al.direction LIKE :${paramName}`;
-        });
-        queryBuilder.andWhere(`(${senderConditions.join(' OR ')})`);
+        const validSenders = filters.sender.in.filter(s =>
+          (allowedRichtungValues as readonly string[]).includes(s)
+        );
+        if (validSenders.length > 0) {
+          const senderConditions = validSenders.map((sender, idx) => {
+            const paramName = `sender_${idx}`;
+            queryBuilder.setParameter(paramName, `%"sender": "${sender}"%`);
+            return `al.direction LIKE :${paramName}`;
+          });
+          queryBuilder.andWhere(`(${senderConditions.join(' OR ')})`);
+        }
       }
 
-      // Special handling for empfaenger filter (JSON field)
       if (filters.empfaenger?.in && filters.empfaenger.in.length > 0) {
-        const empfaengerConditions = filters.empfaenger.in.map((empfaenger, idx) => {
-          const paramName = `empfaenger_${idx}`;
-          queryBuilder.setParameter(paramName, `%"empfaenger": "${empfaenger}"%`);
-          return `al.direction LIKE :${paramName}`;
-        });
-        queryBuilder.andWhere(`(${empfaengerConditions.join(' OR ')})`);
+        const validEmpfaenger = filters.empfaenger.in.filter(e =>
+          (allowedRichtungValues as readonly string[]).includes(e)
+        );
+        if (validEmpfaenger.length > 0) {
+          const empfaengerConditions = validEmpfaenger.map((empfaenger, idx) => {
+            const paramName = `empfaenger_${idx}`;
+            queryBuilder.setParameter(paramName, `%"empfaenger": "${empfaenger}"%`);
+            return `al.direction LIKE :${paramName}`;
+          });
+          queryBuilder.andWhere(`(${empfaengerConditions.join(' OR ')})`);
+        }
       }
 
       // Global q across the 11 fields (case-insensitive LIKE) - Using TypeORM's parameterized methods
