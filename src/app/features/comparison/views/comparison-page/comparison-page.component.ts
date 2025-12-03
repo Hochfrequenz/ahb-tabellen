@@ -45,6 +45,20 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   formatVersionNew = signal<string>('');
   formatVersions = signal<string[]>([]);
 
+  /** Versions available for "old" selection (must be older than selected new version) */
+  get availableOldVersions(): string[] {
+    const newVersion = this.formatVersionNew();
+    if (!newVersion) return this.formatVersions();
+    return this.formatVersions().filter(v => v < newVersion);
+  }
+
+  /** Versions available for "new" selection (must be newer than selected old version) */
+  get availableNewVersions(): string[] {
+    const oldVersion = this.formatVersionOld();
+    if (!oldVersion) return this.formatVersions();
+    return this.formatVersions().filter(v => v > oldVersion);
+  }
+
   diff$?: Observable<AhbDiff>;
   stats$?: Observable<DiffStats>;
   description$?: Observable<DiffDescription>;
@@ -76,7 +90,6 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
       const fvNew = params['fv-new'];
       if (fvOld) this.formatVersionOld.set(fvOld);
       if (fvNew) this.formatVersionNew.set(fvNew);
-      this.ensureVersionOrder();
 
       if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
         this.loadDiff();
@@ -104,18 +117,8 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  private ensureVersionOrder(): void {
-    const old = this.formatVersionOld();
-    const newV = this.formatVersionNew();
-    if (old && newV && old > newV) {
-      this.formatVersionOld.set(newV);
-      this.formatVersionNew.set(old);
-    }
-  }
-
   onVersionOldChange(version: string): void {
     this.formatVersionOld.set(version);
-    this.ensureVersionOrder();
     if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
       this.loadDiff();
     }
@@ -123,7 +126,6 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
 
   onVersionNewChange(version: string): void {
     this.formatVersionNew.set(version);
-    this.ensureVersionOrder();
     if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
       this.loadDiff();
     }

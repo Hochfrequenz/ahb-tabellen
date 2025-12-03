@@ -32,7 +32,7 @@
             class="inline-block border-2 border-white rounded-lg bg-white py-3 ps-3 pe-8 focus:outline-0 w-full"
             [value]="formatVersionOld()"
             (change)="onVersionOldChange($any($event.target).value)">
-            @for (fv of formatVersions(); track fv) {
+            @for (fv of availableOldVersions; track fv) {
               <option [value]="fv">{{ fv }}</option>
             }
           </select>
@@ -52,7 +52,7 @@
             class="inline-block border-2 border-white rounded-lg bg-white py-3 ps-3 pe-8 focus:outline-0 w-full"
             [value]="formatVersionNew()"
             (change)="onVersionNewChange($any($event.target).value)">
-            @for (fv of formatVersions(); track fv) {
+            @for (fv of availableNewVersions; track fv) {
               <option [value]="fv">{{ fv }}</option>
             }
           </select>
