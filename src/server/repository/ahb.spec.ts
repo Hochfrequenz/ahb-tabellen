@@ -15,6 +15,19 @@ jest.mock('../infrastructure/database', () => ({
 // Mock XlsxGeneratorService
 jest.mock('../infrastructure/xlsx-generator.service');
 
+// Mock RichtungRepository to avoid database calls for richtung values
+jest.mock('./richtung', () => {
+  return {
+    __esModule: true,
+    default: jest.fn().mockImplementation(() => ({
+      getDistinctValues: jest.fn().mockResolvedValue({
+        sender: ['LF', 'MSB', 'MSBN', 'MSBA', 'NB', 'LFA', 'LFN', 'ESA'],
+        empfaenger: ['LF', 'MSB', 'MSBN', 'MSBA', 'NB', 'LFA', 'LFN', 'ESA'],
+      }),
+    })),
+  };
+});
+
 describe('AHBRepository - Sender and Empfaenger Filters', () => {
   let repository: AHBRepository;
   let mockQueryBuilder: jest.Mocked<SelectQueryBuilder<AhbLine>>;
@@ -243,41 +256,64 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
     });
   });
 
-  describe('searchAhbLines with special characters', () => {
-    it('should handle sender values with special characters', async () => {
+  describe('searchAhbLines with invalid values', () => {
+    // Values not in allowlist should be filtered out (SQL injection protection)
+    it('should filter out invalid sender values', async () => {
       await repository.searchAhbLines({
         page: 1,
         pageSize: 25,
         sort: [],
         q: '',
         filters: {
-          sender: { in: ['MSB (Strom)'] },
+          sender: { in: ['INVALID_VALUE', 'LF"--'] },
         },
       });
 
-      // Should properly escape the value in the pattern
-      expect(mockQueryBuilder.setParameter).toHaveBeenCalledWith(
-        'sender_0',
-        '%"sender": "MSB (Strom)"%'
+      // Invalid values should not create any parameters
+      const senderCalls = mockQueryBuilder.setParameter.mock.calls.filter(call =>
+        call[0].toString().startsWith('sender_')
       );
+      expect(senderCalls.length).toBe(0);
     });
 
-    it('should handle empfaenger values with special characters', async () => {
+    it('should filter out invalid empfaenger values', async () => {
       await repository.searchAhbLines({
         page: 1,
         pageSize: 25,
         sort: [],
         q: '',
         filters: {
-          empfaenger: { in: ['NB (Gas)'] },
+          empfaenger: { in: ['INVALID', 'NB"; DROP TABLE'] },
         },
       });
 
-      // Should properly escape the value in the pattern
-      expect(mockQueryBuilder.setParameter).toHaveBeenCalledWith(
-        'empfaenger_0',
-        '%"empfaenger": "NB (Gas)"%'
+      // Invalid values should not create any parameters
+      const empfaengerCalls = mockQueryBuilder.setParameter.mock.calls.filter(call =>
+        call[0].toString().startsWith('empfaenger_')
       );
+      expect(empfaengerCalls.length).toBe(0);
+    });
+
+    it('should keep valid values while filtering out invalid ones', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: '',
+        filters: {
+          sender: { in: ['LF', 'INVALID', 'MSB'] },
+        },
+      });
+
+      // Only valid values should create parameters (called twice: main query + count query)
+      expect(mockQueryBuilder.setParameter).toHaveBeenCalledWith('sender_0', '%"sender": "LF"%');
+      expect(mockQueryBuilder.setParameter).toHaveBeenCalledWith('sender_1', '%"sender": "MSB"%');
+
+      // Should have 4 sender calls (2 valid values × 2 queries), not 6 (if invalid was included)
+      const senderCalls = mockQueryBuilder.setParameter.mock.calls.filter(call =>
+        call[0].toString().startsWith('sender_')
+      );
+      expect(senderCalls.length).toBe(4);
     });
   });
 

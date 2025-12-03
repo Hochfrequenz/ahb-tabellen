@@ -4,11 +4,13 @@ import { FormBuilder } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 import { FormatVersionCacheService } from '../../services/format-version-cache.service';
 import { FormatCacheService } from '../../services/format-cache.service';
+import { RichtungCacheService } from '../../services/richtung-cache.service';
 
 describe('SearchFiltersComponent', () => {
   let component: SearchFiltersComponent;
   let mockFormatVersionCacheService: jest.Mocked<FormatVersionCacheService>;
   let mockFormatCacheService: jest.Mocked<FormatCacheService>;
+  let mockRichtungCacheService: jest.Mocked<RichtungCacheService>;
 
   beforeEach(async () => {
     mockFormatVersionCacheService = {
@@ -20,6 +22,10 @@ describe('SearchFiltersComponent', () => {
       getFormats: jest.fn(),
     } as unknown as jest.Mocked<FormatCacheService>;
 
+    mockRichtungCacheService = {
+      getRichtungValues: jest.fn(),
+    } as unknown as jest.Mocked<RichtungCacheService>;
+
     await MockBuilder(SearchFiltersComponent)
       .provide({
         provide: FormatVersionCacheService,
@@ -29,6 +35,10 @@ describe('SearchFiltersComponent', () => {
         provide: FormatCacheService,
         useValue: mockFormatCacheService,
       })
+      .provide({
+        provide: RichtungCacheService,
+        useValue: mockRichtungCacheService,
+      })
       .provide(FormBuilder);
   });
 
@@ -36,6 +46,9 @@ describe('SearchFiltersComponent', () => {
     mockFormatVersionCacheService.getFormatVersions.mockReturnValue(of([]));
     mockFormatVersionCacheService.getCurrentFormatVersion.mockReturnValue(null);
     mockFormatCacheService.getFormats.mockReturnValue(of([]));
+    mockRichtungCacheService.getRichtungValues.mockReturnValue(
+      of({ sender: ['LF', 'MSB', 'NB'], empfaenger: ['LF', 'MSB', 'NB'] })
+    );
 
     const fixture = MockRender(SearchFiltersComponent);
     component = fixture.point.componentInstance;
@@ -47,38 +60,22 @@ describe('SearchFiltersComponent', () => {
       expect(component.filterFields.length).toBeGreaterThan(0);
     });
 
-    it('should include sender filter field', () => {
+    it('should include sender filter field with options loaded from API', () => {
       const senderField = component.filterFields.find(f => f.key === 'sender');
       expect(senderField).toBeDefined();
       expect(senderField?.type).toBe('select');
       expect(senderField?.multiple).toBe(true);
-      expect(senderField?.options).toEqual([
-        'LF',
-        'MSB',
-        'MSBN',
-        'MSBA',
-        'NB',
-        'LFA',
-        'LFN',
-        'ESA',
-      ]);
+      // Options are loaded from RichtungCacheService
+      expect(senderField?.options).toEqual(['LF', 'MSB', 'NB']);
     });
 
-    it('should include empfaenger filter field', () => {
+    it('should include empfaenger filter field with options loaded from API', () => {
       const empfaengerField = component.filterFields.find(f => f.key === 'empfaenger');
       expect(empfaengerField).toBeDefined();
       expect(empfaengerField?.type).toBe('select');
       expect(empfaengerField?.multiple).toBe(true);
-      expect(empfaengerField?.options).toEqual([
-        'LF',
-        'MSB',
-        'MSBN',
-        'MSBA',
-        'NB',
-        'LFA',
-        'LFN',
-        'ESA',
-      ]);
+      // Options are loaded from RichtungCacheService
+      expect(empfaengerField?.options).toEqual(['LF', 'MSB', 'NB']);
     });
 
     it('should initialize form with all filter controls', () => {
@@ -87,6 +84,10 @@ describe('SearchFiltersComponent', () => {
       expect(component.searchForm.get('empfaenger')).toBeDefined();
       expect(component.searchForm.get('format_version')).toBeDefined();
       expect(component.searchForm.get('format')).toBeDefined();
+    });
+
+    it('should call RichtungCacheService on init', () => {
+      expect(mockRichtungCacheService.getRichtungValues).toHaveBeenCalled();
     });
   });
 
@@ -239,6 +240,22 @@ describe('SearchFiltersComponent', () => {
 
       expect(() => component.ngOnInit()).not.toThrow();
       expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to load formats:', expect.any(Error));
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should handle richtung values loading error gracefully', () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      mockRichtungCacheService.getRichtungValues.mockReturnValue(
+        throwError(() => new Error('Network error'))
+      );
+
+      expect(() => component.ngOnInit()).not.toThrow();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to load richtung values:',
+        expect.any(Error)
+      );
 
       consoleErrorSpy.mockRestore();
     });
