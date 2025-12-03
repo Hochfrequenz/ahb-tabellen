@@ -11,9 +11,9 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
-import { getRichtungValues } from '../fn/search/get-richtung-values';
-import { GetRichtungValues$Params } from '../fn/search/get-richtung-values';
-import { RichtungValues } from '../models/richtung-values';
+import { DirectionValues } from '../models/direction-values';
+import { getDirectionValues } from '../fn/search/get-direction-values';
+import { GetDirectionValues$Params } from '../fn/search/get-direction-values';
 import { searchAhbLines } from '../fn/search/search-ahb-lines';
 import { SearchAhbLines$Params } from '../fn/search/search-ahb-lines';
 import { SearchQueryResponse } from '../models/search-query-response';
@@ -61,8 +61,8 @@ export class SearchService extends BaseService {
     );
   }
 
-  /** Path part for operation `getRichtungValues()` */
-  static readonly GetRichtungValuesPath = '/api/richtung-values';
+  /** Path part for operation `getDirectionValues()` */
+  static readonly GetDirectionValuesPath = '/api/direction-values';
 
   /**
    * Get distinct sender and empfaenger values from the database.
@@ -70,12 +70,12 @@ export class SearchService extends BaseService {
    *
    *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `getRichtungValues()` instead.
+   * To access only the response body, use `getDirectionValues()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getRichtungValues$Response(params?: GetRichtungValues$Params, context?: HttpContext): Observable<StrictHttpResponse<RichtungValues>> {
-    return getRichtungValues(this.http, this.rootUrl, params, context);
+  getDirectionValues$Response(params?: GetDirectionValues$Params, context?: HttpContext): Observable<StrictHttpResponse<DirectionValues>> {
+    return getDirectionValues(this.http, this.rootUrl, params, context);
   }
 
   /**
@@ -84,13 +84,13 @@ export class SearchService extends BaseService {
    *
    *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `getRichtungValues$Response()` instead.
+   * To access the full response (for headers, for example), `getDirectionValues$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getRichtungValues(params?: GetRichtungValues$Params, context?: HttpContext): Observable<RichtungValues> {
-    return this.getRichtungValues$Response(params, context).pipe(
-      map((r: StrictHttpResponse<RichtungValues>): RichtungValues => r.body)
+  getDirectionValues(params?: GetDirectionValues$Params, context?: HttpContext): Observable<DirectionValues> {
+    return this.getDirectionValues$Response(params, context).pipe(
+      map((r: StrictHttpResponse<DirectionValues>): DirectionValues => r.body)
     );
   }
 

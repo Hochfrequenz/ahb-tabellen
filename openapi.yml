@@ -142,19 +142,19 @@ paths:
                 items:
                   type: string
                 example: [FV2310, FV2404, FV2410]
-  /api/richtung-values:
+  /api/direction-values:
     get:
       tags:
         - search
       summary: Get distinct sender and empfaenger values from the database
-      operationId: getRichtungValues
+      operationId: getDirectionValues
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RichtungValues'
+                $ref: '#/components/schemas/DirectionValues'
   /api/ahb-diff/{pruefi}:
     get:
       tags:
@@ -493,7 +493,7 @@ components:
         buildBranch:
           type: string
           example: 'main'
-    RichtungValues:
+    DirectionValues:
       type: object
       properties:
         sender:
