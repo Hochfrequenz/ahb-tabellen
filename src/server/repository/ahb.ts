@@ -4,6 +4,7 @@ import { AppDataSource } from '../infrastructure/database';
 import { AhbLine, Anwendungshandbuch, Kommunikationsrichtung } from '../entities/ahb-line.entity';
 import { XlsxGeneratorService } from '../infrastructure/xlsx-generator.service';
 import { SelectQueryBuilder } from 'typeorm';
+import RichtungRepository from './richtung';
 
 export enum FileType {
   CSV = 'csv',
@@ -13,9 +14,11 @@ export enum FileType {
 
 export default class AHBRepository {
   private xlsxGenerator: XlsxGeneratorService;
+  private richtungRepository: RichtungRepository;
 
   constructor() {
     this.xlsxGenerator = new XlsxGeneratorService();
+    this.richtungRepository = new RichtungRepository();
   }
 
   public async searchAhbLines(payload: {
@@ -35,7 +38,9 @@ export default class AHBRepository {
         | 'qualifier'
         | 'line_ahb_status'
         | 'line_name'
-        | 'bedingung',
+        | 'bedingung'
+        | 'sender'
+        | 'empfaenger',
         {
           eq?: string;
           neq?: string;
@@ -71,7 +76,6 @@ export default class AHBRepository {
       await AppDataSource.initialize();
     }
 
-    // Define allowed fields with their corresponding entity property names
     const allowedFields = [
       'format_version',
       'format',
@@ -86,6 +90,10 @@ export default class AHBRepository {
       'bedingung',
       'direction',
     ] as const;
+
+    const richtungValues = await this.richtungRepository.getDistinctValues();
+    const allowedSenderValues = richtungValues.sender;
+    const allowedEmpfaengerValues = richtungValues.empfaenger;
 
     // Helper function to validate field names for TypeORM query builder methods
     // This prevents SQL injection by ensuring only whitelisted field names are used
@@ -118,7 +126,9 @@ export default class AHBRepository {
             | 'qualifier'
             | 'line_ahb_status'
             | 'line_name'
-            | 'bedingung',
+            | 'bedingung'
+            | 'sender'
+            | 'empfaenger',
             {
               eq?: string;
               neq?: string;
@@ -137,6 +147,8 @@ export default class AHBRepository {
       const filters = payload.filters ?? {};
       Object.entries(filters).forEach(([field, value]) => {
         if (!value) return;
+        // Skip sender and empfaenger as they need special handling
+        if (field === 'sender' || field === 'empfaenger') return;
         if (!(allowedFields as readonly string[]).includes(field)) return;
 
         const columnName = validateField(field);
@@ -182,6 +194,32 @@ export default class AHBRepository {
           queryBuilder.andWhere(`al.${columnName} IS NOT NULL`);
         }
       });
+
+      if (filters.sender?.in && filters.sender.in.length > 0) {
+        const validSenders = filters.sender.in.filter(s => allowedSenderValues.includes(s));
+        if (validSenders.length > 0) {
+          const senderConditions = validSenders.map((sender, idx) => {
+            const paramName = `sender_${idx}`;
+            queryBuilder.setParameter(paramName, `%"sender": "${sender}"%`);
+            return `al.direction LIKE :${paramName}`;
+          });
+          queryBuilder.andWhere(`(${senderConditions.join(' OR ')})`);
+        }
+      }
+
+      if (filters.empfaenger?.in && filters.empfaenger.in.length > 0) {
+        const validEmpfaenger = filters.empfaenger.in.filter(e =>
+          allowedEmpfaengerValues.includes(e)
+        );
+        if (validEmpfaenger.length > 0) {
+          const empfaengerConditions = validEmpfaenger.map((empfaenger, idx) => {
+            const paramName = `empfaenger_${idx}`;
+            queryBuilder.setParameter(paramName, `%"empfaenger": "${empfaenger}"%`);
+            return `al.direction LIKE :${paramName}`;
+          });
+          queryBuilder.andWhere(`(${empfaengerConditions.join(' OR ')})`);
+        }
+      }
 
       // Global q across the 11 fields (case-insensitive LIKE) - Using TypeORM's parameterized methods
       const q = (payload.q || '').trim().toLowerCase();

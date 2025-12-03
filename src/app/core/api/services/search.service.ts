@@ -11,6 +11,9 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
+import { DirectionValues } from '../models/direction-values';
+import { getDirectionValues } from '../fn/search/get-direction-values';
+import { GetDirectionValues$Params } from '../fn/search/get-direction-values';
 import { searchAhbLines } from '../fn/search/search-ahb-lines';
 import { SearchAhbLines$Params } from '../fn/search/search-ahb-lines';
 import { SearchQueryResponse } from '../models/search-query-response';
@@ -55,6 +58,39 @@ export class SearchService extends BaseService {
   searchAhbLines(params: SearchAhbLines$Params, context?: HttpContext): Observable<SearchQueryResponse> {
     return this.searchAhbLines$Response(params, context).pipe(
       map((r: StrictHttpResponse<SearchQueryResponse>): SearchQueryResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `getDirectionValues()` */
+  static readonly GetDirectionValuesPath = '/api/direction-values';
+
+  /**
+   * Get distinct sender and empfaenger values from the database.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getDirectionValues()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getDirectionValues$Response(params?: GetDirectionValues$Params, context?: HttpContext): Observable<StrictHttpResponse<DirectionValues>> {
+    return getDirectionValues(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get distinct sender and empfaenger values from the database.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getDirectionValues$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getDirectionValues(params?: GetDirectionValues$Params, context?: HttpContext): Observable<DirectionValues> {
+    return this.getDirectionValues$Response(params, context).pipe(
+      map((r: StrictHttpResponse<DirectionValues>): DirectionValues => r.body)
     );
   }
 

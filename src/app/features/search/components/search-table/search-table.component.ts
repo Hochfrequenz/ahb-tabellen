@@ -101,6 +101,21 @@ export class SearchTableComponent implements OnChanges {
     return value;
   }
 
+  formatDirection(
+    direction: string | { sender: string; empfaenger: string }[] | null | undefined
+  ): string[] {
+    if (!direction) return ['-'];
+    try {
+      const directions = typeof direction === 'string' ? JSON.parse(direction) : direction;
+      if (!Array.isArray(directions) || directions.length === 0) return ['-'];
+      return directions.map(
+        (d: { sender: string; empfaenger: string }) => `${d.sender} → ${d.empfaenger}`
+      );
+    } catch {
+      return [String(direction)];
+    }
+  }
+
   onPruefidentifikatorClick(item: SearchItem): void {
     if (item.format_version && item.pruefidentifikator) {
       const url = this.router

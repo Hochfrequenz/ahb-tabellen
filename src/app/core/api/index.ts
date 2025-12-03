@@ -8,6 +8,7 @@ export { RequestBuilder } from './request-builder';
 export { ApiModule } from './api.module';
 export type { StrictHttpResponse } from './strict-http-response';
 export type { Ahb } from './models/ahb';
+export type { DirectionValues } from './models/direction-values';
 export type { FilterValue } from './models/filter-value';
 export type { Format } from './models/format';
 export type { FormatVersion } from './models/format-version';

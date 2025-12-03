@@ -142,6 +142,19 @@ paths:
                 items:
                   type: string
                 example: [FV2310, FV2404, FV2410]
+  /api/direction-values:
+    get:
+      tags:
+        - search
+      summary: Get distinct sender and empfaenger values from the database
+      operationId: getDirectionValues
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectionValues'
   /api/pruefidentifikatoren/{format-version}:
     get:
       tags:
@@ -299,6 +312,10 @@ components:
           $ref: '#/components/schemas/FilterValue'
         bedingung:
           $ref: '#/components/schemas/FilterValue'
+        sender:
+          $ref: '#/components/schemas/FilterValue'
+        empfaenger:
+          $ref: '#/components/schemas/FilterValue'
     SearchQueryRequest:
       type: object
       properties:
@@ -440,3 +457,19 @@ components:
         buildBranch:
           type: string
           example: 'main'
+    DirectionValues:
+      type: object
+      properties:
+        sender:
+          type: array
+          items:
+            type: string
+          example: ['LF', 'MSB', 'NB']
+        empfaenger:
+          type: array
+          items:
+            type: string
+          example: ['LF', 'MSB', 'NB']
+      required:
+        - sender
+        - empfaenger
