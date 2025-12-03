@@ -242,9 +242,9 @@ jobs:
       - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID_HF_APPS_NET }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID_NET }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID_NET }}
 
       - name: Deploy to Stage
         working-directory: pulumi
@@ -276,9 +276,9 @@ jobs:
       - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID_HF_APPS_NET }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID_NET }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID_NET }}
 
       - name: Deploy to Production
         working-directory: pulumi
