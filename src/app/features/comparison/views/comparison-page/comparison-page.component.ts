@@ -10,6 +10,7 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
 import { ComparisonTableComponent } from '../../components/comparison-table/comparison-table.component';
+import { ComparisonSearchFormHeaderComponent } from '../../components/comparison-search-form-header/comparison-search-form-header.component';
 import { AhbService, AhbDiff, AhbDiffLine } from '../../../../core/api';
 import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
 
@@ -36,6 +37,7 @@ export interface DiffDescription {
     FooterComponent,
     SolutionsFooterComponent,
     ComparisonTableComponent,
+    ComparisonSearchFormHeaderComponent,
   ],
   templateUrl: './comparison-page.component.html',
 })
@@ -43,21 +45,6 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   pruefi = signal<string>('');
   formatVersionOld = signal<string>('');
   formatVersionNew = signal<string>('');
-  formatVersions = signal<string[]>([]);
-
-  /** Versions available for "old" selection (must be older than selected new version) */
-  get availableOldVersions(): string[] {
-    const newVersion = this.formatVersionNew();
-    if (!newVersion) return this.formatVersions();
-    return this.formatVersions().filter(v => v < newVersion);
-  }
-
-  /** Versions available for "new" selection (must be newer than selected old version) */
-  get availableNewVersions(): string[] {
-    const oldVersion = this.formatVersionOld();
-    if (!oldVersion) return this.formatVersions();
-    return this.formatVersions().filter(v => v > oldVersion);
-  }
 
   diff$?: Observable<AhbDiff>;
   stats$?: Observable<DiffStats>;
@@ -108,7 +95,6 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: versions => {
-          this.formatVersions.set(versions);
           if (!this.formatVersionNew() && versions.length >= 2) {
             this.formatVersionNew.set(versions[versions.length - 1]);
             this.formatVersionOld.set(versions[versions.length - 2]);
@@ -126,6 +112,13 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
 
   onVersionNewChange(version: string): void {
     this.formatVersionNew.set(version);
+    if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
+      this.loadDiff();
+    }
+  }
+
+  onPruefiChange(pruefi: string): void {
+    this.pruefi.set(pruefi);
     if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
       this.loadDiff();
     }

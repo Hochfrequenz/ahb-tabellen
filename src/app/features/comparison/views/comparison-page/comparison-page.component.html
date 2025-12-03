@@ -1,4 +1,26 @@
-<app-header />
+<app-header class="flex-none">
+  <!-- Desktop projection -->
+  <app-comparison-search-form-header
+    slot="search-form"
+    class="flex-1"
+    [formatVersionOld]="formatVersionOld()"
+    [formatVersionNew]="formatVersionNew()"
+    [pruefi]="pruefi()"
+    (formatVersionOldChange)="onVersionOldChange($event)"
+    (formatVersionNewChange)="onVersionNewChange($event)"
+    (pruefiChange)="onPruefiChange($event)" />
+
+  <!-- Mobile projection -->
+  <app-comparison-search-form-header
+    slot="search-form-mobile"
+    class="w-full"
+    [formatVersionOld]="formatVersionOld()"
+    [formatVersionNew]="formatVersionNew()"
+    [pruefi]="pruefi()"
+    (formatVersionOldChange)="onVersionOldChange($event)"
+    (formatVersionNewChange)="onVersionNewChange($event)"
+    (pruefiChange)="onPruefiChange($event)" />
+</app-header>
 
 <main class="flex-grow overflow-y-auto bg-hf-pastell-rose p-6">
   <div class="max-w-screen-2xl mx-auto">
@@ -24,60 +46,20 @@
         }
       }
 
-      <div class="flex flex-wrap gap-4 items-end">
-        <!-- Old Version Select -->
-        <div class="flex flex-col items-start mt-2 w-40">
-          <select
-            id="comparison-format-version-old"
-            class="inline-block border-2 border-white rounded-lg bg-white py-3 ps-3 pe-8 focus:outline-0 w-full"
-            [value]="formatVersionOld()"
-            (change)="onVersionOldChange($any($event.target).value)">
-            @for (fv of availableOldVersions; track fv) {
-              <option [value]="fv">{{ fv }}</option>
-            }
-          </select>
-          <label
-            for="comparison-format-version-old"
-            class="ml-3 -mt-14 text-xs inline-block text-slate-500 text-[12px] bg-white px-1">
-            Alte Version
-          </label>
+      <!-- Statistics -->
+      @if (stats$ | async; as stats) {
+        <div class="flex gap-2 text-sm">
+          <span class="px-3 py-1.5 rounded bg-green-100 text-green-800 font-medium">
+            +{{ stats.added }}
+          </span>
+          <span class="px-3 py-1.5 rounded bg-red-100 text-red-800 font-medium">
+            -{{ stats.deleted }}
+          </span>
+          <span class="px-3 py-1.5 rounded bg-yellow-100 text-yellow-800 font-medium">
+            ~{{ stats.modified }}
+          </span>
         </div>
-
-        <span class="text-gray-500 mb-3">→</span>
-
-        <!-- New Version Select -->
-        <div class="flex flex-col items-start mt-2 w-40">
-          <select
-            id="comparison-format-version-new"
-            class="inline-block border-2 border-white rounded-lg bg-white py-3 ps-3 pe-8 focus:outline-0 w-full"
-            [value]="formatVersionNew()"
-            (change)="onVersionNewChange($any($event.target).value)">
-            @for (fv of availableNewVersions; track fv) {
-              <option [value]="fv">{{ fv }}</option>
-            }
-          </select>
-          <label
-            for="comparison-format-version-new"
-            class="ml-3 -mt-14 text-xs inline-block text-slate-500 text-[12px] bg-white px-1">
-            Neue Version
-          </label>
-        </div>
-
-        <!-- Statistics -->
-        @if (stats$ | async; as stats) {
-          <div class="flex gap-2 text-sm mb-3 ml-4">
-            <span class="px-3 py-1.5 rounded bg-green-100 text-green-800 font-medium">
-              +{{ stats.added }}
-            </span>
-            <span class="px-3 py-1.5 rounded bg-red-100 text-red-800 font-medium">
-              -{{ stats.deleted }}
-            </span>
-            <span class="px-3 py-1.5 rounded bg-yellow-100 text-yellow-800 font-medium">
-              ~{{ stats.modified }}
-            </span>
-          </div>
-        }
-      </div>
+      }
     </div>
 
     @if (errorOccurred) {
