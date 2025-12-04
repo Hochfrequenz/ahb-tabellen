@@ -47,16 +47,15 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       expect(component.formatVersions.length).toBe(5);
     }));
 
-    it('should sort format versions descending (most recent first)', fakeAsync(() => {
+    it('should keep format versions in original order (oldest first)', fakeAsync(() => {
       fixture.detectChanges();
       tick();
 
-      expect(component.formatVersions[0]).toBe('FV2504');
-      expect(component.formatVersions[1]).toBe('FV2410');
-      expect(component.formatVersions[4]).toBe('FV2304');
+      expect(component.formatVersions[0]).toBe('FV2304');
+      expect(component.formatVersions[4]).toBe('FV2504');
     }));
 
-    it('should set default new version to most recent (first after desc sort)', fakeAsync(() => {
+    it('should set default new version to most recent (last in list)', fakeAsync(() => {
       fixture.detectChanges();
       tick();
 
@@ -64,7 +63,7 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       expect(formValue).toBe('FV2504');
     }));
 
-    it('should set default old version to second most recent (second after desc sort)', fakeAsync(() => {
+    it('should set default old version to second most recent (second to last in list)', fakeAsync(() => {
       fixture.detectChanges();
       tick();
 

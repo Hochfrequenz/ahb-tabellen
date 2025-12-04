@@ -66,18 +66,18 @@ export class ComparisonSearchFormHeaderComponent {
       .getFormatVersions()
       .pipe(takeUntilDestroyed())
       .subscribe(versions => {
-        // Sort descending so most recent is first
-        this.formatVersions = [...versions].sort((a, b) => b.localeCompare(a));
+        // Keep original order (oldest first, newest last)
+        this.formatVersions = versions;
 
         // Set default values if not provided via inputs
-        // Most recent (index 0 after desc sort) as new, second most recent (index 1) as old
+        // Most recent (last in list) as new, second most recent (second to last) as old
         if (this.formatVersions.length >= 1 && !this.formatVersionNew()) {
-          const defaultNew = this.formatVersions[0];
+          const defaultNew = this.formatVersions[this.formatVersions.length - 1];
           this.headerSearchForm.patchValue({ formatVersionNew: defaultNew }, { emitEvent: false });
           this.formatVersionNewChange.emit(defaultNew);
         }
         if (this.formatVersions.length >= 2 && !this.formatVersionOld()) {
-          const defaultOld = this.formatVersions[1];
+          const defaultOld = this.formatVersions[this.formatVersions.length - 2];
           this.headerSearchForm.patchValue({ formatVersionOld: defaultOld }, { emitEvent: false });
           this.formatVersionOldChange.emit(defaultOld);
         }
