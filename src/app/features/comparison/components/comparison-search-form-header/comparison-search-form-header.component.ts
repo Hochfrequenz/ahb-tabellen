@@ -19,9 +19,9 @@ import { CommonModule } from '@angular/common';
   templateUrl: './comparison-search-form-header.component.html',
 })
 export class ComparisonSearchFormHeaderComponent {
-  formatVersionOld = input.required<string>();
-  formatVersionNew = input.required<string>();
-  pruefi = input.required<string>();
+  formatVersionOld = input<string>('');
+  formatVersionNew = input<string>('');
+  pruefi = input<string>('');
 
   formatVersionOldChange = output<string>();
   formatVersionNewChange = output<string>();
@@ -62,6 +62,17 @@ export class ComparisonSearchFormHeaderComponent {
       .pipe(takeUntilDestroyed())
       .subscribe(versions => {
         this.formatVersions = versions;
+        // Set default values if not provided via inputs
+        if (versions.length >= 2 && !this.formatVersionOld()) {
+          const defaultOld = versions[versions.length - 2];
+          this.headerSearchForm.patchValue({ formatVersionOld: defaultOld }, { emitEvent: false });
+          this.formatVersionOldChange.emit(defaultOld);
+        }
+        if (versions.length >= 1 && !this.formatVersionNew()) {
+          const defaultNew = versions[versions.length - 1];
+          this.headerSearchForm.patchValue({ formatVersionNew: defaultNew }, { emitEvent: false });
+          this.formatVersionNewChange.emit(defaultNew);
+        }
       });
 
     // Update form when inputs change

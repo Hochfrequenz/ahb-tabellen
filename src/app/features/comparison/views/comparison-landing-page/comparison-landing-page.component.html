@@ -1,85 +1,93 @@
 <div class="min-h-screen flex flex-col bg-hf-pastell-rose">
-  <app-header class="flex-none" />
+  <!-- Fixed Main Header -->
+  <app-header class="flex-none">
+    <!-- Desktop projection -->
+    <app-comparison-search-form-header
+      slot="search-form"
+      class="flex-1"
+      [formatVersionOld]="formatVersionOld()"
+      [formatVersionNew]="formatVersionNew()"
+      [pruefi]="pruefiControl.value || ''"
+      (formatVersionOldChange)="formatVersionOld.set($event)"
+      (formatVersionNewChange)="formatVersionNew.set($event)"
+      (pruefiChange)="pruefiControl.setValue($event)" />
+    <app-input-search-enhanced
+      slot="search"
+      class="inline-block w-full md:w-96 pointer-events-none opacity-50"
+      [searchQuery]="''"
+      [selectedPosition]="0"
+      [totalResults]="0" />
 
-  <main class="flex-1 container mx-auto px-4 md:px-6 py-8 md:py-16">
-    <div class="max-w-2xl mx-auto">
-      <h1 class="text-2xl md:text-3xl font-bold text-hf-weiches-schwarz mb-6 text-center">
-        AHB Vergleich
-      </h1>
+    <!-- Mobile projection -->
+    <app-comparison-search-form-header
+      slot="search-form-mobile"
+      class="w-full"
+      [formatVersionOld]="formatVersionOld()"
+      [formatVersionNew]="formatVersionNew()"
+      [pruefi]="pruefiControl.value || ''"
+      (formatVersionOldChange)="formatVersionOld.set($event)"
+      (formatVersionNewChange)="formatVersionNew.set($event)"
+      (pruefiChange)="pruefiControl.setValue($event)" />
+    <app-input-search-enhanced
+      slot="search-mobile"
+      class="w-full"
+      [searchQuery]="''"
+      [selectedPosition]="0"
+      [totalResults]="0" />
+  </app-header>
 
-      <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
-        <div class="flex flex-col md:flex-row gap-4">
-          <!-- Old Version Select -->
-          <div class="flex flex-col items-start mt-2 flex-1">
-            <select
-              id="format-version-old-select"
-              class="inline-block border-2 border-white rounded-lg bg-hf-pastell-rose py-3 ps-3 pe-8 focus:outline-0 w-full"
-              [value]="formatVersionOld()"
-              (change)="onVersionOldChange($any($event.target).value)">
-              @for (fv of formatVersions(); track fv) {
-                <option [value]="fv">{{ fv }}</option>
-              }
-            </select>
-            <label
-              for="format-version-old-select"
-              class="ml-3 -mt-14 text-xs inline-block text-slate-500 text-[12px] bg-white px-1">
-              Alte Version
-            </label>
-          </div>
-
-          <!-- New Version Select -->
-          <div class="flex flex-col items-start mt-2 flex-1">
-            <select
-              id="format-version-new-select"
-              class="inline-block border-2 border-white rounded-lg bg-hf-pastell-rose py-3 ps-3 pe-8 focus:outline-0 w-full"
-              [value]="formatVersionNew()"
-              (change)="onVersionNewChange($any($event.target).value)">
-              @for (fv of formatVersions(); track fv) {
-                <option [value]="fv">{{ fv }}</option>
-              }
-            </select>
-            <label
-              for="format-version-new-select"
-              class="ml-3 -mt-14 text-xs inline-block text-slate-500 text-[12px] bg-white px-1">
-              Neue Version
-            </label>
-          </div>
-
-          <!-- Pruefi Input -->
-          <div class="flex-1 min-w-0">
-            <app-pruefi-input [formatVersion]="formatVersionNew()" [formControl]="pruefiControl" />
+  <!-- Main Content -->
+  <div class="flex-1 container mx-auto px-4 md:px-6 py-8 md:py-24">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+      <!-- Mobile: Full width, Desktop: Aligned with Prüfidentifikator input -->
+      <div class="md:col-start-3 md:col-span-8 lg:col-start-3 lg:col-span-6">
+        <!-- Arrow pointing up -->
+        <div class="flex justify-center md:justify-start mb-8 md:mb-0">
+          <div class="relative top-4 md:-top-16 md:ml-96">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="w-8 h-8 text-hf-dunkel-rose animate-bounce">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+            </svg>
           </div>
         </div>
-      </div>
 
-      <div class="bg-white rounded-lg p-4 md:p-6 shadow-sm">
-        <div class="flex items-start space-x-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-6 h-6 text-hf-dunkel-rose flex-shrink-0 mt-0.5">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-          </svg>
-          <div>
-            <p class="text-sm md:text-base text-hf-weiches-schwarz font-medium">
-              AHBs zwischen Formatversionen vergleichen
-            </p>
-            <p class="text-sm text-hf-weiches-schwarz mt-1 opacity-75">
-              Wählen Sie zwei Formatversionen aus und geben Sie einen Prüfidentifikator ein, um die
-              Änderungen zwischen den Versionen zu visualisieren.
-            </p>
+        <!-- Info box -->
+        <div class="bg-white rounded-lg p-4 md:p-6 mb-6 shadow-sm">
+          <div class="flex items-start space-x-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6 text-hf-dunkel-rose flex-shrink-0 mt-0.5">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+            </svg>
+            <div>
+              <p class="text-sm md:text-base text-hf-weiches-schwarz font-medium">
+                Prüfidentifikator angeben
+              </p>
+              <p class="text-sm text-hf-weiches-schwarz mt-1 opacity-75">
+                Wählen Sie zwei Formatversionen aus und geben Sie einen Prüfidentifikator ein, um
+                die Änderungen zwischen den Versionen zu visualisieren.
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </main>
+  </div>
 
   <app-solutions-footer />
-  <app-footer />
+  <app-footer>
+    <span class="block p-3">&nbsp;</span>
+  </app-footer>
 </div>

@@ -11,7 +11,9 @@
       "Bash(npm test:*)",
       "Bash(node -e:*)",
       "Bash(npx ts-node:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm run:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
