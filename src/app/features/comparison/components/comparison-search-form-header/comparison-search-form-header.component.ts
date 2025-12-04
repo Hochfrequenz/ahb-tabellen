@@ -22,6 +22,7 @@ export class ComparisonSearchFormHeaderComponent {
   formatVersionOld = input<string>('');
   formatVersionNew = input<string>('');
   pruefi = input<string>('');
+  navigateOnSubmit = input<boolean>(true);
 
   formatVersionOldChange = output<string>();
   formatVersionNewChange = output<string>();
@@ -119,7 +120,9 @@ export class ComparisonSearchFormHeaderComponent {
     this.headerSearchForm.get('pruefi')?.valueChanges.subscribe(value => {
       if (value) {
         this.pruefiChange.emit(value);
-        this.navigateToComparison();
+        if (this.navigateOnSubmit()) {
+          this.navigateToComparison();
+        }
       }
     });
   }
