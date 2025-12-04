@@ -226,20 +226,24 @@ jobs:
     name: Deploy to Stage
     needs: [build-stage]
     if: ${{ contains(github.ref_name, '-') }}
-    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@f821a60185b83c25fc76773ec6021055359692d4
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@267786f0c3400e931b126da3f555b74e1e7393fb
     with:
       pulumi_stack_name: dev
       docker_tag: ${{ needs.build-stage.outputs.docker-tag }}
     secrets:
+      azure_client_id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
+      azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
       azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
 
   deploy-production:
     name: Deploy to Production
     needs: [build-production]
     if: ${{ !contains(github.ref_name, '-') }}
-    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@f821a60185b83c25fc76773ec6021055359692d4
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@267786f0c3400e931b126da3f555b74e1e7393fb
     with:
       pulumi_stack_name: prod
       docker_tag: ${{ needs.build-production.outputs.docker-tag }}
     secrets:
+      azure_client_id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
+      azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
       azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
