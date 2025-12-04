@@ -225,69 +225,21 @@ jobs:
   deploy-stage:
     name: Deploy to Stage
     needs: [build-stage]
-    runs-on: ubuntu-latest
     if: ${{ contains(github.ref_name, '-') }}
-    environment: stage
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Install Pulumi CLI
-        uses: pulumi/actions@v5
-        with:
-          pulumi-version: latest
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
-
-      - name: Deploy to Stage
-        working-directory: pulumi
-        run: |
-          pulumi login
-          pulumi stack select dev
-          pulumi config set imageTag ${{ needs.build-stage.outputs.docker-tag }}
-          pulumi up --yes
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@main
+    with:
+      pulumi_stack_name: dev
+      docker_tag: ${{ needs.build-stage.outputs.docker-tag }}
+    secrets:
+      azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
 
   deploy-production:
     name: Deploy to Production
     needs: [build-production]
-    runs-on: ubuntu-latest
     if: ${{ !contains(github.ref_name, '-') }}
-    environment: production
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Install Pulumi CLI
-        uses: pulumi/actions@v5
-        with:
-          pulumi-version: latest
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
-
-      - name: Deploy to Production
-        working-directory: pulumi
-        run: |
-          pulumi login
-          pulumi stack select prod
-          pulumi config set imageTag ${{ needs.build-production.outputs.docker-tag }}
-          pulumi up --yes
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@main
+    with:
+      pulumi_stack_name: prod
+      docker_tag: ${{ needs.build-production.outputs.docker-tag }}
+    secrets:
+      azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
