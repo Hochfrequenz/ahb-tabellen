@@ -226,7 +226,7 @@ jobs:
     name: Deploy to Stage
     needs: [build-stage]
     if: ${{ contains(github.ref_name, '-') }}
-    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@main
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@f821a60185b83c25fc76773ec6021055359692d4
     with:
       pulumi_stack_name: dev
       docker_tag: ${{ needs.build-stage.outputs.docker-tag }}
@@ -237,7 +237,7 @@ jobs:
     name: Deploy to Production
     needs: [build-production]
     if: ${{ !contains(github.ref_name, '-') }}
-    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@main
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@f821a60185b83c25fc76773ec6021055359692d4
     with:
       pulumi_stack_name: prod
       docker_tag: ${{ needs.build-production.outputs.docker-tag }}
