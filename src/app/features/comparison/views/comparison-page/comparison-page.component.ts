@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, Observable, of } from 'rxjs';
+import { Subject, Observable, of, combineLatest } from 'rxjs';
 import { takeUntil, catchError, shareReplay, map } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 
@@ -64,24 +64,24 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadFormatVersions();
 
-    this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      const pruefi = params['pruefi'];
-      if (pruefi) {
-        this.pruefi.set(pruefi);
+    // Combine params and queryParams to avoid race condition
+    combineLatest([this.route.params, this.route.queryParams])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([params, queryParams]) => {
+        const pruefi = params['pruefi'];
+        const fvOld = queryParams['fv-old'];
+        const fvNew = queryParams['fv-new'];
+
+        if (pruefi) this.pruefi.set(pruefi);
+        if (fvOld) this.formatVersionOld.set(fvOld);
+        if (fvNew) this.formatVersionNew.set(fvNew);
+
         this.updateTitle();
-      }
-    });
 
-    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      const fvOld = params['fv-old'];
-      const fvNew = params['fv-new'];
-      if (fvOld) this.formatVersionOld.set(fvOld);
-      if (fvNew) this.formatVersionNew.set(fvNew);
-
-      if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
-        this.loadDiff();
-      }
-    });
+        if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
+          this.loadDiff();
+        }
+      });
   }
 
   ngOnDestroy(): void {

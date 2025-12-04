@@ -1,4 +1,4 @@
-import { Component, input, output, effect, computed } from '@angular/core';
+import { Component, input, output, effect } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -40,6 +40,7 @@ export class ComparisonSearchFormHeaderComponent {
   get availableOldVersions(): string[] {
     const newVersion = this.headerSearchForm.controls.formatVersionNew.value;
     if (!newVersion) return this.formatVersions;
+    // Versions sorted desc, so old versions are those that come after (are less than) new version
     return this.formatVersions.filter(v => v < newVersion);
   }
 
@@ -47,11 +48,14 @@ export class ComparisonSearchFormHeaderComponent {
   get availableNewVersions(): string[] {
     const oldVersion = this.headerSearchForm.controls.formatVersionOld.value;
     if (!oldVersion) return this.formatVersions;
+    // Versions sorted desc, so new versions are those that come before (are greater than) old version
     return this.formatVersions.filter(v => v > oldVersion);
   }
 
-  /** Format version to use for pruefi suggestions (use the new version) */
-  formatVersionForPruefi = computed(() => this.formatVersionNew());
+  /** Format version to use for pruefi suggestions (use the new version from form) */
+  get formatVersionForPruefi(): string | null {
+    return this.headerSearchForm.controls.formatVersionNew.value;
+  }
 
   constructor(
     private readonly router: Router,
@@ -62,24 +66,28 @@ export class ComparisonSearchFormHeaderComponent {
       .getFormatVersions()
       .pipe(takeUntilDestroyed())
       .subscribe(versions => {
-        this.formatVersions = versions;
+        // Sort descending so most recent is first
+        this.formatVersions = [...versions].sort((a, b) => b.localeCompare(a));
+
         // Set default values if not provided via inputs
-        if (versions.length >= 2 && !this.formatVersionOld()) {
-          const defaultOld = versions[versions.length - 2];
-          this.headerSearchForm.patchValue({ formatVersionOld: defaultOld }, { emitEvent: false });
-          this.formatVersionOldChange.emit(defaultOld);
-        }
-        if (versions.length >= 1 && !this.formatVersionNew()) {
-          const defaultNew = versions[versions.length - 1];
+        // Most recent (index 0 after desc sort) as new, second most recent (index 1) as old
+        if (this.formatVersions.length >= 1 && !this.formatVersionNew()) {
+          const defaultNew = this.formatVersions[0];
           this.headerSearchForm.patchValue({ formatVersionNew: defaultNew }, { emitEvent: false });
           this.formatVersionNewChange.emit(defaultNew);
         }
+        if (this.formatVersions.length >= 2 && !this.formatVersionOld()) {
+          const defaultOld = this.formatVersions[1];
+          this.headerSearchForm.patchValue({ formatVersionOld: defaultOld }, { emitEvent: false });
+          this.formatVersionOldChange.emit(defaultOld);
+        }
       });
 
-    // Update form when inputs change
+    // Update form when inputs change (only if input has a value)
     effect(() => {
       const newFormatVersionOld = this.formatVersionOld();
-      if (newFormatVersionOld !== this.headerSearchForm.get('formatVersionOld')?.value) {
+      // Only update form if input has a value (don't overwrite defaults with empty string)
+      if (newFormatVersionOld && newFormatVersionOld !== this.headerSearchForm.get('formatVersionOld')?.value) {
         this.headerSearchForm.patchValue(
           { formatVersionOld: newFormatVersionOld },
           { emitEvent: false }
@@ -89,7 +97,8 @@ export class ComparisonSearchFormHeaderComponent {
 
     effect(() => {
       const newFormatVersionNew = this.formatVersionNew();
-      if (newFormatVersionNew !== this.headerSearchForm.get('formatVersionNew')?.value) {
+      // Only update form if input has a value (don't overwrite defaults with empty string)
+      if (newFormatVersionNew && newFormatVersionNew !== this.headerSearchForm.get('formatVersionNew')?.value) {
         this.headerSearchForm.patchValue(
           { formatVersionNew: newFormatVersionNew },
           { emitEvent: false }
@@ -99,7 +108,7 @@ export class ComparisonSearchFormHeaderComponent {
 
     effect(() => {
       const newPruefi = this.pruefi();
-      if (newPruefi !== this.headerSearchForm.get('pruefi')?.value) {
+      if (newPruefi && newPruefi !== this.headerSearchForm.get('pruefi')?.value) {
         this.headerSearchForm.patchValue({ pruefi: newPruefi }, { emitEvent: false });
       }
     });
@@ -128,11 +137,16 @@ export class ComparisonSearchFormHeaderComponent {
   }
 
   private navigateToComparison() {
-    if (this.headerSearchForm.valid) {
-      this.router.navigate(['/comparison', this.headerSearchForm.value.pruefi], {
+    const pruefi = this.headerSearchForm.value.pruefi;
+    const fvOld = this.headerSearchForm.value.formatVersionOld;
+    const fvNew = this.headerSearchForm.value.formatVersionNew;
+
+    // Navigate if we have all required values (pruefi must be 5 digits)
+    if (pruefi?.match(/^\d{5}$/) && fvOld && fvNew) {
+      this.router.navigate(['/comparison', pruefi], {
         queryParams: {
-          'fv-old': this.headerSearchForm.value.formatVersionOld,
-          'fv-new': this.headerSearchForm.value.formatVersionNew,
+          'fv-old': fvOld,
+          'fv-new': fvNew,
         },
       });
     }
