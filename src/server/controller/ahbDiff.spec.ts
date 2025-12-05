@@ -34,7 +34,7 @@ describe('AhbDiffController', () => {
 
     mockRepository = {
       getDiff: jest.fn(),
-    } as jest.Mocked<AhbDiffRepository>;
+    } as unknown as jest.Mocked<AhbDiffRepository>;
 
     controller = new AhbDiffController(mockRepository);
   });

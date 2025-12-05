@@ -1,12 +1,8 @@
 /**
  * AHB Diff Repository
  *
- * Note: This repository uses raw SQL instead of TypeORM's query builder because:
- * 1. The existing v_ahb_diff entity has a different schema (segmentgroup_name_a, segment_id_a, etc.)
- *    than what the API expects (segmentgroup_key, segment_code, line_ahb_status, etc.)
- * 2. The v_ahbtabellen view provides the exact field names needed by the frontend
- * 3. The CTE-based query efficiently computes diffs in a single database round-trip
- * 4. Refactoring to use the entity would require changes across the entire stack
+ * Uses the v_ahb_diff view which pre-computes diff status and joins both versions.
+ * The view compares AHB status fields to determine added/modified/deleted/unchanged status.
  *
  * The raw SQL uses parameterized queries to prevent SQL injection.
  */
@@ -47,22 +43,35 @@ interface RawDiffRow {
   diff_status: string;
   id_path: string;
   sort_path: string;
-  old_segmentgroup_key: string | null;
-  old_segment_code: string | null;
-  old_data_element: string | null;
-  old_qualifier: string | null;
-  old_line_ahb_status: string | null;
-  old_line_name: string | null;
-  old_line_type: string | null;
-  old_bedingung: string | null;
-  new_segmentgroup_key: string | null;
-  new_segment_code: string | null;
-  new_data_element: string | null;
-  new_qualifier: string | null;
-  new_line_ahb_status: string | null;
-  new_line_name: string | null;
-  new_line_type: string | null;
-  new_bedingung: string | null;
+  type: string | null;
+  // Version A (new) columns
+  segmentgroup_name_a: string | null;
+  segmentgroup_ahb_status_a: string | null;
+  segment_id_a: string | null;
+  segment_name_a: string | null;
+  segment_ahb_status_a: string | null;
+  dataelementgroup_id_a: string | null;
+  dataelementgroup_name_a: string | null;
+  dataelement_id_a: string | null;
+  dataelement_name_a: string | null;
+  dataelement_ahb_status_a: string | null;
+  code_value_a: string | null;
+  code_name_a: string | null;
+  code_ahb_status_a: string | null;
+  // Version B (old) columns
+  segmentgroup_name_b: string | null;
+  segmentgroup_ahb_status_b: string | null;
+  segment_id_b: string | null;
+  segment_name_b: string | null;
+  segment_ahb_status_b: string | null;
+  dataelementgroup_id_b: string | null;
+  dataelementgroup_name_b: string | null;
+  dataelement_id_b: string | null;
+  dataelement_name_b: string | null;
+  dataelement_ahb_status_b: string | null;
+  code_value_b: string | null;
+  code_name_b: string | null;
+  code_ahb_status_b: string | null;
 }
 
 export default class AhbDiffRepository {
@@ -75,89 +84,54 @@ export default class AhbDiffRepository {
       await AppDataSource.initialize();
     }
 
-    // Optimized query using CTEs to materialize old/new versions once
-    // Then uses FULL OUTER JOIN logic (LEFT JOIN + UNION for deleted)
-    // to compute diff_status based on presence and content comparison
-    //
-    // Parameters: pruefi, formatVersionB (old), pruefi, formatVersionA (new)
+    // Query the v_ahb_diff view directly - it already has the diff logic built-in
+    // format_version_a = new version, format_version_b = old version
     const query = `
-      WITH old_version AS (
-        SELECT * FROM v_ahbtabellen
-        WHERE pruefidentifikator = ? AND format_version = ?
-      ),
-      new_version AS (
-        SELECT * FROM v_ahbtabellen
-        WHERE pruefidentifikator = ? AND format_version = ?
-      )
-      SELECT * FROM (
-        -- Main join: added, modified, unchanged (new LEFT JOIN old)
-        SELECT
-          CASE
-            WHEN old_tbl.id_path IS NULL THEN 'added'
-            WHEN old_tbl.line_ahb_status != new_tbl.line_ahb_status
-              OR old_tbl.bedingung != new_tbl.bedingung
-              OR old_tbl.line_name != new_tbl.line_name
-            THEN 'modified'
-            ELSE 'unchanged'
-          END AS diff_status,
-          COALESCE(new_tbl.id_path, old_tbl.id_path) AS id_path,
-          COALESCE(new_tbl.sort_path, old_tbl.sort_path) AS sort_path,
-          old_tbl.segmentgroup_key AS old_segmentgroup_key,
-          old_tbl.segment_code AS old_segment_code,
-          old_tbl.data_element AS old_data_element,
-          old_tbl.qualifier AS old_qualifier,
-          old_tbl.line_ahb_status AS old_line_ahb_status,
-          old_tbl.line_name AS old_line_name,
-          old_tbl.line_type AS old_line_type,
-          old_tbl.bedingung AS old_bedingung,
-          new_tbl.segmentgroup_key AS new_segmentgroup_key,
-          new_tbl.segment_code AS new_segment_code,
-          new_tbl.data_element AS new_data_element,
-          new_tbl.qualifier AS new_qualifier,
-          new_tbl.line_ahb_status AS new_line_ahb_status,
-          new_tbl.line_name AS new_line_name,
-          new_tbl.line_type AS new_line_type,
-          new_tbl.bedingung AS new_bedingung
-        FROM new_version new_tbl
-        LEFT JOIN old_version old_tbl ON new_tbl.id_path = old_tbl.id_path
-
-        UNION ALL
-
-        -- Deleted rows (in old but not in new)
-        SELECT
-          'deleted' AS diff_status,
-          old_tbl.id_path,
-          old_tbl.sort_path,
-          old_tbl.segmentgroup_key AS old_segmentgroup_key,
-          old_tbl.segment_code AS old_segment_code,
-          old_tbl.data_element AS old_data_element,
-          old_tbl.qualifier AS old_qualifier,
-          old_tbl.line_ahb_status AS old_line_ahb_status,
-          old_tbl.line_name AS old_line_name,
-          old_tbl.line_type AS old_line_type,
-          old_tbl.bedingung AS old_bedingung,
-          NULL AS new_segmentgroup_key,
-          NULL AS new_segment_code,
-          NULL AS new_data_element,
-          NULL AS new_qualifier,
-          NULL AS new_line_ahb_status,
-          NULL AS new_line_name,
-          NULL AS new_line_type,
-          NULL AS new_bedingung
-        FROM old_version old_tbl
-        LEFT JOIN new_version new_tbl ON old_tbl.id_path = new_tbl.id_path
-        WHERE new_tbl.id_path IS NULL
-      ) combined
-      ORDER BY combined.sort_path ASC
+      SELECT
+        diff_status,
+        id_path,
+        sort_path,
+        type,
+        segmentgroup_name_a,
+        segmentgroup_ahb_status_a,
+        segment_id_a,
+        segment_name_a,
+        segment_ahb_status_a,
+        dataelementgroup_id_a,
+        dataelementgroup_name_a,
+        dataelement_id_a,
+        dataelement_name_a,
+        dataelement_ahb_status_a,
+        code_value_a,
+        code_name_a,
+        code_ahb_status_a,
+        segmentgroup_name_b,
+        segmentgroup_ahb_status_b,
+        segment_id_b,
+        segment_name_b,
+        segment_ahb_status_b,
+        dataelementgroup_id_b,
+        dataelementgroup_name_b,
+        dataelement_id_b,
+        dataelement_name_b,
+        dataelement_ahb_status_b,
+        code_value_b,
+        code_name_b,
+        code_ahb_status_b
+      FROM v_ahb_diff
+      WHERE pruefidentifikator_a = ?
+        AND pruefidentifikator_b = ?
+        AND format_version_a = ?
+        AND format_version_b = ?
+      ORDER BY sort_path ASC
     `;
 
     const diffQueryStart = performance.now();
     const rawRows: RawDiffRow[] = await AppDataSource.query(query, [
-      // CTE parameters
       pruefi,
-      formatVersionB, // old version
       pruefi,
       formatVersionA, // new version
+      formatVersionB, // old version
     ]);
     const diffQueryMs = performance.now() - diffQueryStart;
     console.log(
@@ -170,23 +144,20 @@ export default class AhbDiffRepository {
       );
     }
 
-    // Transform raw rows into the expected structure
+    // Transform raw rows into the expected API structure
+    // Map v_ahb_diff columns to the AhbDiffSide format expected by the frontend
     const lines: AhbDiffLineJoined[] = rawRows.map(row => {
       const hasOldData =
-        row.old_segmentgroup_key !== null ||
-        row.old_segment_code !== null ||
-        row.old_data_element !== null ||
-        row.old_qualifier !== null ||
-        row.old_line_ahb_status !== null ||
-        row.old_line_name !== null;
+        row.segmentgroup_name_b !== null ||
+        row.segment_id_b !== null ||
+        row.dataelement_id_b !== null ||
+        row.code_value_b !== null;
 
       const hasNewData =
-        row.new_segmentgroup_key !== null ||
-        row.new_segment_code !== null ||
-        row.new_data_element !== null ||
-        row.new_qualifier !== null ||
-        row.new_line_ahb_status !== null ||
-        row.new_line_name !== null;
+        row.segmentgroup_name_a !== null ||
+        row.segment_id_a !== null ||
+        row.dataelement_id_a !== null ||
+        row.code_value_a !== null;
 
       return {
         diff_status: row.diff_status,
@@ -194,26 +165,26 @@ export default class AhbDiffRepository {
         sort_path: row.sort_path,
         old: hasOldData
           ? {
-              segmentgroup_key: row.old_segmentgroup_key,
-              segment_code: row.old_segment_code,
-              data_element: row.old_data_element,
-              qualifier: row.old_qualifier,
-              line_ahb_status: row.old_line_ahb_status,
-              line_name: row.old_line_name,
-              line_type: row.old_line_type,
-              bedingung: row.old_bedingung,
+              segmentgroup_key: row.segmentgroup_name_b,
+              segment_code: row.segment_id_b,
+              data_element: row.dataelement_id_b,
+              qualifier: row.code_value_b,
+              line_ahb_status: this.getLineAhbStatus(row, 'b'),
+              line_name: this.getLineName(row, 'b'),
+              line_type: row.type,
+              bedingung: null,
             }
           : null,
         new: hasNewData
           ? {
-              segmentgroup_key: row.new_segmentgroup_key,
-              segment_code: row.new_segment_code,
-              data_element: row.new_data_element,
-              qualifier: row.new_qualifier,
-              line_ahb_status: row.new_line_ahb_status,
-              line_name: row.new_line_name,
-              line_type: row.new_line_type,
-              bedingung: row.new_bedingung,
+              segmentgroup_key: row.segmentgroup_name_a,
+              segment_code: row.segment_id_a,
+              data_element: row.dataelement_id_a,
+              qualifier: row.code_value_a,
+              line_ahb_status: this.getLineAhbStatus(row, 'a'),
+              line_name: this.getLineName(row, 'a'),
+              line_type: row.type,
+              bedingung: null,
             }
           : null,
       };
@@ -249,5 +220,47 @@ export default class AhbDiffRepository {
         description_b: descriptionB ?? undefined,
       },
     };
+  }
+
+  /**
+   * Get the appropriate AHB status based on the row type
+   */
+  private getLineAhbStatus(row: RawDiffRow, version: 'a' | 'b'): string | null {
+    if (version === 'a') {
+      return (
+        row.code_ahb_status_a ??
+        row.dataelement_ahb_status_a ??
+        row.segment_ahb_status_a ??
+        row.segmentgroup_ahb_status_a
+      );
+    }
+    return (
+      row.code_ahb_status_b ??
+      row.dataelement_ahb_status_b ??
+      row.segment_ahb_status_b ??
+      row.segmentgroup_ahb_status_b
+    );
+  }
+
+  /**
+   * Get the appropriate name based on the row type
+   */
+  private getLineName(row: RawDiffRow, version: 'a' | 'b'): string | null {
+    if (version === 'a') {
+      return (
+        row.code_name_a ??
+        row.dataelement_name_a ??
+        row.dataelementgroup_name_a ??
+        row.segment_name_a ??
+        row.segmentgroup_name_a
+      );
+    }
+    return (
+      row.code_name_b ??
+      row.dataelement_name_b ??
+      row.dataelementgroup_name_b ??
+      row.segment_name_b ??
+      row.segmentgroup_name_b
+    );
   }
 }

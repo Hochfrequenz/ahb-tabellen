@@ -87,7 +87,10 @@ export class ComparisonSearchFormHeaderComponent {
     effect(() => {
       const newFormatVersionOld = this.formatVersionOld();
       // Only update form if input has a value (don't overwrite defaults with empty string)
-      if (newFormatVersionOld && newFormatVersionOld !== this.headerSearchForm.get('formatVersionOld')?.value) {
+      if (
+        newFormatVersionOld &&
+        newFormatVersionOld !== this.headerSearchForm.get('formatVersionOld')?.value
+      ) {
         this.headerSearchForm.patchValue(
           { formatVersionOld: newFormatVersionOld },
           { emitEvent: false }
@@ -98,7 +101,10 @@ export class ComparisonSearchFormHeaderComponent {
     effect(() => {
       const newFormatVersionNew = this.formatVersionNew();
       // Only update form if input has a value (don't overwrite defaults with empty string)
-      if (newFormatVersionNew && newFormatVersionNew !== this.headerSearchForm.get('formatVersionNew')?.value) {
+      if (
+        newFormatVersionNew &&
+        newFormatVersionNew !== this.headerSearchForm.get('formatVersionNew')?.value
+      ) {
         this.headerSearchForm.patchValue(
           { formatVersionNew: newFormatVersionNew },
           { emitEvent: false }

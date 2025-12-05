@@ -10,6 +10,79 @@ jest.mock('../infrastructure/database', () => ({
   },
 }));
 
+// Mock row structure matching the new v_ahb_diff view
+interface MockDiffRow {
+  diff_status: string;
+  id_path: string;
+  sort_path: string;
+  type: string | null;
+  segmentgroup_name_a: string | null;
+  segmentgroup_ahb_status_a: string | null;
+  segment_id_a: string | null;
+  segment_name_a: string | null;
+  segment_ahb_status_a: string | null;
+  dataelementgroup_id_a: string | null;
+  dataelementgroup_name_a: string | null;
+  dataelement_id_a: string | null;
+  dataelement_name_a: string | null;
+  dataelement_ahb_status_a: string | null;
+  code_value_a: string | null;
+  code_name_a: string | null;
+  code_ahb_status_a: string | null;
+  segmentgroup_name_b: string | null;
+  segmentgroup_ahb_status_b: string | null;
+  segment_id_b: string | null;
+  segment_name_b: string | null;
+  segment_ahb_status_b: string | null;
+  dataelementgroup_id_b: string | null;
+  dataelementgroup_name_b: string | null;
+  dataelement_id_b: string | null;
+  dataelement_name_b: string | null;
+  dataelement_ahb_status_b: string | null;
+  code_value_b: string | null;
+  code_name_b: string | null;
+  code_ahb_status_b: string | null;
+}
+
+// Helper to create a mock row matching the new v_ahb_diff structure
+function createMockRow(overrides: Partial<MockDiffRow> = {}): MockDiffRow {
+  return {
+    diff_status: 'unchanged',
+    id_path: 'path/1',
+    sort_path: '001',
+    type: 'segment',
+    // Version A (new) columns
+    segmentgroup_name_a: 'SG1',
+    segmentgroup_ahb_status_a: null,
+    segment_id_a: 'SEG',
+    segment_name_a: 'Segment Name',
+    segment_ahb_status_a: 'M',
+    dataelementgroup_id_a: null,
+    dataelementgroup_name_a: null,
+    dataelement_id_a: null,
+    dataelement_name_a: null,
+    dataelement_ahb_status_a: null,
+    code_value_a: null,
+    code_name_a: null,
+    code_ahb_status_a: null,
+    // Version B (old) columns
+    segmentgroup_name_b: 'SG1',
+    segmentgroup_ahb_status_b: null,
+    segment_id_b: 'SEG',
+    segment_name_b: 'Segment Name',
+    segment_ahb_status_b: 'M',
+    dataelementgroup_id_b: null,
+    dataelementgroup_name_b: null,
+    dataelement_id_b: null,
+    dataelement_name_b: null,
+    dataelement_ahb_status_b: null,
+    code_value_b: null,
+    code_name_b: null,
+    code_ahb_status_b: null,
+    ...overrides,
+  };
+}
+
 describe('AhbDiffRepository', () => {
   let repository: AhbDiffRepository;
 
@@ -20,29 +93,7 @@ describe('AhbDiffRepository', () => {
 
   describe('getDiff', () => {
     it('should return diff result with transformed lines', async () => {
-      const mockRawRows = [
-        {
-          diff_status: 'unchanged',
-          id_path: 'path/1',
-          sort_path: '001',
-          old_segmentgroup_key: 'SG1',
-          old_segment_code: 'SEG',
-          old_data_element: 'DE1',
-          old_qualifier: 'Q1',
-          old_line_ahb_status: 'M',
-          old_line_name: 'Name1',
-          old_line_type: 'type1',
-          old_bedingung: 'B1',
-          new_segmentgroup_key: 'SG1',
-          new_segment_code: 'SEG',
-          new_data_element: 'DE1',
-          new_qualifier: 'Q1',
-          new_line_ahb_status: 'M',
-          new_line_name: 'Name1',
-          new_line_type: 'type1',
-          new_bedingung: 'B1',
-        },
-      ];
+      const mockRawRows = [createMockRow()];
       const mockDescriptionRows = [
         { description: 'Desc A', format_version: 'FV2504' },
         { description: 'Desc B', format_version: 'FV2410' },
@@ -67,27 +118,21 @@ describe('AhbDiffRepository', () => {
 
     it('should handle added rows (no old data)', async () => {
       const mockRawRows = [
-        {
+        createMockRow({
           diff_status: 'added',
           id_path: 'path/new',
           sort_path: '002',
-          old_segmentgroup_key: null,
-          old_segment_code: null,
-          old_data_element: null,
-          old_qualifier: null,
-          old_line_ahb_status: null,
-          old_line_name: null,
-          old_line_type: null,
-          old_bedingung: null,
-          new_segmentgroup_key: 'SG2',
-          new_segment_code: 'SEG2',
-          new_data_element: 'DE2',
-          new_qualifier: 'Q2',
-          new_line_ahb_status: 'M',
-          new_line_name: 'New Name',
-          new_line_type: 'type2',
-          new_bedingung: 'B2',
-        },
+          // Old side is null
+          segmentgroup_name_b: null,
+          segment_id_b: null,
+          segment_name_b: null,
+          segment_ahb_status_b: null,
+          // New side has data
+          segmentgroup_name_a: 'SG2',
+          segment_id_a: 'SEG2',
+          segment_name_a: 'New Segment',
+          segment_ahb_status_a: 'M',
+        }),
       ];
 
       (AppDataSource.query as jest.Mock)
@@ -104,27 +149,21 @@ describe('AhbDiffRepository', () => {
 
     it('should handle deleted rows (no new data)', async () => {
       const mockRawRows = [
-        {
+        createMockRow({
           diff_status: 'deleted',
           id_path: 'path/old',
           sort_path: '003',
-          old_segmentgroup_key: 'SG3',
-          old_segment_code: 'SEG3',
-          old_data_element: 'DE3',
-          old_qualifier: 'Q3',
-          old_line_ahb_status: 'M',
-          old_line_name: 'Old Name',
-          old_line_type: 'type3',
-          old_bedingung: 'B3',
-          new_segmentgroup_key: null,
-          new_segment_code: null,
-          new_data_element: null,
-          new_qualifier: null,
-          new_line_ahb_status: null,
-          new_line_name: null,
-          new_line_type: null,
-          new_bedingung: null,
-        },
+          // New side is null
+          segmentgroup_name_a: null,
+          segment_id_a: null,
+          segment_name_a: null,
+          segment_ahb_status_a: null,
+          // Old side has data
+          segmentgroup_name_b: 'SG3',
+          segment_id_b: 'SEG3',
+          segment_name_b: 'Old Segment',
+          segment_ahb_status_b: 'M',
+        }),
       ];
 
       (AppDataSource.query as jest.Mock)
@@ -149,29 +188,7 @@ describe('AhbDiffRepository', () => {
     });
 
     it('should pass correct parameters to the query', async () => {
-      const mockRawRows = [
-        {
-          diff_status: 'unchanged',
-          id_path: 'path/1',
-          sort_path: '001',
-          old_segmentgroup_key: 'SG1',
-          old_segment_code: null,
-          old_data_element: null,
-          old_qualifier: null,
-          old_line_ahb_status: null,
-          old_line_name: null,
-          old_line_type: null,
-          old_bedingung: null,
-          new_segmentgroup_key: 'SG1',
-          new_segment_code: null,
-          new_data_element: null,
-          new_qualifier: null,
-          new_line_ahb_status: null,
-          new_line_name: null,
-          new_line_type: null,
-          new_bedingung: null,
-        },
-      ];
+      const mockRawRows = [createMockRow()];
 
       (AppDataSource.query as jest.Mock)
         .mockResolvedValueOnce(mockRawRows)
@@ -182,7 +199,8 @@ describe('AhbDiffRepository', () => {
       // First call is the main diff query
       expect(AppDataSource.query).toHaveBeenCalledTimes(2);
       const firstCallArgs = (AppDataSource.query as jest.Mock).mock.calls[0];
-      expect(firstCallArgs[1]).toEqual(['11042', 'FV2410', '11042', 'FV2504']);
+      // New query params: pruefi_a, pruefi_b, format_version_a, format_version_b
+      expect(firstCallArgs[1]).toEqual(['11042', '11042', 'FV2504', 'FV2410']);
 
       // Second call is the description query
       const secondCallArgs = (AppDataSource.query as jest.Mock).mock.calls[1];
@@ -190,29 +208,7 @@ describe('AhbDiffRepository', () => {
     });
 
     it('should handle missing descriptions gracefully', async () => {
-      const mockRawRows = [
-        {
-          diff_status: 'unchanged',
-          id_path: 'path/1',
-          sort_path: '001',
-          old_segmentgroup_key: 'SG1',
-          old_segment_code: null,
-          old_data_element: null,
-          old_qualifier: null,
-          old_line_ahb_status: null,
-          old_line_name: null,
-          old_line_type: null,
-          old_bedingung: null,
-          new_segmentgroup_key: 'SG1',
-          new_segment_code: null,
-          new_data_element: null,
-          new_qualifier: null,
-          new_line_ahb_status: null,
-          new_line_name: null,
-          new_line_type: null,
-          new_bedingung: null,
-        },
-      ];
+      const mockRawRows = [createMockRow()];
 
       (AppDataSource.query as jest.Mock)
         .mockResolvedValueOnce(mockRawRows)
@@ -227,29 +223,7 @@ describe('AhbDiffRepository', () => {
     it('should initialize database if not initialized', async () => {
       (AppDataSource as { isInitialized: boolean }).isInitialized = false;
 
-      const mockRawRows = [
-        {
-          diff_status: 'unchanged',
-          id_path: 'path/1',
-          sort_path: '001',
-          old_segmentgroup_key: 'SG1',
-          old_segment_code: null,
-          old_data_element: null,
-          old_qualifier: null,
-          old_line_ahb_status: null,
-          old_line_name: null,
-          old_line_type: null,
-          old_bedingung: null,
-          new_segmentgroup_key: 'SG1',
-          new_segment_code: null,
-          new_data_element: null,
-          new_qualifier: null,
-          new_line_ahb_status: null,
-          new_line_name: null,
-          new_line_type: null,
-          new_bedingung: null,
-        },
-      ];
+      const mockRawRows = [createMockRow()];
 
       (AppDataSource.query as jest.Mock)
         .mockResolvedValueOnce(mockRawRows)
@@ -261,6 +235,29 @@ describe('AhbDiffRepository', () => {
 
       // Reset for other tests
       (AppDataSource as { isInitialized: boolean }).isInitialized = true;
+    });
+
+    it('should map line_ahb_status from the appropriate field based on type', async () => {
+      const mockRawRows = [
+        createMockRow({
+          type: 'code',
+          code_ahb_status_a: 'X',
+          code_ahb_status_b: 'M',
+          code_value_a: 'E01',
+          code_value_b: 'E01',
+          code_name_a: 'Code Name',
+          code_name_b: 'Code Name',
+        }),
+      ];
+
+      (AppDataSource.query as jest.Mock)
+        .mockResolvedValueOnce(mockRawRows)
+        .mockResolvedValueOnce([]);
+
+      const result = await repository.getDiff('11042', 'FV2504', 'FV2410');
+
+      expect(result.lines[0].new?.line_ahb_status).toBe('X');
+      expect(result.lines[0].old?.line_ahb_status).toBe('M');
     });
   });
 });
