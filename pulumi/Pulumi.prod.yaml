@@ -1,7 +1,7 @@
 config:
   pulumi:template: container-azure-python
   azure-native:location: germanywestcentral
-  azure-native:subscriptionId: 1cdc65f0-62d2-4770-be11-9ec1da950c81
+  azure-native:subscriptionId: 2384dcc1-2c97-4c32-932d-44215b137f7a
   ahb-tabellen:appPath: app
   ahb-tabellen:bedingungsbaumBaseUrl: https://bedingungsbaum.hochfrequenz.de
   ahb-tabellen:ebdBaseUrl: https://ebd.hochfrequenz.de
