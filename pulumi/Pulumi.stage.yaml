@@ -1,0 +1,24 @@
+config:
+  ahb-tabellen:appPath: app
+  ahb-tabellen:bedingungsbaumBaseUrl: https://bedingungsbaum.stage.hochfrequenz.de
+  ahb-tabellen:containerPort: "80"
+  ahb-tabellen:cpu: "1"
+  ahb-tabellen:db_7z_archive_password:
+    secure: AAABAKCZGXsqn3HVUmLUZYH/9jIIsqbvOJ50Vt4YCacdUABfog63VkVqStKJDYgXTve9Ny0hO1UaIUqKRPU=
+  ahb-tabellen:ebdBaseUrl: https://ebd.stage.hochfrequenz.de
+  ahb-tabellen:environment: stage
+  ahb-tabellen:ghcr_token:
+    secure: AAABABkZ6JHu21N1Q6+hgJVXWzz7KkywfdZ84phM1XkWy6aTrm5zvSibf6PIxCcUJsJgeqDU3aexWUGI7ZH3nFOEIGtpoyKa
+  ahb-tabellen:imageName: ghcr.io/hochfrequenz/ahb-tabellen
+  ahb-tabellen:imageTag: v1.4.0-rc02
+  ahb-tabellen:memory: "2"
+  ahb-tabellen:ohDearHealthCheckSecret:
+    secure: AAABAFE/v/fLv99CnNg0sBE42GYr5nMYhNJoa1prN9EgomNzl9D0B3vgse7uW3w6
+  ahb-tabellen:websitesContainerStartTimeLimit: "300"
+  azure-native:clientId: bb60c465-2cfb-4293-9512-e95cd64e59c4
+  azure-native:clientSecret:
+    secure: AAABAO4Lti8Hd8+i77DCTBBczL3btdx0Vu6ucxcA8rHBgDVTUnP6BaK7g/9XmUzlTSykQVPAPbr+umnRNqrKR0mqpmjWUQWd
+  azure-native:location: germanywestcentral
+  azure-native:subscriptionId: 2384dcc1-2c97-4c32-932d-44215b137f7a
+  azure-native:tenantId: fb2b0361-fa12-48a5-bade-533bf89760d9
+  pulumi:template: container-azure-python
