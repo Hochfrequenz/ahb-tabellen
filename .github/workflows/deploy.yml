@@ -231,7 +231,7 @@ jobs:
       id-token: write
     uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@5f78996ec6a07117a0f27a6ec83b594f4a3e9701
     with:
-      pulumi_stack_name: dev
+      pulumi_stack_name: stage
       docker_tag: ${{ needs.build-stage.outputs.docker-tag }}
     secrets:
       azure_client_id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
