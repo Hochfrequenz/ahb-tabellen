@@ -13,7 +13,11 @@
       "Bash(npx ts-node:*)",
       "Bash(curl:*)",
       "Bash(npm run:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
