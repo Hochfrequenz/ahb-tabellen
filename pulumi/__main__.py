@@ -41,13 +41,23 @@ assert db_7z_archive_password, "db_7z_archive_password must be set"
 cpu = config.get_int("cpu", 1)
 memory = config.get_int("memory", 2)
 
-# Create an Azure Resource Group
-resource_group = azure_native.resources.ResourceGroup("ahb-tabellen")
+# Get location from azure-native config
+azure_config = pulumi.Config("azure-native")
+location = azure_config.get("location") or "germanywestcentral"
+
+# Create an Azure Resource Group with environment name
+resource_group_name = f"ahb-tabellen-{environment}"
+resource_group = azure_native.resources.ResourceGroup(
+    resource_group_name,
+    resource_group_name=resource_group_name,
+    location=location
+)
 
 # Create an Azure Storage Account
 storage_account = azure_native.storage.StorageAccount(
     "ahbtabellen",
     resource_group_name=resource_group.name,
+    location=resource_group.location,
     sku=azure_native.storage.SkuArgs(
         name=azure_native.storage.SkuName.STANDARD_LRS,
     ),
