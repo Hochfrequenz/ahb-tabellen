@@ -18,7 +18,7 @@ config:
   azure-native:clientId: bb60c465-2cfb-4293-9512-e95cd64e59c4
   azure-native:clientSecret:
     secure: AAABAO4Lti8Hd8+i77DCTBBczL3btdx0Vu6ucxcA8rHBgDVTUnP6BaK7g/9XmUzlTSykQVPAPbr+umnRNqrKR0mqpmjWUQWd
-  azure-native:location: germanywestcentral
+  azure-native:location: westeurope
   azure-native:subscriptionId: 2384dcc1-2c97-4c32-932d-44215b137f7a
   azure-native:tenantId: fb2b0361-fa12-48a5-bade-533bf89760d9
   pulumi:template: container-azure-python
