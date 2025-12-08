@@ -5,108 +5,83 @@ export type DiffLineType = 'segmentgroup' | 'segment' | 'dataelementgroup' | 'da
 
 @Entity({ name: 'v_ahb_diff', synchronize: false })
 export class AhbDiffLine {
-  @PrimaryColumn({ type: 'varchar' })
-  format_version_a!: string;
+  @Column({ type: 'varchar', nullable: true })
+  diff_status?: DiffStatus;
 
-  @PrimaryColumn({ type: 'varchar' })
-  format_version_b!: string;
-
-  @PrimaryColumn({ type: 'varchar' })
-  pruefidentifikator_a!: string;
-
-  @PrimaryColumn({ type: 'varchar' })
-  pruefidentifikator_b!: string;
+  @Column({ type: 'varchar', nullable: true })
+  changed_columns?: string;
 
   @PrimaryColumn({ type: 'varchar' })
   id_path!: string;
 
   @Column({ type: 'varchar', nullable: true })
-  path?: string;
-
-  @Column({ type: 'varchar', nullable: true })
   sort_path?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  type?: DiffLineType;
+  path?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  diff_status?: DiffStatus;
+  line_type?: DiffLineType;
+
+  // Old version columns
+  @PrimaryColumn({ type: 'varchar' })
+  old_format_version!: string;
+
+  @PrimaryColumn({ type: 'varchar' })
+  old_pruefidentifikator!: string;
 
   @Column({ type: 'varchar', nullable: true })
-  segmentgroup_name_a?: string;
+  old_segmentgroup_key?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  segmentgroup_name_b?: string;
+  old_segment_code?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  segmentgroup_ahb_status_a?: string;
+  old_data_element?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  segmentgroup_ahb_status_b?: string;
+  old_qualifier?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  segment_id_a?: string;
+  old_line_ahb_status?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  segment_id_b?: string;
+  old_line_name?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  segment_name_a?: string;
+  old_bedingung?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  segment_name_b?: string;
+  old_bedingungsfehler?: string;
+
+  // New version columns
+  @PrimaryColumn({ type: 'varchar' })
+  new_format_version!: string;
+
+  @PrimaryColumn({ type: 'varchar' })
+  new_pruefidentifikator!: string;
 
   @Column({ type: 'varchar', nullable: true })
-  segment_ahb_status_a?: string;
+  new_segmentgroup_key?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  segment_ahb_status_b?: string;
+  new_segment_code?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  dataelementgroup_id_a?: string;
+  new_data_element?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  dataelementgroup_id_b?: string;
+  new_qualifier?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  dataelementgroup_name_a?: string;
+  new_line_ahb_status?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  dataelementgroup_name_b?: string;
+  new_line_name?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  dataelement_id_a?: string;
+  new_bedingung?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  dataelement_id_b?: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  dataelement_name_a?: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  dataelement_name_b?: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  dataelement_ahb_status_a?: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  dataelement_ahb_status_b?: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  code_value_a?: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  code_value_b?: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  code_name_a?: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  code_name_b?: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  code_ahb_status_a?: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  code_ahb_status_b?: string;
+  new_bedingungsfehler?: string;
 }

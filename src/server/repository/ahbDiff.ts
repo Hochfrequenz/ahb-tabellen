@@ -41,37 +41,33 @@ export interface AhbDiffResult {
 
 interface RawDiffRow {
   diff_status: string;
+  changed_columns: string | null;
   id_path: string;
   sort_path: string;
-  type: string | null;
-  // Version A (new) columns
-  segmentgroup_name_a: string | null;
-  segmentgroup_ahb_status_a: string | null;
-  segment_id_a: string | null;
-  segment_name_a: string | null;
-  segment_ahb_status_a: string | null;
-  dataelementgroup_id_a: string | null;
-  dataelementgroup_name_a: string | null;
-  dataelement_id_a: string | null;
-  dataelement_name_a: string | null;
-  dataelement_ahb_status_a: string | null;
-  code_value_a: string | null;
-  code_name_a: string | null;
-  code_ahb_status_a: string | null;
-  // Version B (old) columns
-  segmentgroup_name_b: string | null;
-  segmentgroup_ahb_status_b: string | null;
-  segment_id_b: string | null;
-  segment_name_b: string | null;
-  segment_ahb_status_b: string | null;
-  dataelementgroup_id_b: string | null;
-  dataelementgroup_name_b: string | null;
-  dataelement_id_b: string | null;
-  dataelement_name_b: string | null;
-  dataelement_ahb_status_b: string | null;
-  code_value_b: string | null;
-  code_name_b: string | null;
-  code_ahb_status_b: string | null;
+  path: string | null;
+  line_type: string | null;
+  // Old version columns
+  old_format_version: string | null;
+  old_pruefidentifikator: string | null;
+  old_segmentgroup_key: string | null;
+  old_segment_code: string | null;
+  old_data_element: string | null;
+  old_qualifier: string | null;
+  old_line_ahb_status: string | null;
+  old_line_name: string | null;
+  old_bedingung: string | null;
+  old_bedingungsfehler: string | null;
+  // New version columns
+  new_format_version: string | null;
+  new_pruefidentifikator: string | null;
+  new_segmentgroup_key: string | null;
+  new_segment_code: string | null;
+  new_data_element: string | null;
+  new_qualifier: string | null;
+  new_line_ahb_status: string | null;
+  new_line_name: string | null;
+  new_bedingung: string | null;
+  new_bedingungsfehler: string | null;
 }
 
 export default class AhbDiffRepository {
@@ -85,44 +81,40 @@ export default class AhbDiffRepository {
     }
 
     // Query the v_ahb_diff view directly - it already has the diff logic built-in
-    // format_version_a = new version, format_version_b = old version
+    // new_format_version = new version, old_format_version = old version
     const query = `
       SELECT
         diff_status,
+        changed_columns,
         id_path,
         sort_path,
-        type,
-        segmentgroup_name_a,
-        segmentgroup_ahb_status_a,
-        segment_id_a,
-        segment_name_a,
-        segment_ahb_status_a,
-        dataelementgroup_id_a,
-        dataelementgroup_name_a,
-        dataelement_id_a,
-        dataelement_name_a,
-        dataelement_ahb_status_a,
-        code_value_a,
-        code_name_a,
-        code_ahb_status_a,
-        segmentgroup_name_b,
-        segmentgroup_ahb_status_b,
-        segment_id_b,
-        segment_name_b,
-        segment_ahb_status_b,
-        dataelementgroup_id_b,
-        dataelementgroup_name_b,
-        dataelement_id_b,
-        dataelement_name_b,
-        dataelement_ahb_status_b,
-        code_value_b,
-        code_name_b,
-        code_ahb_status_b
+        path,
+        line_type,
+        old_format_version,
+        old_pruefidentifikator,
+        old_segmentgroup_key,
+        old_segment_code,
+        old_data_element,
+        old_qualifier,
+        old_line_ahb_status,
+        old_line_name,
+        old_bedingung,
+        old_bedingungsfehler,
+        new_format_version,
+        new_pruefidentifikator,
+        new_segmentgroup_key,
+        new_segment_code,
+        new_data_element,
+        new_qualifier,
+        new_line_ahb_status,
+        new_line_name,
+        new_bedingung,
+        new_bedingungsfehler
       FROM v_ahb_diff
-      WHERE pruefidentifikator_a = ?
-        AND pruefidentifikator_b = ?
-        AND format_version_a = ?
-        AND format_version_b = ?
+      WHERE new_pruefidentifikator = ?
+        AND old_pruefidentifikator = ?
+        AND new_format_version = ?
+        AND old_format_version = ?
       ORDER BY sort_path ASC
     `;
 
@@ -148,16 +140,16 @@ export default class AhbDiffRepository {
     // Map v_ahb_diff columns to the AhbDiffSide format expected by the frontend
     const lines: AhbDiffLineJoined[] = rawRows.map(row => {
       const hasOldData =
-        row.segmentgroup_name_b !== null ||
-        row.segment_id_b !== null ||
-        row.dataelement_id_b !== null ||
-        row.code_value_b !== null;
+        row.old_segmentgroup_key !== null ||
+        row.old_segment_code !== null ||
+        row.old_data_element !== null ||
+        row.old_qualifier !== null;
 
       const hasNewData =
-        row.segmentgroup_name_a !== null ||
-        row.segment_id_a !== null ||
-        row.dataelement_id_a !== null ||
-        row.code_value_a !== null;
+        row.new_segmentgroup_key !== null ||
+        row.new_segment_code !== null ||
+        row.new_data_element !== null ||
+        row.new_qualifier !== null;
 
       return {
         diff_status: row.diff_status,
@@ -165,26 +157,26 @@ export default class AhbDiffRepository {
         sort_path: row.sort_path,
         old: hasOldData
           ? {
-              segmentgroup_key: row.segmentgroup_name_b,
-              segment_code: row.segment_id_b,
-              data_element: row.dataelement_id_b,
-              qualifier: row.code_value_b,
-              line_ahb_status: this.getLineAhbStatus(row, 'b'),
-              line_name: this.getLineName(row, 'b'),
-              line_type: row.type,
-              bedingung: null,
+              segmentgroup_key: row.old_segmentgroup_key,
+              segment_code: row.old_segment_code,
+              data_element: row.old_data_element,
+              qualifier: row.old_qualifier,
+              line_ahb_status: row.old_line_ahb_status,
+              line_name: row.old_line_name,
+              line_type: row.line_type,
+              bedingung: row.old_bedingung,
             }
           : null,
         new: hasNewData
           ? {
-              segmentgroup_key: row.segmentgroup_name_a,
-              segment_code: row.segment_id_a,
-              data_element: row.dataelement_id_a,
-              qualifier: row.code_value_a,
-              line_ahb_status: this.getLineAhbStatus(row, 'a'),
-              line_name: this.getLineName(row, 'a'),
-              line_type: row.type,
-              bedingung: null,
+              segmentgroup_key: row.new_segmentgroup_key,
+              segment_code: row.new_segment_code,
+              data_element: row.new_data_element,
+              qualifier: row.new_qualifier,
+              line_ahb_status: row.new_line_ahb_status,
+              line_name: row.new_line_name,
+              line_type: row.line_type,
+              bedingung: row.new_bedingung,
             }
           : null,
       };
@@ -220,47 +212,5 @@ export default class AhbDiffRepository {
         description_b: descriptionB ?? undefined,
       },
     };
-  }
-
-  /**
-   * Get the appropriate AHB status based on the row type
-   */
-  private getLineAhbStatus(row: RawDiffRow, version: 'a' | 'b'): string | null {
-    if (version === 'a') {
-      return (
-        row.code_ahb_status_a ??
-        row.dataelement_ahb_status_a ??
-        row.segment_ahb_status_a ??
-        row.segmentgroup_ahb_status_a
-      );
-    }
-    return (
-      row.code_ahb_status_b ??
-      row.dataelement_ahb_status_b ??
-      row.segment_ahb_status_b ??
-      row.segmentgroup_ahb_status_b
-    );
-  }
-
-  /**
-   * Get the appropriate name based on the row type
-   */
-  private getLineName(row: RawDiffRow, version: 'a' | 'b'): string | null {
-    if (version === 'a') {
-      return (
-        row.code_name_a ??
-        row.dataelement_name_a ??
-        row.dataelementgroup_name_a ??
-        row.segment_name_a ??
-        row.segmentgroup_name_a
-      );
-    }
-    return (
-      row.code_name_b ??
-      row.dataelement_name_b ??
-      row.dataelementgroup_name_b ??
-      row.segment_name_b ??
-      row.segmentgroup_name_b
-    );
   }
 }

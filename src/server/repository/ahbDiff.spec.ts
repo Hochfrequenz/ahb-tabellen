@@ -10,75 +10,69 @@ jest.mock('../infrastructure/database', () => ({
   },
 }));
 
-// Mock row structure matching the new v_ahb_diff view
+// Mock row structure matching the new v_ahb_diff view with old_/new_ prefixes
 interface MockDiffRow {
   diff_status: string;
+  changed_columns: string | null;
   id_path: string;
   sort_path: string;
-  type: string | null;
-  segmentgroup_name_a: string | null;
-  segmentgroup_ahb_status_a: string | null;
-  segment_id_a: string | null;
-  segment_name_a: string | null;
-  segment_ahb_status_a: string | null;
-  dataelementgroup_id_a: string | null;
-  dataelementgroup_name_a: string | null;
-  dataelement_id_a: string | null;
-  dataelement_name_a: string | null;
-  dataelement_ahb_status_a: string | null;
-  code_value_a: string | null;
-  code_name_a: string | null;
-  code_ahb_status_a: string | null;
-  segmentgroup_name_b: string | null;
-  segmentgroup_ahb_status_b: string | null;
-  segment_id_b: string | null;
-  segment_name_b: string | null;
-  segment_ahb_status_b: string | null;
-  dataelementgroup_id_b: string | null;
-  dataelementgroup_name_b: string | null;
-  dataelement_id_b: string | null;
-  dataelement_name_b: string | null;
-  dataelement_ahb_status_b: string | null;
-  code_value_b: string | null;
-  code_name_b: string | null;
-  code_ahb_status_b: string | null;
+  path: string | null;
+  line_type: string | null;
+  // Old version columns
+  old_format_version: string | null;
+  old_pruefidentifikator: string | null;
+  old_segmentgroup_key: string | null;
+  old_segment_code: string | null;
+  old_data_element: string | null;
+  old_qualifier: string | null;
+  old_line_ahb_status: string | null;
+  old_line_name: string | null;
+  old_bedingung: string | null;
+  old_bedingungsfehler: string | null;
+  // New version columns
+  new_format_version: string | null;
+  new_pruefidentifikator: string | null;
+  new_segmentgroup_key: string | null;
+  new_segment_code: string | null;
+  new_data_element: string | null;
+  new_qualifier: string | null;
+  new_line_ahb_status: string | null;
+  new_line_name: string | null;
+  new_bedingung: string | null;
+  new_bedingungsfehler: string | null;
 }
 
 // Helper to create a mock row matching the new v_ahb_diff structure
 function createMockRow(overrides: Partial<MockDiffRow> = {}): MockDiffRow {
   return {
     diff_status: 'unchanged',
+    changed_columns: null,
     id_path: 'path/1',
     sort_path: '001',
-    type: 'segment',
-    // Version A (new) columns
-    segmentgroup_name_a: 'SG1',
-    segmentgroup_ahb_status_a: null,
-    segment_id_a: 'SEG',
-    segment_name_a: 'Segment Name',
-    segment_ahb_status_a: 'M',
-    dataelementgroup_id_a: null,
-    dataelementgroup_name_a: null,
-    dataelement_id_a: null,
-    dataelement_name_a: null,
-    dataelement_ahb_status_a: null,
-    code_value_a: null,
-    code_name_a: null,
-    code_ahb_status_a: null,
-    // Version B (old) columns
-    segmentgroup_name_b: 'SG1',
-    segmentgroup_ahb_status_b: null,
-    segment_id_b: 'SEG',
-    segment_name_b: 'Segment Name',
-    segment_ahb_status_b: 'M',
-    dataelementgroup_id_b: null,
-    dataelementgroup_name_b: null,
-    dataelement_id_b: null,
-    dataelement_name_b: null,
-    dataelement_ahb_status_b: null,
-    code_value_b: null,
-    code_name_b: null,
-    code_ahb_status_b: null,
+    path: 'SG1/SEG',
+    line_type: 'segment',
+    // Old version columns
+    old_format_version: 'FV2410',
+    old_pruefidentifikator: '11042',
+    old_segmentgroup_key: 'SG1',
+    old_segment_code: 'SEG',
+    old_data_element: null,
+    old_qualifier: null,
+    old_line_ahb_status: 'M',
+    old_line_name: 'Segment Name',
+    old_bedingung: null,
+    old_bedingungsfehler: null,
+    // New version columns
+    new_format_version: 'FV2504',
+    new_pruefidentifikator: '11042',
+    new_segmentgroup_key: 'SG1',
+    new_segment_code: 'SEG',
+    new_data_element: null,
+    new_qualifier: null,
+    new_line_ahb_status: 'M',
+    new_line_name: 'Segment Name',
+    new_bedingung: null,
+    new_bedingungsfehler: null,
     ...overrides,
   };
 }
@@ -123,15 +117,17 @@ describe('AhbDiffRepository', () => {
           id_path: 'path/new',
           sort_path: '002',
           // Old side is null
-          segmentgroup_name_b: null,
-          segment_id_b: null,
-          segment_name_b: null,
-          segment_ahb_status_b: null,
+          old_segmentgroup_key: null,
+          old_segment_code: null,
+          old_data_element: null,
+          old_qualifier: null,
+          old_line_ahb_status: null,
+          old_line_name: null,
           // New side has data
-          segmentgroup_name_a: 'SG2',
-          segment_id_a: 'SEG2',
-          segment_name_a: 'New Segment',
-          segment_ahb_status_a: 'M',
+          new_segmentgroup_key: 'SG2',
+          new_segment_code: 'SEG2',
+          new_line_ahb_status: 'M',
+          new_line_name: 'New Segment',
         }),
       ];
 
@@ -154,15 +150,17 @@ describe('AhbDiffRepository', () => {
           id_path: 'path/old',
           sort_path: '003',
           // New side is null
-          segmentgroup_name_a: null,
-          segment_id_a: null,
-          segment_name_a: null,
-          segment_ahb_status_a: null,
+          new_segmentgroup_key: null,
+          new_segment_code: null,
+          new_data_element: null,
+          new_qualifier: null,
+          new_line_ahb_status: null,
+          new_line_name: null,
           // Old side has data
-          segmentgroup_name_b: 'SG3',
-          segment_id_b: 'SEG3',
-          segment_name_b: 'Old Segment',
-          segment_ahb_status_b: 'M',
+          old_segmentgroup_key: 'SG3',
+          old_segment_code: 'SEG3',
+          old_line_ahb_status: 'M',
+          old_line_name: 'Old Segment',
         }),
       ];
 
@@ -199,7 +197,7 @@ describe('AhbDiffRepository', () => {
       // First call is the main diff query
       expect(AppDataSource.query).toHaveBeenCalledTimes(2);
       const firstCallArgs = (AppDataSource.query as jest.Mock).mock.calls[0];
-      // New query params: pruefi_a, pruefi_b, format_version_a, format_version_b
+      // Query params: new_pruefidentifikator, old_pruefidentifikator, new_format_version, old_format_version
       expect(firstCallArgs[1]).toEqual(['11042', '11042', 'FV2504', 'FV2410']);
 
       // Second call is the description query
@@ -237,16 +235,16 @@ describe('AhbDiffRepository', () => {
       (AppDataSource as { isInitialized: boolean }).isInitialized = true;
     });
 
-    it('should map line_ahb_status from the appropriate field based on type', async () => {
+    it('should map line_ahb_status directly from the view columns', async () => {
       const mockRawRows = [
         createMockRow({
-          type: 'code',
-          code_ahb_status_a: 'X',
-          code_ahb_status_b: 'M',
-          code_value_a: 'E01',
-          code_value_b: 'E01',
-          code_name_a: 'Code Name',
-          code_name_b: 'Code Name',
+          line_type: 'code',
+          new_line_ahb_status: 'X',
+          old_line_ahb_status: 'M',
+          new_qualifier: 'E01',
+          old_qualifier: 'E01',
+          new_line_name: 'Code Name',
+          old_line_name: 'Code Name',
         }),
       ];
 
