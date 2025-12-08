@@ -38,7 +38,7 @@ jobs:
     needs: generate-changelog
     runs-on: ubuntu-latest
     # Only run for pre-release tags (e.g., v1.0.0-rc)
-    if: ${{ contains(github.ref_name, 'rc') }}
+    if: ${{ contains(github.ref_name, '*-rc*') }}
     permissions:
       contents: read
       packages: write
@@ -122,7 +122,7 @@ jobs:
     name: Build Production Docker Image
     needs: generate-changelog
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.ref_name, 'rc') }}
+    if: ${{ !contains(github.ref_name, '*-rc*') }}
     permissions:
       contents: read
       packages: write
@@ -215,7 +215,7 @@ jobs:
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
 
       - name: Publish GitHub Pre-release
-        if: ${{ contains(github.ref_name, 'rc') }}
+        if: ${{ contains(github.ref_name, '*-rc*') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
@@ -225,7 +225,7 @@ jobs:
           draft: false
 
       - name: Publish GitHub Release
-        if: ${{ !contains(github.ref_name, 'rc') }}
+        if: ${{ !contains(github.ref_name, '*-rc*') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
@@ -237,7 +237,7 @@ jobs:
   deploy-stage:
     name: Deploy to Stage
     needs: [build-stage]
-    if: ${{ contains(github.ref_name, 'rc') }}
+    if: ${{ contains(github.ref_name, '*-rc*') }}
     permissions:
       contents: read
       id-token: write
@@ -254,7 +254,7 @@ jobs:
   deploy-production:
     name: Deploy to Production
     needs: [build-production]
-    if: ${{ !contains(github.ref_name, 'rc') }}
+    if: ${{ !contains(github.ref_name, '*-rc*') }}
     permissions:
       contents: read
       id-token: write
