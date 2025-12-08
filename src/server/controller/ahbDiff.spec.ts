@@ -124,6 +124,7 @@ describe('AhbDiffController', () => {
             diff_status: 'unchanged',
             id_path: 'path/1',
             sort_path: '001',
+            changed_columns: [],
             old: { segmentgroup_key: 'SG1' },
             new: { segmentgroup_key: 'SG1' },
           },

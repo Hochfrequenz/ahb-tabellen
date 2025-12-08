@@ -257,5 +257,39 @@ describe('AhbDiffRepository', () => {
       expect(result.lines[0].new?.line_ahb_status).toBe('X');
       expect(result.lines[0].old?.line_ahb_status).toBe('M');
     });
+
+    it('should parse changed_columns from comma-separated string', async () => {
+      const mockRawRows = [
+        createMockRow({
+          changed_columns: 'line_ahb_status, line_name',
+          diff_status: 'modified',
+        }),
+      ];
+
+      (AppDataSource.query as jest.Mock)
+        .mockResolvedValueOnce(mockRawRows)
+        .mockResolvedValueOnce([]);
+
+      const result = await repository.getDiff('11042', 'FV2504', 'FV2410');
+
+      expect(result.lines[0].changed_columns).toEqual(['line_ahb_status', 'line_name']);
+    });
+
+    it('should return empty array when changed_columns is null', async () => {
+      const mockRawRows = [
+        createMockRow({
+          changed_columns: null,
+          diff_status: 'unchanged',
+        }),
+      ];
+
+      (AppDataSource.query as jest.Mock)
+        .mockResolvedValueOnce(mockRawRows)
+        .mockResolvedValueOnce([]);
+
+      const result = await repository.getDiff('11042', 'FV2504', 'FV2410');
+
+      expect(result.lines[0].changed_columns).toEqual([]);
+    });
   });
 });

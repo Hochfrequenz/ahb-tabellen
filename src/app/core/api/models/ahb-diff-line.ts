@@ -10,6 +10,11 @@ import { AhbDiffSide } from '../models/ahb-diff-side';
 export interface AhbDiffLine {
 
   /**
+   * List of column names that changed between versions
+   */
+  changed_columns?: Array<string>;
+
+  /**
    * The diff status from v_ahb_diff
    */
   diff_status: 'unchanged' | 'modified' | 'added' | 'deleted';

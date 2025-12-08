@@ -24,6 +24,7 @@ export interface AhbDiffLineJoined {
   diff_status: string;
   id_path: string;
   sort_path: string;
+  changed_columns: string[];
   old: AhbDiffSide | null;
   new: AhbDiffSide | null;
 }
@@ -151,10 +152,16 @@ export default class AhbDiffRepository {
         row.new_data_element !== null ||
         row.new_qualifier !== null;
 
+      // Parse changed_columns from comma-separated string to array
+      const changedColumns = row.changed_columns
+        ? row.changed_columns.split(',').map(c => c.trim()).filter(c => c.length > 0)
+        : [];
+
       return {
         diff_status: row.diff_status,
         id_path: row.id_path,
         sort_path: row.sort_path,
+        changed_columns: changedColumns,
         old: hasOldData
           ? {
               segmentgroup_key: row.old_segmentgroup_key,

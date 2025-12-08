@@ -61,8 +61,20 @@ export class ComparisonTableComponent {
     return side?.line_type === 'segmentgroup';
   }
 
-  getCellDiffClass(oldVal: string | null | undefined, newVal: string | null | undefined): string {
-    if ((oldVal ?? '') !== (newVal ?? '')) {
+  /**
+   * Check if a column is in the changed_columns list
+   * @param line The diff line containing changed_columns
+   * @param column The column name to check (e.g., 'segmentgroup_key', 'segment_code')
+   */
+  isColumnChanged(line: AhbDiffLine, column: string): boolean {
+    return line.changed_columns?.includes(column) ?? false;
+  }
+
+  /**
+   * Get CSS class for a cell based on whether its column changed
+   */
+  getChangedColumnClass(line: AhbDiffLine, column: string): string {
+    if (this.isColumnChanged(line, column)) {
       return 'font-semibold text-yellow-700';
     }
     return '';

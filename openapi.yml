@@ -557,6 +557,11 @@ components:
         sort_path:
           type: string
           description: The sort_path for ordering
+        changed_columns:
+          type: array
+          items:
+            type: string
+          description: List of column names that changed between versions
         old:
           $ref: '#/components/schemas/AhbDiffSide'
           description: Data from v_ahbtabellen for the old (B) version
