@@ -203,8 +203,7 @@ jobs:
 
   publish-release:
     name: Publish GitHub Release
-    needs: [generate-changelog, build-stage, build-production]
-    if: always() && needs.generate-changelog.result == 'success' && (needs.build-stage.result == 'success' || needs.build-stage.result == 'skipped') && (needs.build-production.result == 'success' || needs.build-production.result == 'skipped')
+    needs: [generate-changelog]
     runs-on: ubuntu-latest
     permissions:
       contents: write
