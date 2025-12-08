@@ -77,7 +77,6 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}.{{patch}}
             type=raw,value=${{ env.VERSION_TAG }}
 
       - name: Extract Docker Tag from JSON
@@ -160,10 +159,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}.{{patch}}
             type=raw,value=${{ env.VERSION_TAG }}
             type=raw,value=latest
 
