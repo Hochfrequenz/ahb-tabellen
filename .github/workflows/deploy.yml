@@ -3,15 +3,15 @@ name: Deploy on Version Tag
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  BUILD_DATE: "set by build_release_info step"
-  COMMIT_ID: "set by build_release_info step"
-  VERSION_TAG: "set by build_release_info step"
-  DOCKER_TAG: "set by extract-tag step"
+  BUILD_DATE: 'set by build_release_info step'
+  COMMIT_ID: 'set by build_release_info step'
+  VERSION_TAG: 'set by build_release_info step'
+  DOCKER_TAG: 'set by extract-tag step'
 
 on:
   push:
     tags:
-      - "v*.*.*"
+      - 'v*.*.*'
 
 jobs:
   generate-changelog:
@@ -219,7 +219,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
-          name: "Pre-release ${{ env.VERSION_TAG }}"
+          name: 'Pre-release ${{ env.VERSION_TAG }}'
           body: ${{ needs.generate-changelog.outputs.release_body }}
           prerelease: true
           draft: false
@@ -229,7 +229,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
-          name: "Release ${{ env.VERSION_TAG }}"
+          name: 'Release ${{ env.VERSION_TAG }}'
           body: ${{ needs.generate-changelog.outputs.release_body }}
           prerelease: false
           draft: false
