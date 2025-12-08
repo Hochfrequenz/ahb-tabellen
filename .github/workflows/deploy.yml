@@ -3,11 +3,10 @@ name: Deploy on Version Tag
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  PROJECT_NAME: ahb-tabellen
-  OCTOPUS_SPACE: Default
   BUILD_DATE: 'set by build_release_info step'
   COMMIT_ID: 'set by build_release_info step'
   VERSION_TAG: 'set by build_release_info step'
+  DOCKER_TAG: 'set by extract-tag step'
 
 on:
   push:
@@ -33,15 +32,20 @@ jobs:
           config: cliff.toml
           args: --latest --github-repo ${{ github.repository }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-  deploy:
-    name: Deploy to Docker and Octopus Deploy
+
+  build-stage:
+    name: Build Stage Docker Image
     needs: generate-changelog
     runs-on: ubuntu-latest
+    # Only run for pre-release tags (e.g., v1.0.0-rc)
+    if: ${{ contains(github.ref_name, '*-rc*') }}
     permissions:
-      contents: write
+      contents: read
       packages: write
       attestations: write
       id-token: write
+    outputs:
+      docker-tag: ${{ steps.extract-tag.outputs.tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -70,8 +74,31 @@ jobs:
         uses: docker/metadata-action@v5.10.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=${{ env.VERSION_TAG }}
 
-      - name: Build and push Docker image
+      - name: Extract Docker Tag from JSON
+        id: extract-tag
+        run: |
+          FULL_TAG=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags[0]')
+          if [ -z "$FULL_TAG" ] || [ "$FULL_TAG" = "null" ]; then
+            echo "Error: Failed to extract Docker tag (tags[0] missing or null)"
+            exit 1
+          fi
+          if [[ "$FULL_TAG" != *:* ]]; then
+            echo "Error: Extracted tag does not contain a colon: $FULL_TAG"
+            exit 1
+          fi
+          DOCKER_TAG=$(echo "$FULL_TAG" | cut -d':' -f2)
+          if [ -z "$DOCKER_TAG" ]; then
+            echo "Error: Docker tag part after colon is empty in: $FULL_TAG"
+            exit 1
+          fi
+          echo "Extracted Docker tag: $DOCKER_TAG"
+          echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image for Stage
         id: push
         uses: docker/build-push-action@v6.18.0
         with:
@@ -91,8 +118,104 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
+  build-production:
+    name: Build Production Docker Image
+    needs: generate-changelog
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.ref_name, '*-rc*') }}
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    outputs:
+      docker-tag: ${{ steps.extract-tag.outputs.tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Set build and release information
+        id: build_release_info
+        run: |
+          BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          COMMIT_ID=$(git rev-parse HEAD)
+          VERSION_TAG=${GITHUB_REF#refs/tags/}
+          echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
+          echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5.10.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=${{ env.VERSION_TAG }}
+            type=raw,value=latest
+
+      - name: Extract Docker Tag from JSON
+        id: extract-tag
+        run: |
+          FULL_TAG=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags[0]')
+          if [ -z "$FULL_TAG" ] || [ "$FULL_TAG" = "null" ]; then
+            echo "Error: Failed to extract Docker tag (tags[0] missing or null)"
+            exit 1
+          fi
+          if [[ "$FULL_TAG" != *:* ]]; then
+            echo "Error: Extracted tag does not contain a colon: $FULL_TAG"
+            exit 1
+          fi
+          DOCKER_TAG=$(echo "$FULL_TAG" | cut -d':' -f2)
+          if [ -z "$DOCKER_TAG" ]; then
+            echo "Error: Docker tag part after colon is empty in: $FULL_TAG"
+            exit 1
+          fi
+          echo "Extracted Docker tag: $DOCKER_TAG"
+          echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+      - name: Build and push Docker image for Production
+        id: push
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUILD_DATE=${{ env.BUILD_DATE }}
+            COMMIT_ID=${{ env.COMMIT_ID }}
+            VERSION=${{ env.VERSION_TAG }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [generate-changelog]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Set version tag
+        run: |
+          VERSION_TAG=${GITHUB_REF#refs/tags/}
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+
       - name: Publish GitHub Pre-release
-        if: ${{ contains(env.VERSION_TAG, '-') }}
+        if: ${{ contains(github.ref_name, '*-rc*') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
@@ -102,7 +225,7 @@ jobs:
           draft: false
 
       - name: Publish GitHub Release
-        if: ${{ !contains(env.VERSION_TAG, '-') }}
+        if: ${{ !contains(github.ref_name, '*-rc*') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
@@ -111,27 +234,36 @@ jobs:
           prerelease: false
           draft: false
 
-      - name: Login to Octopus Deploy 🐙
-        uses: OctopusDeploy/login@v1
-        with:
-          server: https://hochfrequenz.octopus.app
-          service_account_id: 990f3f62-2e3f-4b1e-9569-d5a6817a2c80
+  deploy-stage:
+    name: Deploy to Stage
+    needs: [build-stage]
+    if: ${{ contains(github.ref_name, '*-rc*') }}
+    permissions:
+      contents: read
+      id-token: write
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@5f78996ec6a07117a0f27a6ec83b594f4a3e9701
+    with:
+      pulumi_stack_name: stage
+      docker_tag: ${{ needs.build-stage.outputs.docker-tag }}
+    secrets:
+      azure_client_id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
+      azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+      azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
+      pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
-      - name: Create a release in Octopus Deploy 🐙
-        uses: OctopusDeploy/create-release-action@v3
-        with:
-          space: ${{ env.OCTOPUS_SPACE }}
-          project: ${{ env.PROJECT_NAME }}
-          release_number: ${{ env.VERSION_TAG }}
-          git_ref: ${{ github.ref }}
-          git_commit: ${{ github.sha }}
-          release_notes: 'Release created from GitHub Actions. Version: ${{ env.VERSION_TAG }}'
-
-      - name: Deploy a release in Octopus Deploy 🐙
-        uses: OctopusDeploy/deploy-release-action@v3
-        with:
-          space: ${{ env.OCTOPUS_SPACE }}
-          project: ${{ env.PROJECT_NAME }}
-          release_number: ${{ env.VERSION_TAG }}
-          environments: |
-            Staging
+  deploy-production:
+    name: Deploy to Production
+    needs: [build-production]
+    if: ${{ !contains(github.ref_name, '*-rc*') }}
+    permissions:
+      contents: read
+      id-token: write
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@5f78996ec6a07117a0f27a6ec83b594f4a3e9701
+    with:
+      pulumi_stack_name: prod
+      docker_tag: ${{ needs.build-production.outputs.docker-tag }}
+    secrets:
+      azure_client_id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
+      azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+      azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
+      pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
