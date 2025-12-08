@@ -97,6 +97,7 @@ jobs:
             exit 1
           fi
           echo "Extracted Docker tag: $DOCKER_TAG"
+          echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image for Stage
         id: push
