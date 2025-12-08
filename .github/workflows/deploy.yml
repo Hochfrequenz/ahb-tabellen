@@ -3,7 +3,6 @@ name: Deploy on Version Tag
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  PROJECT_NAME: ahb-tabellen
   BUILD_DATE: "set by build_release_info step"
   COMMIT_ID: "set by build_release_info step"
   VERSION_TAG: "set by build_release_info step"
