@@ -154,7 +154,10 @@ export default class AhbDiffRepository {
 
       // Parse changed_columns from comma-separated string to array
       const changedColumns = row.changed_columns
-        ? row.changed_columns.split(',').map(c => c.trim()).filter(c => c.length > 0)
+        ? row.changed_columns
+            .split(',')
+            .map(c => c.trim())
+            .filter(c => c.length > 0)
         : [];
 
       return {

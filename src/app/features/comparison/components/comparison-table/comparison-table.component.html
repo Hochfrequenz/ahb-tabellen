@@ -54,14 +54,10 @@
               [class]="getChangedColumnClass(line, 'segment_code')">
               {{ getSegmentCode(line, 'old') || '-' }}
             </td>
-            <td
-              class="px-3 py-2"
-              [class]="getChangedColumnClass(line, 'data_element')">
+            <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'data_element')">
               {{ getDataElement(line, 'old') || '-' }}
             </td>
-            <td
-              class="px-3 py-2"
-              [class]="getChangedColumnClass(line, 'qualifier')">
+            <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'qualifier')">
               @if (generateEbdDeepLink(getQualifier(line, 'old'), formatVersionOld); as ebdLink) {
                 <a
                   [href]="ebdLink"
@@ -74,9 +70,7 @@
                 {{ getQualifier(line, 'old') || '-' }}
               }
             </td>
-            <td
-              class="px-3 py-2"
-              [class]="getChangedColumnClass(line, 'line_name')">
+            <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'line_name')">
               {{ getName(line, 'old') || '-' }}
             </td>
             <td
@@ -111,14 +105,10 @@
               [class]="getChangedColumnClass(line, 'segment_code')">
               {{ getSegmentCode(line, 'new') || '-' }}
             </td>
-            <td
-              class="px-3 py-2"
-              [class]="getChangedColumnClass(line, 'data_element')">
+            <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'data_element')">
               {{ getDataElement(line, 'new') || '-' }}
             </td>
-            <td
-              class="px-3 py-2"
-              [class]="getChangedColumnClass(line, 'qualifier')">
+            <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'qualifier')">
               @if (generateEbdDeepLink(getQualifier(line, 'new'), formatVersionNew); as ebdLink) {
                 <a
                   [href]="ebdLink"
@@ -131,9 +121,7 @@
                 {{ getQualifier(line, 'new') || '-' }}
               }
             </td>
-            <td
-              class="px-3 py-2"
-              [class]="getChangedColumnClass(line, 'line_name')">
+            <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'line_name')">
               {{ getName(line, 'new') || '-' }}
             </td>
             <td
