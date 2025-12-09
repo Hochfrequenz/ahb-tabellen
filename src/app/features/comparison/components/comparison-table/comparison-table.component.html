@@ -81,7 +81,7 @@
             </td>
             <td
               class="px-3 py-2"
-              [class]="getChangedColumnClass(line, 'line_ahb_status')">
+              [class]="getChangedColumnClass(line, ['line_ahb_status', 'bedingung'])">
               @if (
                 generateBedingungsbaumDeepLink(getAhbStatus(line, 'old'), formatVersionOld);
                 as treeLink
@@ -138,7 +138,7 @@
             </td>
             <td
               class="px-3 py-2"
-              [class]="getChangedColumnClass(line, 'line_ahb_status')">
+              [class]="getChangedColumnClass(line, ['line_ahb_status', 'bedingung'])">
               @if (
                 generateBedingungsbaumDeepLink(getAhbStatus(line, 'new'), formatVersionNew);
                 as treeLink

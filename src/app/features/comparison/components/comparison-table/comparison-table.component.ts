@@ -72,9 +72,12 @@ export class ComparisonTableComponent {
 
   /**
    * Get CSS class for a cell based on whether its column changed
+   * @param columns Can be a single column name or an array of column names to check
    */
-  getChangedColumnClass(line: AhbDiffLine, column: string): string {
-    if (this.isColumnChanged(line, column)) {
+  getChangedColumnClass(line: AhbDiffLine, columns: string | string[]): string {
+    const columnsToCheck = Array.isArray(columns) ? columns : [columns];
+    const hasChange = columnsToCheck.some(col => this.isColumnChanged(line, col));
+    if (hasChange) {
       return 'font-semibold text-yellow-700';
     }
     return '';
