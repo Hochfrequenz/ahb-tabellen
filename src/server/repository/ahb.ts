@@ -184,12 +184,9 @@ export default class AHBRepository {
           );
         }
         if (value.contains !== undefined) {
-          queryBuilder.andWhere(
-            `LOWER(al.${columnName}) LIKE :${paramBase}_contains ESCAPE '\\\\'`,
-            {
-              [`${paramBase}_contains`]: convertToLikePattern(value.contains),
-            }
-          );
+          queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_contains ESCAPE '\\'`, {
+            [`${paramBase}_contains`]: convertToLikePattern(value.contains),
+          });
         }
         if (value.startsWith !== undefined) {
           queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_starts`, {
@@ -261,9 +258,10 @@ export default class AHBRepository {
         const likePattern = convertToLikePattern(qRaw);
 
         // Use TypeORM's parameterized query methods - validate each field
+        // Include ESCAPE clause for SQLite to recognize backslash as escape character
         const orConditions = qFields.map((field, idx) => {
           const columnName = validateField(field);
-          return `LOWER(al.${columnName}) LIKE :q${idx}`;
+          return `LOWER(al.${columnName}) LIKE :q${idx} ESCAPE '\\'`;
         });
 
         const params = Object.fromEntries(qFields.map((_, idx) => [`q${idx}`, likePattern]));
