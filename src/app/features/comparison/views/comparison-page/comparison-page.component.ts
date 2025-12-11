@@ -135,8 +135,8 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     this.diff$ = this.ahbService
       .getAhbDiff({
         pruefi: this.pruefi(),
-        'format-version-a': this.formatVersionNew(),
-        'format-version-b': this.formatVersionOld(),
+        'format-version-new': this.formatVersionNew(),
+        'format-version-old': this.formatVersionOld(),
       })
       .pipe(
         shareReplay(1),

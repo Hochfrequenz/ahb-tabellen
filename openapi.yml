@@ -170,15 +170,15 @@ paths:
             type: string
             pattern: '^\d{5}$'
             example: '55014'
-        - name: format-version-a
+        - name: format-version-new
           in: query
-          description: First format version (typically newer)
+          description: The newer format version to compare
           required: true
           schema:
             $ref: '#/components/schemas/FormatVersion'
-        - name: format-version-b
+        - name: format-version-old
           in: query
-          description: Second format version (typically older)
+          description: The older format version to compare
           required: true
           schema:
             $ref: '#/components/schemas/FormatVersion'
@@ -522,24 +522,24 @@ components:
             pruefidentifikator:
               type: string
               example: '55014'
-            format_version_a:
+            format_version_new:
               type: string
               example: 'FV2504'
-            format_version_b:
+            format_version_old:
               type: string
               example: 'FV2410'
-            description_a:
+            description_new:
               type: string
               nullable: true
-              description: Description of the Pruefidentifikator in version A (new)
-            description_b:
+              description: Description of the Pruefidentifikator in the new version
+            description_old:
               type: string
               nullable: true
-              description: Description of the Pruefidentifikator in version B (old)
+              description: Description of the Pruefidentifikator in the old version
           required:
             - pruefidentifikator
-            - format_version_a
-            - format_version_b
+            - format_version_new
+            - format_version_old
       required:
         - lines
         - meta

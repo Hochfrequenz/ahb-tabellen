@@ -33,10 +33,10 @@ export interface AhbDiffResult {
   lines: AhbDiffLineJoined[];
   meta: {
     pruefidentifikator: string;
-    format_version_a: string;
-    format_version_b: string;
-    description_a?: string;
-    description_b?: string;
+    format_version_new: string;
+    format_version_old: string;
+    description_new?: string;
+    description_old?: string;
   };
 }
 
@@ -74,8 +74,8 @@ interface RawDiffRow {
 export default class AhbDiffRepository {
   public async getDiff(
     pruefi: string,
-    formatVersionA: string,
-    formatVersionB: string
+    formatVersionNew: string,
+    formatVersionOld: string
   ): Promise<AhbDiffResult> {
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
@@ -123,17 +123,17 @@ export default class AhbDiffRepository {
     const rawRows: RawDiffRow[] = await AppDataSource.query(query, [
       pruefi,
       pruefi,
-      formatVersionA, // new version
-      formatVersionB, // old version
+      formatVersionNew,
+      formatVersionOld,
     ]);
     const diffQueryMs = performance.now() - diffQueryStart;
     console.log(
-      `[AhbDiff] Main diff query: ${diffQueryMs.toFixed(1)}ms, rows=${rawRows.length}, pruefi=${pruefi}, fvA=${formatVersionA}, fvB=${formatVersionB}`
+      `[AhbDiff] Main diff query: ${diffQueryMs.toFixed(1)}ms, rows=${rawRows.length}, pruefi=${pruefi}, fvNew=${formatVersionNew}, fvOld=${formatVersionOld}`
     );
 
     if (rawRows.length === 0) {
       throw new NotFoundError(
-        `No diff found for pruefi ${pruefi} between ${formatVersionA} and ${formatVersionB}`
+        `No diff found for pruefi ${pruefi} between ${formatVersionNew} and ${formatVersionOld}`
       );
     }
 
@@ -201,25 +201,25 @@ export default class AhbDiffRepository {
     `;
     const descQueryStart = performance.now();
     const descriptionRows: { description: string | null; format_version: string }[] =
-      await AppDataSource.query(descriptionQuery, [pruefi, formatVersionA, formatVersionB]);
+      await AppDataSource.query(descriptionQuery, [pruefi, formatVersionNew, formatVersionOld]);
     const descQueryMs = performance.now() - descQueryStart;
     console.log(`[AhbDiff] Description query: ${descQueryMs.toFixed(1)}ms, pruefi=${pruefi}`);
 
-    const descriptionA = descriptionRows.find(
-      r => r.format_version === formatVersionA
+    const descriptionNew = descriptionRows.find(
+      r => r.format_version === formatVersionNew
     )?.description;
-    const descriptionB = descriptionRows.find(
-      r => r.format_version === formatVersionB
+    const descriptionOld = descriptionRows.find(
+      r => r.format_version === formatVersionOld
     )?.description;
 
     return {
       lines,
       meta: {
         pruefidentifikator: pruefi,
-        format_version_a: formatVersionA,
-        format_version_b: formatVersionB,
-        description_a: descriptionA ?? undefined,
-        description_b: descriptionB ?? undefined,
+        format_version_new: formatVersionNew,
+        format_version_old: formatVersionOld,
+        description_new: descriptionNew ?? undefined,
+        description_old: descriptionOld ?? undefined,
       },
     };
   }

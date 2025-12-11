@@ -104,10 +104,10 @@ describe('AhbDiffRepository', () => {
       expect(result.lines[0].old).not.toBeNull();
       expect(result.lines[0].new).not.toBeNull();
       expect(result.meta.pruefidentifikator).toBe('11042');
-      expect(result.meta.format_version_a).toBe('FV2504');
-      expect(result.meta.format_version_b).toBe('FV2410');
-      expect(result.meta.description_a).toBe('Desc A');
-      expect(result.meta.description_b).toBe('Desc B');
+      expect(result.meta.format_version_new).toBe('FV2504');
+      expect(result.meta.format_version_old).toBe('FV2410');
+      expect(result.meta.description_new).toBe('Desc A');
+      expect(result.meta.description_old).toBe('Desc B');
     });
 
     it('should handle added rows (no old data)', async () => {
@@ -214,8 +214,8 @@ describe('AhbDiffRepository', () => {
 
       const result = await repository.getDiff('11042', 'FV2504', 'FV2410');
 
-      expect(result.meta.description_a).toBeUndefined();
-      expect(result.meta.description_b).toBeUndefined();
+      expect(result.meta.description_new).toBeUndefined();
+      expect(result.meta.description_old).toBeUndefined();
     });
 
     it('should initialize database if not initialized', async () => {

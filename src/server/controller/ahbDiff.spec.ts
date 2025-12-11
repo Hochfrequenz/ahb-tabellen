@@ -46,7 +46,7 @@ describe('AhbDiffController', () => {
   describe('input validation', () => {
     it('should reject invalid pruefi format (not 5 digits)', async () => {
       mockReq.params = { pruefi: '1234' };
-      mockReq.query = { 'format-version-a': 'FV2504', 'format-version-b': 'FV2410' };
+      mockReq.query = { 'format-version-new': 'FV2504', 'format-version-old': 'FV2410' };
 
       await controller.get(mockReq as Request, mockRes as Response, mockNext);
 
@@ -58,7 +58,7 @@ describe('AhbDiffController', () => {
 
     it('should reject invalid pruefi format (letters)', async () => {
       mockReq.params = { pruefi: 'abcde' };
-      mockReq.query = { 'format-version-a': 'FV2504', 'format-version-b': 'FV2410' };
+      mockReq.query = { 'format-version-new': 'FV2504', 'format-version-old': 'FV2410' };
 
       await controller.get(mockReq as Request, mockRes as Response, mockNext);
 
@@ -67,52 +67,52 @@ describe('AhbDiffController', () => {
       expect(error.name).toBe('ValidationError');
     });
 
-    it('should reject missing format-version-a', async () => {
+    it('should reject missing format-version-new', async () => {
       mockReq.params = { pruefi: '11042' };
-      mockReq.query = { 'format-version-b': 'FV2410' };
+      mockReq.query = { 'format-version-old': 'FV2410' };
 
       await controller.get(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
       const error = mockNext.mock.calls[0][0] as unknown as ValidationError;
       expect(error.name).toBe('ValidationError');
-      expect(error.message).toContain('format-version-a');
+      expect(error.message).toContain('format-version-new');
     });
 
-    it('should reject missing format-version-b', async () => {
+    it('should reject missing format-version-old', async () => {
       mockReq.params = { pruefi: '11042' };
-      mockReq.query = { 'format-version-a': 'FV2504' };
+      mockReq.query = { 'format-version-new': 'FV2504' };
 
       await controller.get(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
       const error = mockNext.mock.calls[0][0] as unknown as ValidationError;
       expect(error.name).toBe('ValidationError');
-      expect(error.message).toContain('format-version-b');
+      expect(error.message).toContain('format-version-old');
     });
 
-    it('should reject invalid format-version-a pattern', async () => {
+    it('should reject invalid format-version-new pattern', async () => {
       mockReq.params = { pruefi: '11042' };
-      mockReq.query = { 'format-version-a': 'invalid', 'format-version-b': 'FV2410' };
+      mockReq.query = { 'format-version-new': 'invalid', 'format-version-old': 'FV2410' };
 
       await controller.get(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
       const error = mockNext.mock.calls[0][0] as unknown as ValidationError;
       expect(error.name).toBe('ValidationError');
-      expect(error.message).toContain('format-version-a');
+      expect(error.message).toContain('format-version-new');
     });
 
-    it('should reject invalid format-version-b pattern', async () => {
+    it('should reject invalid format-version-old pattern', async () => {
       mockReq.params = { pruefi: '11042' };
-      mockReq.query = { 'format-version-a': 'FV2504', 'format-version-b': '2410' };
+      mockReq.query = { 'format-version-new': 'FV2504', 'format-version-old': '2410' };
 
       await controller.get(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
       const error = mockNext.mock.calls[0][0] as unknown as ValidationError;
       expect(error.name).toBe('ValidationError');
-      expect(error.message).toContain('format-version-b');
+      expect(error.message).toContain('format-version-old');
     });
   });
 
@@ -131,14 +131,14 @@ describe('AhbDiffController', () => {
         ],
         meta: {
           pruefidentifikator: '11042',
-          format_version_a: 'FV2504',
-          format_version_b: 'FV2410',
+          format_version_new: 'FV2504',
+          format_version_old: 'FV2410',
         },
       };
       mockRepository.getDiff.mockResolvedValue(mockResult);
 
       mockReq.params = { pruefi: '11042' };
-      mockReq.query = { 'format-version-a': 'FV2504', 'format-version-b': 'FV2410' };
+      mockReq.query = { 'format-version-new': 'FV2504', 'format-version-old': 'FV2410' };
 
       await controller.get(mockReq as Request, mockRes as Response, mockNext);
 
@@ -154,7 +154,7 @@ describe('AhbDiffController', () => {
       mockRepository.getDiff.mockRejectedValue(error);
 
       mockReq.params = { pruefi: '11042' };
-      mockReq.query = { 'format-version-a': 'FV2504', 'format-version-b': 'FV2410' };
+      mockReq.query = { 'format-version-new': 'FV2504', 'format-version-old': 'FV2410' };
 
       await controller.get(mockReq as Request, mockRes as Response, mockNext);
 

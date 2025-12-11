@@ -12,8 +12,8 @@ export default class AhbDiffController {
   public async get(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const pruefi = req.params['pruefi'];
-      const formatVersionA = req.query['format-version-a'] as string;
-      const formatVersionB = req.query['format-version-b'] as string;
+      const formatVersionNew = req.query['format-version-new'] as string;
+      const formatVersionOld = req.query['format-version-old'] as string;
 
       if (!/^\d{5}$/.test(pruefi)) {
         throw new ValidationError(
@@ -21,19 +21,19 @@ export default class AhbDiffController {
         );
       }
 
-      if (!formatVersionA || !/^FV\d{4}$/.test(formatVersionA)) {
+      if (!formatVersionNew || !/^FV\d{4}$/.test(formatVersionNew)) {
         throw new ValidationError(
-          `Invalid format-version-a: ${formatVersionA}. Expected pattern: FV followed by 4 digits.`
+          `Invalid format-version-new: ${formatVersionNew}. Expected pattern: FV followed by 4 digits.`
         );
       }
 
-      if (!formatVersionB || !/^FV\d{4}$/.test(formatVersionB)) {
+      if (!formatVersionOld || !/^FV\d{4}$/.test(formatVersionOld)) {
         throw new ValidationError(
-          `Invalid format-version-b: ${formatVersionB}. Expected pattern: FV followed by 4 digits.`
+          `Invalid format-version-old: ${formatVersionOld}. Expected pattern: FV followed by 4 digits.`
         );
       }
 
-      const result = await this.repository.getDiff(pruefi, formatVersionA, formatVersionB);
+      const result = await this.repository.getDiff(pruefi, formatVersionNew, formatVersionOld);
 
       res.status(200).setHeader('Content-Type', 'application/json').json(result);
     } catch (error) {

@@ -19,22 +19,22 @@ export interface GetAhbDiff$Params {
   pruefi: string;
 
 /**
- * First format version (typically newer)
+ * The newer format version to compare
  */
-  'format-version-a': FormatVersion;
+  'format-version-new': FormatVersion;
 
 /**
- * Second format version (typically older)
+ * The older format version to compare
  */
-  'format-version-b': FormatVersion;
+  'format-version-old': FormatVersion;
 }
 
 export function getAhbDiff(http: HttpClient, rootUrl: string, params: GetAhbDiff$Params, context?: HttpContext): Observable<StrictHttpResponse<AhbDiff>> {
   const rb = new RequestBuilder(rootUrl, getAhbDiff.PATH, 'get');
   if (params) {
     rb.path('pruefi', params.pruefi, {});
-    rb.query('format-version-a', params['format-version-a'], {});
-    rb.query('format-version-b', params['format-version-b'], {});
+    rb.query('format-version-new', params['format-version-new'], {});
+    rb.query('format-version-old', params['format-version-old'], {});
   }
 
   return http.request(

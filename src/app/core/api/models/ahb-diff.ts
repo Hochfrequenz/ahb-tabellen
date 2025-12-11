@@ -7,17 +7,17 @@ export interface AhbDiff {
   lines: Array<AhbDiffLine>;
   meta: {
 'pruefidentifikator': string;
-'format_version_a': string;
-'format_version_b': string;
+'format_version_new': string;
+'format_version_old': string;
 
 /**
- * Description of the Pruefidentifikator in version A (new)
+ * Description of the Pruefidentifikator in the new version
  */
-'description_a'?: string | null;
+'description_new'?: string | null;
 
 /**
- * Description of the Pruefidentifikator in version B (old)
+ * Description of the Pruefidentifikator in the old version
  */
-'description_b'?: string | null;
+'description_old'?: string | null;
 };
 }
