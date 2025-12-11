@@ -1,0 +1,43 @@
+<form [formGroup]="headerSearchForm" class="flex items-center gap-2">
+  <!-- Old Version Select -->
+  <div class="flex flex-col items-start h-16 w-36 pt-2">
+    <select
+      id="header-format-version-old"
+      class="inline-block border-2 border-white rounded-lg bg-hf-pastell-rose py-[10.5px] ps-3 pe-8 focus:outline-0 w-full"
+      formControlName="formatVersionOld">
+      @for (fv of availableOldVersions; track fv) {
+        <option [value]="fv">{{ fv }}</option>
+      }
+    </select>
+    <label
+      for="header-format-version-old"
+      class="ml-3 -mt-14 text-xs inline-block text-slate-500 text-[12px] bg-white px-1">
+      Alte Version
+    </label>
+  </div>
+
+  <span class="text-gray-500">→</span>
+
+  <!-- New Version Select -->
+  <div class="flex flex-col items-start h-16 w-36 pt-2">
+    <select
+      id="header-format-version-new"
+      class="inline-block border-2 border-white rounded-lg bg-hf-pastell-rose py-[10.5px] ps-3 pe-8 focus:outline-0 w-full"
+      formControlName="formatVersionNew">
+      @for (fv of availableNewVersions; track fv) {
+        <option [value]="fv">{{ fv }}</option>
+      }
+    </select>
+    <label
+      for="header-format-version-new"
+      class="ml-3 -mt-14 text-xs inline-block text-slate-500 text-[12px] bg-white px-1">
+      Neue Version
+    </label>
+  </div>
+
+  <!-- Pruefi Input -->
+  <app-pruefi-input
+    class="inline-block h-16 w-64"
+    formControlName="pruefi"
+    [formatVersion]="formatVersionForPruefi" />
+</form>

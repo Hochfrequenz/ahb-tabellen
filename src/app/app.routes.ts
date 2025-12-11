@@ -15,6 +15,12 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'compare',
+    loadChildren: async () =>
+      (await import('./features/comparison/comparison.routes')).COMPARISON_ROUTES,
+    canActivate: [AuthGuard],
+  },
+  {
     path: '',
     loadChildren: async () =>
       (await import('./features/landingpage/landingpage.routes')).LANDINGPAGE_ROUTES,

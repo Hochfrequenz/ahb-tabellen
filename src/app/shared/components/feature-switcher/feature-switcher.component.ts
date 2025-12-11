@@ -21,6 +21,7 @@ export class FeatureSwitcherComponent {
   readonly features: FeatureOption[] = [
     { value: 'ahb', label: 'AHB-Tabellen', route: '/ahb' },
     { value: 'search', label: 'Globale Suche', route: '/search' },
+    { value: 'comparison', label: 'AHB Vergleich', route: '/compare' },
   ];
 
   constructor(

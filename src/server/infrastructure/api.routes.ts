@@ -1,5 +1,6 @@
 import { Router, IRouter } from 'express';
 import AHBController from '../controller/ahb';
+import AhbDiffController from '../controller/ahbDiff';
 import FormatVersionController from '../controller/formatVersion';
 import FormateController from '../controller/formate';
 import HealthController from '../controller/health';
@@ -9,6 +10,7 @@ import RichtungController from '../controller/richtung';
 const router: IRouter = Router();
 
 const ahbController = new AHBController();
+const ahbDiffController = new AhbDiffController();
 const formatVersionController = new FormatVersionController();
 const formateController = new FormateController();
 const healthController = new HealthController();
@@ -21,6 +23,10 @@ router.get('/health', async (req, res, next) => {
 
 router.get('/ahb/:formatVersion/:pruefi', (req, res, next) => {
   ahbController.get(req, res, next);
+});
+
+router.get('/ahb-diff/:pruefi', (req, res, next) => {
+  ahbDiffController.get(req, res, next);
 });
 
 router.post('/search/query', (req, res, next) => {

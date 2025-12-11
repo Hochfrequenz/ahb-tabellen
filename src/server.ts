@@ -14,6 +14,7 @@ server.use(express.json());
 server.use(
   cors({
     origin: [
+      'http://localhost:3000',
       'http://localhost:4200',
       'http://localhost:4000',
       'https://ahb-tabellen.stage.hochfrequenz.de',

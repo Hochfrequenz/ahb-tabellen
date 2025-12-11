@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { AhbMetaInformation } from '../entities/ahb-meta-information.entity';
 import { AhbLine, Anwendungshandbuch } from '../entities/ahb-line.entity';
+import { AhbDiffLine } from '../entities/ahb-diff.entity';
 import path from 'path';
 
 const dbPath = path.resolve(process.cwd(), 'src/server/data/ahb.db');
@@ -9,7 +10,7 @@ const dbPath = path.resolve(process.cwd(), 'src/server/data/ahb.db');
 const dataSourceConfig = {
   type: 'sqlite' as const,
   database: dbPath,
-  entities: [AhbMetaInformation, AhbLine, Anwendungshandbuch],
+  entities: [AhbMetaInformation, AhbLine, Anwendungshandbuch, AhbDiffLine],
   logging: true, // Enable SQL query logging
   synchronize: false, // Set to false since we already have the database schema
 };

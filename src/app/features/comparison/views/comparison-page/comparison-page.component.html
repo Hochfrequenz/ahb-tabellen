@@ -1,0 +1,98 @@
+<app-header class="flex-none">
+  <!-- Desktop projection -->
+  <app-comparison-search-form-header
+    slot="search-form"
+    class="flex-1"
+    [formatVersionOld]="formatVersionOld()"
+    [formatVersionNew]="formatVersionNew()"
+    [pruefi]="pruefi()"
+    [navigateOnSubmit]="false"
+    (formatVersionOldChange)="onVersionOldChange($event)"
+    (formatVersionNewChange)="onVersionNewChange($event)"
+    (pruefiChange)="onPruefiChange($event)" />
+
+  <!-- Mobile projection -->
+  <app-comparison-search-form-header
+    slot="search-form-mobile"
+    class="w-full"
+    [formatVersionOld]="formatVersionOld()"
+    [formatVersionNew]="formatVersionNew()"
+    [pruefi]="pruefi()"
+    [navigateOnSubmit]="false"
+    (formatVersionOldChange)="onVersionOldChange($event)"
+    (formatVersionNewChange)="onVersionNewChange($event)"
+    (pruefiChange)="onPruefiChange($event)" />
+</app-header>
+
+<main class="flex-grow overflow-y-auto bg-hf-pastell-rose p-6">
+  <div class="max-w-screen-2xl mx-auto">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-1">AHB Vergleich: {{ pruefi() }}</h1>
+      @if (description$ | async; as desc) {
+        @if (desc.descriptionOld || desc.descriptionNew) {
+          <p class="text-gray-600 mb-4">
+            @if (desc.descriptionOld === desc.descriptionNew) {
+              {{ desc.descriptionNew }}
+            } @else {
+              @if (desc.descriptionOld) {
+                <span class="text-red-700">{{ desc.descriptionOld }}</span>
+              }
+              @if (desc.descriptionOld && desc.descriptionNew) {
+                <span class="text-gray-400 mx-2">→</span>
+              }
+              @if (desc.descriptionNew) {
+                <span class="text-green-700">{{ desc.descriptionNew }}</span>
+              }
+            }
+          </p>
+        }
+      }
+
+      <!-- Statistics -->
+      @if (stats$ | async; as stats) {
+        <div class="flex gap-2 text-sm">
+          <span class="px-3 py-1.5 rounded bg-green-100 text-green-800 font-medium">
+            +{{ stats.added }}
+          </span>
+          <span class="px-3 py-1.5 rounded bg-red-100 text-red-800 font-medium">
+            -{{ stats.deleted }}
+          </span>
+          <span class="px-3 py-1.5 rounded bg-yellow-100 text-yellow-800 font-medium">
+            ~{{ stats.modified }}
+          </span>
+        </div>
+      }
+    </div>
+
+    @if (errorOccurred) {
+      <div
+        class="text-center p-8 bg-hf-grell-rose text-hf-weiches-schwarz rounded-lg max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold mb-4">Fehler</h2>
+        <p class="mb-4">{{ errorMessage }}</p>
+      </div>
+    } @else {
+      @if (diff$ | async; as diff) {
+        @if (diff.lines && diff.lines.length > 0) {
+          <app-comparison-table
+            [lines]="diff.lines"
+            [formatVersionOld]="formatVersionOld()"
+            [formatVersionNew]="formatVersionNew()"
+            [pruefi]="pruefi()" />
+        } @else {
+          <div class="text-center py-12 text-gray-500">
+            Bitte wählen Sie zwei Formatversionen zum Vergleichen aus.
+          </div>
+        }
+      } @else {
+        <div class="text-center py-12">
+          <div
+            class="animate-spin rounded-full h-12 w-12 border-b-2 border-hf-dunkel-rose mx-auto"></div>
+          <p class="mt-4 text-gray-500">Lade Vergleich...</p>
+        </div>
+      }
+    }
+  </div>
+</main>
+
+<app-solutions-footer />
+<app-footer />
