@@ -40,7 +40,7 @@ export class ComparisonSearchFormHeaderComponent {
   get availableOldVersions(): string[] {
     const newVersion = this.headerSearchForm.controls.formatVersionNew.value;
     if (!newVersion) return this.formatVersions;
-    // Versions sorted desc, so old versions are those that come after (are less than) new version
+    // Versions sorted asc (oldest first), so old versions are those less than new version
     return this.formatVersions.filter(v => v < newVersion);
   }
 
@@ -48,7 +48,7 @@ export class ComparisonSearchFormHeaderComponent {
   get availableNewVersions(): string[] {
     const oldVersion = this.headerSearchForm.controls.formatVersionOld.value;
     if (!oldVersion) return this.formatVersions;
-    // Versions sorted desc, so new versions are those that come before (are greater than) old version
+    // Versions sorted asc (oldest first), so new versions are those greater than old version
     return this.formatVersions.filter(v => v > oldVersion);
   }
 
