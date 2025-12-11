@@ -202,7 +202,7 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       fixture.detectChanges();
       tick();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/comparison', '12345'], {
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/compare', '12345'], {
         queryParams: {
           'fv-old': 'FV2410',
           'fv-new': 'FV2504',

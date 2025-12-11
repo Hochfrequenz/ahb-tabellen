@@ -118,7 +118,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
 
   private navigateToComparison(pruefi: string, fvOld: string, fvNew: string): void {
     if (pruefi && fvOld && fvNew) {
-      this.router.navigate(['/comparison', pruefi], {
+      this.router.navigate(['/compare', pruefi], {
         queryParams: {
           'fv-old': fvOld,
           'fv-new': fvNew,

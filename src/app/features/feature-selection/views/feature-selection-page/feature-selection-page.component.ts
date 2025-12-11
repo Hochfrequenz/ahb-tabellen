@@ -20,6 +20,6 @@ export class FeatureSelectionPageComponent {
   }
 
   onComparisonClick() {
-    this.router.navigate(['/comparison']);
+    this.router.navigate(['/compare']);
   }
 }

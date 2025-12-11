@@ -148,7 +148,7 @@ export class ComparisonSearchFormHeaderComponent {
 
     // Navigate if we have all required values (pruefi must be 5 digits)
     if (pruefi?.match(/^\d{5}$/) && fvOld && fvNew) {
-      this.router.navigate(['/comparison', pruefi], {
+      this.router.navigate(['/compare', pruefi], {
         queryParams: {
           'fv-old': fvOld,
           'fv-new': fvNew,
