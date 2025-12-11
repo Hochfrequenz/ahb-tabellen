@@ -105,6 +105,24 @@ export default class AHBRepository {
       return field;
     };
 
+    // Helper function to convert user wildcard patterns to SQL LIKE patterns
+    // - If user enters "*", replace with "%" for SQL wildcard
+    // - If no "*" is present, wrap with "%" for implicit substring matching
+    // - Escapes SQL LIKE special characters: % and _ (single char wildcard)
+    const convertToLikePattern = (input: string): string => {
+      if (input.includes('*')) {
+        // User explicitly used wildcard - escape SQL special chars, then convert * to %
+        return input
+          .toLowerCase()
+          .replace(/%/g, '\\%')
+          .replace(/_/g, '\\_')
+          .replace(/\*/g, '%');
+      }
+      // No wildcard - use implicit substring matching (escape special chars first)
+      const escaped = input.toLowerCase().replace(/%/g, '\\%').replace(/_/g, '\\_');
+      return `%${escaped}%`;
+    };
+
     // Helper function to apply filters to a query builder
     // This ensures consistent filtering logic between main query and count query
     const applyFilters = (
@@ -168,16 +186,8 @@ export default class AHBRepository {
           );
         }
         if (value.contains !== undefined) {
-          // Apply wildcard conversion: * becomes %, no wildcard means substring match
-          const containsRaw = value.contains;
-          let containsPattern: string;
-          if (containsRaw.includes('*')) {
-            containsPattern = containsRaw.toLowerCase().replace(/%/g, '\\%').replace(/\*/g, '%');
-          } else {
-            containsPattern = `%${containsRaw.toLowerCase()}%`;
-          }
           queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_contains`, {
-            [`${paramBase}_contains`]: containsPattern,
+            [`${paramBase}_contains`]: convertToLikePattern(value.contains),
           });
         }
         if (value.startsWith !== undefined) {
@@ -247,17 +257,7 @@ export default class AHBRepository {
           'bedingung',
         ];
 
-        // Convert user wildcards (*) to SQL LIKE pattern (%)
-        // If user enters "*", replace with "%" for SQL
-        // If no "*" is present, wrap with "%" for substring matching
-        let likePattern: string;
-        if (qRaw.includes('*')) {
-          // User explicitly used wildcard - replace * with % and escape any literal %
-          likePattern = qRaw.toLowerCase().replace(/%/g, '\\%').replace(/\*/g, '%');
-        } else {
-          // No wildcard - use implicit substring matching
-          likePattern = `%${qRaw.toLowerCase()}%`;
-        }
+        const likePattern = convertToLikePattern(qRaw);
 
         // Use TypeORM's parameterized query methods - validate each field
         const orConditions = qFields.map((field, idx) => {
