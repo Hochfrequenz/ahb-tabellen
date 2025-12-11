@@ -109,6 +109,8 @@ export default class AHBRepository {
     // - If user enters "*", replace with "%" for SQL wildcard
     // - If no "*" is present, wrap with "%" for implicit substring matching
     // - Escapes SQL LIKE special characters: % and _ (single char wildcard)
+    // IMPORTANT: All LIKE queries using this function must include ESCAPE '\\' clause
+    // for SQLite to recognize the backslash as escape character
     const convertToLikePattern = (input: string): string => {
       if (input.includes('*')) {
         // User explicitly used wildcard - escape SQL special chars, then convert * to %
