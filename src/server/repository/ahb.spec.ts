@@ -485,4 +485,78 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
       );
     });
   });
+
+  describe('searchAhbLines with wildcard in contains filter', () => {
+    it('should convert * wildcard to SQL % pattern in contains filter', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: '',
+        filters: {
+          pruefidentifikator: { contains: '44*' },
+        },
+      });
+
+      // Should use "44%" pattern (starts with 44)
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.pruefidentifikator) LIKE'),
+        expect.objectContaining({ f_pruefidentifikator_contains: '44%' })
+      );
+    });
+
+    it('should use substring matching when no wildcards in contains filter', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: '',
+        filters: {
+          pruefidentifikator: { contains: '44' },
+        },
+      });
+
+      // Should use "%44%" pattern (substring match)
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.pruefidentifikator) LIKE'),
+        expect.objectContaining({ f_pruefidentifikator_contains: '%44%' })
+      );
+    });
+
+    it('should escape % and _ characters in contains filter', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: '',
+        filters: {
+          line_name: { contains: '100%_test*' },
+        },
+      });
+
+      // Should escape % as \%, _ as \_, and convert * to %
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.line_name) LIKE'),
+        expect.objectContaining({ f_line_name_contains: '100\\%\\_test%' })
+      );
+    });
+
+    it('should handle pattern matching in middle of contains filter', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: '',
+        filters: {
+          line_name: { contains: 'Konfig*-ID' },
+        },
+      });
+
+      // Should use "konfig%-id" pattern
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.line_name) LIKE'),
+        expect.objectContaining({ f_line_name_contains: 'konfig%-id' })
+      );
+    });
+  });
 });

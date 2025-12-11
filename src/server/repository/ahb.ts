@@ -112,11 +112,7 @@ export default class AHBRepository {
     const convertToLikePattern = (input: string): string => {
       if (input.includes('*')) {
         // User explicitly used wildcard - escape SQL special chars, then convert * to %
-        return input
-          .toLowerCase()
-          .replace(/%/g, '\\%')
-          .replace(/_/g, '\\_')
-          .replace(/\*/g, '%');
+        return input.toLowerCase().replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/\*/g, '%');
       }
       // No wildcard - use implicit substring matching (escape special chars first)
       const escaped = input.toLowerCase().replace(/%/g, '\\%').replace(/_/g, '\\_');
