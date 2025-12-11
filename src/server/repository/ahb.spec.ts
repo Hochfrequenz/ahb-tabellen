@@ -355,4 +355,118 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
       expect(result.total).toBe(1);
     });
   });
+
+  describe('searchAhbLines with wildcard search (q parameter)', () => {
+    it('should convert * wildcard to SQL % pattern for prefix search', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: '44*',
+        filters: {},
+      });
+
+      // Should use "44%" pattern (starts with 44)
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.'),
+        expect.objectContaining({ q0: '44%' })
+      );
+    });
+
+    it('should convert * wildcard to SQL % pattern for suffix search', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: '*foo',
+        filters: {},
+      });
+
+      // Should use "%foo" pattern (ends with foo)
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.'),
+        expect.objectContaining({ q0: '%foo' })
+      );
+    });
+
+    it('should convert * wildcard in middle of search term', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: 'Konfig*-ID',
+        filters: {},
+      });
+
+      // Should use "Konfig%-ID" pattern
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.'),
+        expect.objectContaining({ q0: 'konfig%-id' })
+      );
+    });
+
+    it('should handle multiple wildcards', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: '*foo*bar*',
+        filters: {},
+      });
+
+      // Should convert all * to %
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.'),
+        expect.objectContaining({ q0: '%foo%bar%' })
+      );
+    });
+
+    it('should use substring matching when no wildcards are present (backward compatible)', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: 'foo',
+        filters: {},
+      });
+
+      // Should use "%foo%" pattern (substring match - backward compatible)
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.'),
+        expect.objectContaining({ q0: '%foo%' })
+      );
+    });
+
+    it('should escape existing % characters in user input', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: '100%*',
+        filters: {},
+      });
+
+      // Should escape % as \% and convert * to %
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.'),
+        expect.objectContaining({ q0: '100\\%%' })
+      );
+    });
+
+    it('should handle case-insensitive search with wildcards', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: 'FOO*BAR',
+        filters: {},
+      });
+
+      // Should lowercase the pattern
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.'),
+        expect.objectContaining({ q0: 'foo%bar' })
+      );
+    });
+  });
 });

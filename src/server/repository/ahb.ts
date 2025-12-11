@@ -168,8 +168,16 @@ export default class AHBRepository {
           );
         }
         if (value.contains !== undefined) {
+          // Apply wildcard conversion: * becomes %, no wildcard means substring match
+          const containsRaw = value.contains;
+          let containsPattern: string;
+          if (containsRaw.includes('*')) {
+            containsPattern = containsRaw.toLowerCase().replace(/%/g, '\\%').replace(/\*/g, '%');
+          } else {
+            containsPattern = `%${containsRaw.toLowerCase()}%`;
+          }
           queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_contains`, {
-            [`${paramBase}_contains`]: `%${value.contains.toLowerCase()}%`,
+            [`${paramBase}_contains`]: containsPattern,
           });
         }
         if (value.startsWith !== undefined) {
@@ -222,8 +230,9 @@ export default class AHBRepository {
       }
 
       // Global q across the 11 fields (case-insensitive LIKE) - Using TypeORM's parameterized methods
-      const q = (payload.q || '').trim().toLowerCase();
-      if (q.length > 0) {
+      // Supports wildcard search with * (e.g., "44*" matches "4400" but not "21044")
+      const qRaw = (payload.q || '').trim();
+      if (qRaw.length > 0) {
         const qFields = [
           'format_version',
           'format',
@@ -238,13 +247,25 @@ export default class AHBRepository {
           'bedingung',
         ];
 
+        // Convert user wildcards (*) to SQL LIKE pattern (%)
+        // If user enters "*", replace with "%" for SQL
+        // If no "*" is present, wrap with "%" for substring matching
+        let likePattern: string;
+        if (qRaw.includes('*')) {
+          // User explicitly used wildcard - replace * with % and escape any literal %
+          likePattern = qRaw.toLowerCase().replace(/%/g, '\\%').replace(/\*/g, '%');
+        } else {
+          // No wildcard - use implicit substring matching
+          likePattern = `%${qRaw.toLowerCase()}%`;
+        }
+
         // Use TypeORM's parameterized query methods - validate each field
         const orConditions = qFields.map((field, idx) => {
           const columnName = validateField(field);
           return `LOWER(al.${columnName}) LIKE :q${idx}`;
         });
 
-        const params = Object.fromEntries(qFields.map((_, idx) => [`q${idx}`, `%${q}%`]));
+        const params = Object.fromEntries(qFields.map((_, idx) => [`q${idx}`, likePattern]));
         queryBuilder.andWhere(`(${orConditions.join(' OR ')})`, params);
       }
     };
