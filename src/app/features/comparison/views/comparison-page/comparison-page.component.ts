@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, Observable, of, combineLatest } from 'rxjs';
 import { takeUntil, catchError, shareReplay, map } from 'rxjs/operators';
@@ -56,6 +56,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
     private readonly ahbService: AhbService,
     private readonly formatVersionCacheService: FormatVersionCacheService,
     private readonly title: Title
@@ -104,23 +105,25 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   }
 
   onVersionOldChange(version: string): void {
-    this.formatVersionOld.set(version);
-    if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
-      this.loadDiff();
-    }
+    this.navigateToComparison(this.pruefi(), version, this.formatVersionNew());
   }
 
   onVersionNewChange(version: string): void {
-    this.formatVersionNew.set(version);
-    if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
-      this.loadDiff();
-    }
+    this.navigateToComparison(this.pruefi(), this.formatVersionOld(), version);
   }
 
   onPruefiChange(pruefi: string): void {
-    this.pruefi.set(pruefi);
-    if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
-      this.loadDiff();
+    this.navigateToComparison(pruefi, this.formatVersionOld(), this.formatVersionNew());
+  }
+
+  private navigateToComparison(pruefi: string, fvOld: string, fvNew: string): void {
+    if (pruefi && fvOld && fvNew) {
+      this.router.navigate(['/comparison', pruefi], {
+        queryParams: {
+          'fv-old': fvOld,
+          'fv-new': fvNew,
+        },
+      });
     }
   }
 

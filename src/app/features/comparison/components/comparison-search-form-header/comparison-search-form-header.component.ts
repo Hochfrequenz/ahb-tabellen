@@ -136,14 +136,13 @@ export class ComparisonSearchFormHeaderComponent {
       if (value) {
         this.pruefiChange.emit(value);
         if (this.navigateOnSubmit()) {
-          this.navigateToComparison();
+          this.navigateToComparison(value);
         }
       }
     });
   }
 
-  private navigateToComparison() {
-    const pruefi = this.headerSearchForm.value.pruefi;
+  private navigateToComparison(pruefi: string) {
     const fvOld = this.headerSearchForm.value.formatVersionOld;
     const fvNew = this.headerSearchForm.value.formatVersionNew;
 

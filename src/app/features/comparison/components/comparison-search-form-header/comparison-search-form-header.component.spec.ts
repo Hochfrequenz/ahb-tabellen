@@ -170,4 +170,66 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       expect(available).toContain(selectedNew);
     }));
   });
+
+  describe('pruefi navigation', () => {
+    it('should emit pruefiChange when pruefi form control value changes', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      const pruefiChangeSpy = jest.fn();
+      component.pruefiChange.subscribe(pruefiChangeSpy);
+
+      // Set pruefi value directly on form control
+      component.headerSearchForm.controls.pruefi.setValue('12345');
+      tick();
+
+      expect(pruefiChangeSpy).toHaveBeenCalledWith('12345');
+    }));
+
+    it('should navigate when pruefi is set and navigateOnSubmit is true', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      // Ensure format versions are set (they should be by default)
+      expect(component.headerSearchForm.controls.formatVersionOld.value).toBeTruthy();
+      expect(component.headerSearchForm.controls.formatVersionNew.value).toBeTruthy();
+
+      // Verify navigateOnSubmit is true by default
+      expect(component.navigateOnSubmit()).toBe(true);
+
+      // Set pruefi value - this should trigger navigation
+      component.headerSearchForm.controls.pruefi.setValue('12345');
+      fixture.detectChanges();
+      tick();
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/comparison', '12345'], {
+        queryParams: {
+          'fv-old': 'FV2410',
+          'fv-new': 'FV2504',
+        },
+      });
+    }));
+
+    it('should NOT navigate when pruefi has less than 5 digits', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      // Set invalid pruefi value
+      component.headerSearchForm.controls.pruefi.setValue('1234');
+      tick();
+
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
+    }));
+
+    it('should NOT navigate when pruefi contains letters', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      // Set invalid pruefi value
+      component.headerSearchForm.controls.pruefi.setValue('1234a');
+      tick();
+
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
+    }));
+  });
 });
