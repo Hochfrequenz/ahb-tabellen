@@ -153,8 +153,8 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     this.stats$ = this.diff$.pipe(map(diff => this.computeStats(diff.lines || [])));
     this.description$ = this.diff$.pipe(
       map(diff => ({
-        descriptionOld: diff.meta?.description_b,
-        descriptionNew: diff.meta?.description_a,
+        descriptionOld: diff.meta?.description_old,
+        descriptionNew: diff.meta?.description_new,
       }))
     );
   }
