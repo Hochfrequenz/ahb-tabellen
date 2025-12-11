@@ -453,6 +453,22 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
       );
     });
 
+    it('should escape underscore characters in user input', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: 'foo_bar*',
+        filters: {},
+      });
+
+      // Should escape _ as \_ (SQL single char wildcard) and convert * to %
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(al.'),
+        expect.objectContaining({ q0: 'foo\\_bar%' })
+      );
+    });
+
     it('should handle case-insensitive search with wildcards', async () => {
       await repository.searchAhbLines({
         page: 1,
