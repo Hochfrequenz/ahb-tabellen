@@ -11,6 +11,9 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
+import { Datenstand } from '../models/datenstand';
+import { getDatenstand } from '../fn/maintenance/get-datenstand';
+import { GetDatenstand$Params } from '../fn/maintenance/get-datenstand';
 import { getVersion } from '../fn/maintenance/get-version';
 import { GetVersion$Params } from '../fn/maintenance/get-version';
 import { Version } from '../models/version';
@@ -55,6 +58,39 @@ export class MaintenanceService extends BaseService {
   getVersion(params?: GetVersion$Params, context?: HttpContext): Observable<Version> {
     return this.getVersion$Response(params, context).pipe(
       map((r: StrictHttpResponse<Version>): Version => r.body)
+    );
+  }
+
+  /** Path part for operation `getDatenstand()` */
+  static readonly GetDatenstandPath = '/api/datenstand';
+
+  /**
+   * Get the latest publication date of the AHB data.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getDatenstand()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getDatenstand$Response(params?: GetDatenstand$Params, context?: HttpContext): Observable<StrictHttpResponse<Datenstand>> {
+    return getDatenstand(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get the latest publication date of the AHB data.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getDatenstand$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getDatenstand(params?: GetDatenstand$Params, context?: HttpContext): Observable<Datenstand> {
+    return this.getDatenstand$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Datenstand>): Datenstand => r.body)
     );
   }
 
