@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject, Observable, of, combineLatest } from 'rxjs';
 import { takeUntil, catchError, shareReplay, map } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
@@ -38,6 +39,7 @@ export interface DiffDescription {
     SolutionsFooterComponent,
     ComparisonTableComponent,
     ComparisonSearchFormHeaderComponent,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './comparison-page.component.html',
 })
