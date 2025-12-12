@@ -1,6 +1,7 @@
 import { Router, IRouter } from 'express';
 import AHBController from '../controller/ahb';
 import AhbDiffController from '../controller/ahbDiff';
+import DatenstandController from '../controller/datenstand';
 import FormatVersionController from '../controller/formatVersion';
 import FormateController from '../controller/formate';
 import HealthController from '../controller/health';
@@ -11,6 +12,7 @@ const router: IRouter = Router();
 
 const ahbController = new AHBController();
 const ahbDiffController = new AhbDiffController();
+const datenstandController = new DatenstandController();
 const formatVersionController = new FormatVersionController();
 const formateController = new FormateController();
 const healthController = new HealthController();
@@ -43,6 +45,10 @@ router.get('/formate', async (req, res, next) => {
 
 router.get('/direction-values', async (req, res, next) => {
   await richtungController.list(req, res).catch((err: Error) => next(err));
+});
+
+router.get('/datenstand', async (req, res, next) => {
+  await datenstandController.get(req, res).catch((err: Error) => next(err));
 });
 
 router.get('/pruefidentifikatoren/:formatVersion', async (req, res, next) => {

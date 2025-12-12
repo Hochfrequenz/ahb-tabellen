@@ -234,6 +234,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Version'
+  /api/datenstand:
+    get:
+      tags:
+        - maintenance
+      summary: Get the latest publication date of the AHB data
+      operationId: getDatenstand
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Datenstand'
 
 components:
   schemas:
@@ -602,3 +615,13 @@ components:
         bedingung:
           type: string
           nullable: true
+    Datenstand:
+      type: object
+      description: Latest publication date of the AHB data
+      properties:
+        veroeffentlichungsdatum:
+          type: string
+          description: Publication date in DD.MM.YYYY format
+          example: '01.04.2025'
+      required:
+        - veroeffentlichungsdatum
