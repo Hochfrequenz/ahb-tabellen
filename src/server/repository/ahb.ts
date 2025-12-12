@@ -105,6 +105,22 @@ export default class AHBRepository {
       return field;
     };
 
+    // Helper function to convert user wildcard patterns to SQL LIKE patterns
+    // - If user enters "*", replace with "%" for SQL wildcard
+    // - If no "*" is present, wrap with "%" for implicit substring matching
+    // - Escapes SQL LIKE special characters: % and _ (single char wildcard)
+    // IMPORTANT: All LIKE queries using this function must include ESCAPE '\\' clause
+    // for SQLite to recognize the backslash as escape character
+    const convertToLikePattern = (input: string): string => {
+      if (input.includes('*')) {
+        // User explicitly used wildcard - escape SQL special chars, then convert * to %
+        return input.toLowerCase().replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/\*/g, '%');
+      }
+      // No wildcard - use implicit substring matching (escape special chars first)
+      const escaped = input.toLowerCase().replace(/%/g, '\\%').replace(/_/g, '\\_');
+      return `%${escaped}%`;
+    };
+
     // Helper function to apply filters to a query builder
     // This ensures consistent filtering logic between main query and count query
     const applyFilters = (
@@ -168,8 +184,8 @@ export default class AHBRepository {
           );
         }
         if (value.contains !== undefined) {
-          queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_contains`, {
-            [`${paramBase}_contains`]: `%${value.contains.toLowerCase()}%`,
+          queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_contains ESCAPE '\\'`, {
+            [`${paramBase}_contains`]: convertToLikePattern(value.contains),
           });
         }
         if (value.startsWith !== undefined) {
@@ -222,8 +238,9 @@ export default class AHBRepository {
       }
 
       // Global q across the 11 fields (case-insensitive LIKE) - Using TypeORM's parameterized methods
-      const q = (payload.q || '').trim().toLowerCase();
-      if (q.length > 0) {
+      // Supports wildcard search with * (e.g., "44*" matches "4400" but not "21044")
+      const qRaw = (payload.q || '').trim();
+      if (qRaw.length > 0) {
         const qFields = [
           'format_version',
           'format',
@@ -238,13 +255,16 @@ export default class AHBRepository {
           'bedingung',
         ];
 
+        const likePattern = convertToLikePattern(qRaw);
+
         // Use TypeORM's parameterized query methods - validate each field
+        // Include ESCAPE clause for SQLite to recognize backslash as escape character
         const orConditions = qFields.map((field, idx) => {
           const columnName = validateField(field);
-          return `LOWER(al.${columnName}) LIKE :q${idx}`;
+          return `LOWER(al.${columnName}) LIKE :q${idx} ESCAPE '\\'`;
         });
 
-        const params = Object.fromEntries(qFields.map((_, idx) => [`q${idx}`, `%${q}%`]));
+        const params = Object.fromEntries(qFields.map((_, idx) => [`q${idx}`, likePattern]));
         queryBuilder.andWhere(`(${orConditions.join(' OR ')})`, params);
       }
     };
