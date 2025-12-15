@@ -29,6 +29,25 @@ export class ComparisonTableComponent {
     }
   }
 
+  /**
+   * Get CSS class for links based on row diff status.
+   * Unchanged rows use the original link colors, changed rows inherit row color.
+   */
+  getLinkClass(line: AhbDiffLine, linkType: 'ebd' | 'bedingung'): string {
+    const baseClass = 'hover:underline flex flex-row gap-1 items-center';
+    if (
+      line.diff_status === 'added' ||
+      line.diff_status === 'deleted' ||
+      line.diff_status === 'modified'
+    ) {
+      return `${baseClass} text-inherit`;
+    }
+    // Unchanged rows use original colors
+    return linkType === 'ebd'
+      ? `${baseClass} text-hf-dunkel-blau`
+      : `${baseClass} text-hf-dunkel-gelb`;
+  }
+
   getDiffStatusLabel(status: string | undefined): string {
     switch (status) {
       case 'added':

@@ -50,10 +50,7 @@
             </td>
             <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'qualifier')">
               @if (generateEbdDeepLink(getQualifier(line, 'old'), formatVersionOld); as ebdLink) {
-                <a
-                  [href]="ebdLink"
-                  target="_blank"
-                  class="hover:underline text-inherit flex flex-row gap-1 items-center">
+                <a [href]="ebdLink" target="_blank" [class]="getLinkClass(line, 'ebd')">
                   <span>{{ getQualifier(line, 'old') }}</span>
                   <app-icon-link />
                 </a>
@@ -71,10 +68,7 @@
                 generateBedingungsbaumDeepLink(getAhbStatus(line, 'old'), formatVersionOld);
                 as treeLink
               ) {
-                <a
-                  [href]="treeLink"
-                  target="_blank"
-                  class="hover:underline text-inherit flex flex-row gap-1 items-center">
+                <a [href]="treeLink" target="_blank" [class]="getLinkClass(line, 'bedingung')">
                   <span>{{ getAhbStatus(line, 'old') }}</span>
                   <app-icon-link />
                 </a>
@@ -103,10 +97,7 @@
             </td>
             <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'qualifier')">
               @if (generateEbdDeepLink(getQualifier(line, 'new'), formatVersionNew); as ebdLink) {
-                <a
-                  [href]="ebdLink"
-                  target="_blank"
-                  class="hover:underline text-inherit flex flex-row gap-1 items-center">
+                <a [href]="ebdLink" target="_blank" [class]="getLinkClass(line, 'ebd')">
                   <span>{{ getQualifier(line, 'new') }}</span>
                   <app-icon-link />
                 </a>
@@ -124,10 +115,7 @@
                 generateBedingungsbaumDeepLink(getAhbStatus(line, 'new'), formatVersionNew);
                 as treeLink
               ) {
-                <a
-                  [href]="treeLink"
-                  target="_blank"
-                  class="hover:underline text-inherit flex flex-row gap-1 items-center">
+                <a [href]="treeLink" target="_blank" [class]="getLinkClass(line, 'bedingung')">
                   <span>{{ getAhbStatus(line, 'new') }}</span>
                   <app-icon-link />
                 </a>
