@@ -139,6 +139,23 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   errorMessage = '';
   errorDetails = signal<{ pruefi: string; fvNew: string; fvOld: string } | null>(null);
 
+  /** Entertaining loading messages that rotate while waiting */
+  readonly loadingMessages = [
+    'Lade Vergleich...',
+    'Durchforste die AHB-Zeilen...',
+    'Vergleiche Formatversionen...',
+    'Suche nach Unterschieden...',
+    'Analysiere Änderungen...',
+    'Fast geschafft...',
+    'Die Bits werden sortiert...',
+    'Kaffee wäre jetzt gut...',
+    'Geduld ist eine Tugend...',
+    'EDIFACT wird entschlüsselt...',
+  ];
+  currentMessageIndex = signal(0);
+  private messageInterval?: ReturnType<typeof setInterval>;
+  readonly currentLoadingMessage = computed(() => this.loadingMessages[this.currentMessageIndex()]);
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -175,8 +192,23 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopMessageRotation();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private startMessageRotation(): void {
+    this.currentMessageIndex.set(0);
+    this.messageInterval = setInterval(() => {
+      this.currentMessageIndex.update(i => (i + 1) % this.loadingMessages.length);
+    }, 2500);
+  }
+
+  private stopMessageRotation(): void {
+    if (this.messageInterval) {
+      clearInterval(this.messageInterval);
+      this.messageInterval = undefined;
+    }
   }
 
   private loadFormatVersions(): void {
@@ -231,6 +263,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.errorDetails.set(null);
     this.isLoading.set(true);
+    this.startMessageRotation();
     this.diffData.set(null);
     this.updateTitle();
 
@@ -259,6 +292,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe(diff => {
+        this.stopMessageRotation();
         this.diffData.set(diff);
         this.isLoading.set(false);
       });
