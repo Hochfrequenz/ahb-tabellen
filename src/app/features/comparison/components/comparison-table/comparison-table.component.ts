@@ -134,7 +134,8 @@ export class ComparisonTableComponent {
   }
 
   /**
-   * Compare two bedingung strings word-by-word and return HTML with differences wrapped in <strong> tags
+   * Compare two bedingung strings and return HTML with unique words wrapped in <strong> tags.
+   * Uses set-based comparison to highlight words that exist in one version but not the other.
    */
   getHighlightedBedingung(line: AhbDiffLine, side: 'old' | 'new'): string {
     const oldText = line.old?.bedingung ?? '';
@@ -146,15 +147,23 @@ export class ComparisonTableComponent {
       return this.escapeHtml(currentText) || '-';
     }
 
-    // Split into words (preserving whitespace)
-    const currentWords = currentText.split(/(\s+)/);
-    const otherWords = otherText.split(/(\s+)/);
+    // Create a set of words from the other text for efficient lookup
+    const otherWordsSet = new Set(
+      otherText
+        .split(/\s+/)
+        .filter(w => w.trim())
+        .map(w => w.toLowerCase())
+    );
 
-    // Build highlighted output
-    return currentWords
-      .map((word, i) => {
-        const escaped = this.escapeHtml(word);
-        if (otherWords[i] !== word && word.trim()) {
+    // Split current text into words while preserving whitespace for reconstruction
+    const currentTokens = currentText.split(/(\s+)/);
+
+    // Build highlighted output - bold words that don't exist in the other text
+    return currentTokens
+      .map(token => {
+        const escaped = this.escapeHtml(token);
+        // Only highlight non-whitespace tokens that aren't in the other text
+        if (token.trim() && !otherWordsSet.has(token.toLowerCase())) {
           return `<strong>${escaped}</strong>`;
         }
         return escaped;
