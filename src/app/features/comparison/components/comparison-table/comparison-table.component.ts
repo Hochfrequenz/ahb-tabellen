@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { diffWords } from 'diff';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
 import { environment } from '../../../../environments/environment';
@@ -17,6 +18,9 @@ export class ComparisonTableComponent {
   @Input() formatVersionNew = '';
   @Input() pruefi = '';
 
+  /** Whether to show the conditions/hints/formats column */
+  @Input() showConditionsColumn = false;
+
   getRowClass(line: AhbDiffLine): string {
     switch (line.diff_status) {
       case 'added':
@@ -26,7 +30,7 @@ export class ComparisonTableComponent {
       case 'modified':
         return 'bg-hf-neutral text-hf-neutral-dark';
       default:
-        return 'bg-white';
+        return 'bg-white text-hf-table-text';
     }
   }
 
@@ -115,7 +119,12 @@ export class ComparisonTableComponent {
   }
 
   getDataElement(line: AhbDiffLine, side: 'old' | 'new'): string {
-    return this.getSide(line, side)?.data_element ?? '';
+    const value = this.getSide(line, side)?.data_element ?? '';
+    // Remove "D_" prefix if present
+    if (value.startsWith('D_')) {
+      return value.substring(2);
+    }
+    return value;
   }
 
   getQualifier(line: AhbDiffLine, side: 'old' | 'new'): string {
@@ -128,6 +137,54 @@ export class ComparisonTableComponent {
 
   getAhbStatus(line: AhbDiffLine, side: 'old' | 'new'): string {
     return this.getSide(line, side)?.line_ahb_status ?? '';
+  }
+
+  /**
+   * Compare two bedingung strings using proper diff algorithm.
+   * Highlights added words (in new) or removed words (in old) with <strong> tags.
+   */
+  getHighlightedBedingung(line: AhbDiffLine, side: 'old' | 'new'): string {
+    const oldText = line.old?.bedingung ?? '';
+    const newText = line.new?.bedingung ?? '';
+    const currentText = side === 'old' ? oldText : newText;
+
+    if (!this.isColumnChanged(line, 'bedingung') || !currentText) {
+      return this.escapeHtml(currentText) || '-';
+    }
+
+    // diffWords returns an array of change objects with added/removed flags
+    const changes = diffWords(oldText, newText);
+
+    // Build the highlighted output for the requested side
+    return changes
+      .map(change => {
+        const escaped = this.escapeHtml(change.value);
+
+        if (side === 'old' && change.removed) {
+          // Word was removed (exists only in old)
+          return `<strong>${escaped}</strong>`;
+        }
+        if (side === 'new' && change.added) {
+          // Word was added (exists only in new)
+          return `<strong>${escaped}</strong>`;
+        }
+        if (!change.added && !change.removed) {
+          // Unchanged text - show on both sides
+          return escaped;
+        }
+        // Skip: added words when showing old side, removed words when showing new side
+        return '';
+      })
+      .join('');
+  }
+
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   generateBedingungsbaumDeepLink(expression: string, formatVersion: string): string | null {

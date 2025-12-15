@@ -14,6 +14,8 @@ module.exports = {
         // the hf colors are defined in hochfrequenz.css
         // see: https://github.com/Hochfrequenz/companystylesheet/blob/933394932c5c97328a891c2bd3e72dbb6cecd357/css/hochfrequenz.css
         hf: {
+          // Table text
+          'table-text': '#40313E',
           // Greens
           'pastell-gruen': '#d5f4b9',
           'grell-gruen': '#8de040',
