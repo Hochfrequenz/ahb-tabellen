@@ -34,6 +34,7 @@
   /* Pinks oben, zweites von links */
   --pastell-rose: #f4e0e1;
   --grell-rose: #ebbec1;
+  --dunkel-rose: #cf939a;
 
   /* Turquoise oben links */
   --pastell-tuerkis: #d4ede8;
@@ -141,4 +142,9 @@ body {
 /* Ensure table can scroll horizontally on mobile */
 .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
+}
+
+/* Angular Material Spinner color override */
+mat-spinner circle {
+  stroke: var(--dunkel-rose);
 }

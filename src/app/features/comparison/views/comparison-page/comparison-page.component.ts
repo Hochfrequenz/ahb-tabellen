@@ -1,11 +1,12 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, Observable, of, combineLatest } from 'rxjs';
-import { takeUntil, catchError, shareReplay, map } from 'rxjs/operators';
+import { Subject, of, combineLatest } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { BreakpointObserver } from '@angular/cdk/layout';
 
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
@@ -48,12 +49,112 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   formatVersionOld = signal<string>('');
   formatVersionNew = signal<string>('');
 
-  diff$?: Observable<AhbDiff>;
-  stats$?: Observable<DiffStats>;
-  description$?: Observable<DiffDescription>;
+  /** Whether the viewport is at least medium (768px) - Tailwind's md breakpoint */
+  isDesktop = signal<boolean>(false);
+
+  /** Filter visibility states (all visible by default) */
+  showUnchanged = signal(true);
+  showAdded = signal(true);
+  showDeleted = signal(true);
+  showModified = signal(true);
+
+  /** Filter toggle button configurations */
+  readonly filterToggles = [
+    {
+      key: 'unchanged' as const,
+      signal: this.showUnchanged,
+      symbol: '=',
+      title: 'Unveränderte Zeilen ein-/ausblenden',
+      colorClasses: 'bg-gray-200 text-gray-700 focus:ring-gray-400 hover:ring-gray-400',
+    },
+    {
+      key: 'added' as const,
+      signal: this.showAdded,
+      symbol: '+',
+      title: 'Hinzugefügte Zeilen ein-/ausblenden',
+      colorClasses:
+        'bg-hf-positive text-hf-positive-dark focus:ring-hf-positive-dark hover:ring-hf-positive-dark',
+    },
+    {
+      key: 'deleted' as const,
+      signal: this.showDeleted,
+      symbol: '-',
+      title: 'Gelöschte Zeilen ein-/ausblenden',
+      colorClasses:
+        'bg-hf-negative text-hf-negative-dark focus:ring-hf-negative-dark hover:ring-hf-negative-dark',
+    },
+    {
+      key: 'modified' as const,
+      signal: this.showModified,
+      symbol: '~',
+      title: 'Geänderte Zeilen ein-/ausblenden',
+      colorClasses:
+        'bg-hf-neutral text-hf-neutral-dark focus:ring-hf-neutral-dark hover:ring-hf-neutral-dark',
+    },
+  ];
+
+  /** Current diff data as a signal for reactive filtering */
+  private readonly diffData = signal<AhbDiff | null>(null);
+
+  /** Computed filtered lines based on filter toggle states - automatically updates when filters or diff data change */
+  readonly filteredLines = computed(() => {
+    const diff = this.diffData();
+    if (!diff?.lines) return [];
+
+    return diff.lines.filter(line => {
+      switch (line.diff_status) {
+        case 'unchanged':
+          return this.showUnchanged();
+        case 'added':
+          return this.showAdded();
+        case 'deleted':
+          return this.showDeleted();
+        case 'modified':
+          return this.showModified();
+        default:
+          return true;
+      }
+    });
+  });
+
+  /** Computed statistics from diff data */
+  readonly stats = computed(() => {
+    const diff = this.diffData();
+    return diff?.lines ? this.computeStats(diff.lines) : null;
+  });
+
+  /** Computed description from diff data */
+  readonly description = computed(() => {
+    const diff = this.diffData();
+    return diff?.meta
+      ? {
+          descriptionOld: diff.meta.description_old,
+          descriptionNew: diff.meta.description_new,
+        }
+      : null;
+  });
+
+  isLoading = signal(false);
   errorOccurred = false;
   errorMessage = '';
   errorDetails = signal<{ pruefi: string; fvNew: string; fvOld: string } | null>(null);
+
+  /** Entertaining loading messages that rotate while waiting */
+  readonly loadingMessages = [
+    'Lade Vergleich...',
+    'Durchforste die AHB-Zeilen...',
+    'Vergleiche Formatversionen...',
+    'Suche nach Unterschieden...',
+    'Analysiere Änderungen...',
+    'Fast geschafft...',
+    'Die Bits werden sortiert...',
+    'Kaffee wäre jetzt gut...',
+    'Geduld ist eine Tugend...',
+    'EDIFACT wird entschlüsselt...',
+  ];
+  currentMessageIndex = signal(0);
+  private messageInterval?: ReturnType<typeof setInterval>;
+  readonly currentLoadingMessage = computed(() => this.loadingMessages[this.currentMessageIndex()]);
 
   private destroy$ = new Subject<void>();
 
@@ -62,11 +163,13 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly ahbService: AhbService,
     private readonly formatVersionCacheService: FormatVersionCacheService,
-    private readonly title: Title
+    private readonly title: Title,
+    private readonly breakpointObserver: BreakpointObserver
   ) {}
 
   ngOnInit(): void {
     this.loadFormatVersions();
+    this.initBreakpointObserver();
 
     // Combine params and queryParams to avoid race condition
     combineLatest([this.route.params, this.route.queryParams])
@@ -89,8 +192,23 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopMessageRotation();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private startMessageRotation(): void {
+    this.currentMessageIndex.set(0);
+    this.messageInterval = setInterval(() => {
+      this.currentMessageIndex.update(i => (i + 1) % this.loadingMessages.length);
+    }, 2500);
+  }
+
+  private stopMessageRotation(): void {
+    if (this.messageInterval) {
+      clearInterval(this.messageInterval);
+      this.messageInterval = undefined;
+    }
   }
 
   private loadFormatVersions(): void {
@@ -104,6 +222,16 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
             this.formatVersionOld.set(versions[versions.length - 2]);
           }
         },
+      });
+  }
+
+  private initBreakpointObserver(): void {
+    // Tailwind's md breakpoint is 768px
+    this.breakpointObserver
+      .observe(['(min-width: 768px)'])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(result => {
+        this.isDesktop.set(result.matches);
       });
   }
 
@@ -134,16 +262,19 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     this.errorOccurred = false;
     this.errorMessage = '';
     this.errorDetails.set(null);
+    this.isLoading.set(true);
+    this.startMessageRotation();
+    this.diffData.set(null);
     this.updateTitle();
 
-    this.diff$ = this.ahbService
+    this.ahbService
       .getAhbDiff({
         pruefi: this.pruefi(),
         'format-version-new': this.formatVersionNew(),
         'format-version-old': this.formatVersionOld(),
       })
       .pipe(
-        shareReplay(1),
+        takeUntil(this.destroy$),
         catchError(error => {
           this.errorOccurred = true;
           if (error.status === 404) {
@@ -157,17 +288,14 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
             this.errorDetails.set(null);
             this.errorMessage = 'Ein Fehler ist aufgetreten.';
           }
-          return of({} as AhbDiff);
+          return of(null);
         })
-      );
-
-    this.stats$ = this.diff$.pipe(map(diff => this.computeStats(diff.lines || [])));
-    this.description$ = this.diff$.pipe(
-      map(diff => ({
-        descriptionOld: diff.meta?.description_old,
-        descriptionNew: diff.meta?.description_new,
-      }))
-    );
+      )
+      .subscribe(diff => {
+        this.stopMessageRotation();
+        this.diffData.set(diff);
+        this.isLoading.set(false);
+      });
   }
 
   private computeStats(lines: AhbDiffLine[]): DiffStats {

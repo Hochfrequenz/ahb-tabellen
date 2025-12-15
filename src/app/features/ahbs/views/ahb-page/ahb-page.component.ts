@@ -25,6 +25,7 @@ import { ExportButtonComponent } from '../../components/export-button/export-but
 import { IconCopyUrlComponent } from '../../../../shared/components/icon-copy-url/icon-copy-url.component';
 import { FallbackPageComponent } from '../../../../shared/components/fallback-page/fallback-page.component';
 import { DvgwFallbackPageComponent } from '../../../../shared/components/dvgw-fallback-page/dvgw-fallback-page.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -44,6 +45,7 @@ import { environment } from '../../../../environments/environment';
     IconCopyUrlComponent,
     FallbackPageComponent,
     DvgwFallbackPageComponent,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './ahb-page.component.html',
 })

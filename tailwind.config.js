@@ -49,6 +49,13 @@ module.exports = {
           'neutral-grau-2': '#eaece9',
           'grell-grau': '#c4cac1',
           'weiches-schwarz': '#25141d',
+          // Semantic Colors
+          positive: '#b9cf85',
+          'positive-dark': '#44541f',
+          negative: '#ff7779',
+          'negative-dark': '#6d292b',
+          neutral: '#ffd495',
+          'neutral-dark': '#68491a',
         },
       },
       fontFamily: {
