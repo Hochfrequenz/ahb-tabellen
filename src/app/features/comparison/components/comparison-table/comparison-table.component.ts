@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
 import { environment } from '../../../../environments/environment';
+import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.utils';
 
 @Component({
   selector: 'app-comparison-table',
@@ -116,7 +117,7 @@ export class ComparisonTableComponent {
       return null;
     }
     const encodedExpression = encodeURIComponent(expression);
-    return `${environment.bedingungsbaumBaseUrl}/tree/?format=${this.getFormat(this.pruefi)}&format_version=${formatVersion}&expression=${encodedExpression}`;
+    return `${environment.bedingungsbaumBaseUrl}/tree/?format=${getFormatFromPruefi(this.pruefi)}&format_version=${formatVersion}&expression=${encodedExpression}`;
   }
 
   generateEbdDeepLink(qualifier: string | null | undefined, formatVersion: string): string | null {
@@ -130,33 +131,5 @@ export class ComparisonTableComponent {
     }
     const ebdKey = match.groups['ebd_key']!;
     return `${environment.ebdBaseUrl}/ebd/?formatversion=${formatVersion}&ebd=${ebdKey}`;
-  }
-
-  private getFormat(pruefi: string): string {
-    const mapping: { [key: string]: string } = {
-      '99': 'APERAK',
-      '29': 'COMDIS',
-      '21': 'IFTSTA',
-      '23': 'INSRPT',
-      '31': 'INVOIC',
-      '13': 'MSCONS',
-      '39': 'ORDCHG',
-      '17': 'ORDERS',
-      '19': 'ORDRSP',
-      '27': 'PRICAT',
-      '15': 'QUOTES',
-      '33': 'REMADV',
-      '35': 'REQOTE',
-      '37': 'PARTIN',
-      '11': 'UTILMD',
-      '25': 'UTILTS',
-      '91': 'CONTRL',
-      '92': 'APERAK',
-      '44': 'UTILMDG',
-      '55': 'UTILMDS',
-    };
-
-    const key = pruefi.substring(0, 2);
-    return mapping[key] || '';
   }
 }

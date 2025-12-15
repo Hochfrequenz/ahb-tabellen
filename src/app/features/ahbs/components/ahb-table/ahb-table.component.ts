@@ -14,6 +14,7 @@ import { HighlightPipe, HighlightResult } from '../../../../shared/pipes/highlig
 import { environment } from '../../../../environments/environment';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
 import { DomSanitizer } from '@angular/platform-browser';
+import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.utils';
 
 interface ExpandedState {
   [key: number]: boolean;
@@ -236,7 +237,7 @@ export class AhbTableComponent {
 
   generateBedingungsbaumDeepLink(expression: string): string {
     const encodedExpression = encodeURIComponent(expression);
-    return `${environment.bedingungsbaumBaseUrl}/tree/?format=${this.getFormat(this.pruefi())}&format_version=${this.formatVersion()}&expression=${encodedExpression}`;
+    return `${environment.bedingungsbaumBaseUrl}/tree/?format=${getFormatFromPruefi(this.pruefi())}&format_version=${this.formatVersion()}&expression=${encodedExpression}`;
   }
 
   generateEbdDeepLink(value_pool_entry: string | null): string | null {
@@ -251,34 +252,6 @@ export class AhbTableComponent {
     const ebdKey = match.groups['ebd_key']!;
     // e.g. https://ebd.stage.hochfrequenz.de/ebd/?formatversion=FV2504&ebd=E_0004
     return `${environment.ebdBaseUrl}/ebd/?formatversion=${this.formatVersion()}&ebd=${ebdKey}`;
-  }
-
-  private getFormat(pruefi: string): string {
-    const mapping: { [key: string]: string } = {
-      '99': 'APERAK',
-      '29': 'COMDIS',
-      '21': 'IFTSTA',
-      '23': 'INSRPT',
-      '31': 'INVOIC',
-      '13': 'MSCONS',
-      '39': 'ORDCHG',
-      '17': 'ORDERS',
-      '19': 'ORDRSP',
-      '27': 'PRICAT',
-      '15': 'QUOTES',
-      '33': 'REMADV',
-      '35': 'REQOTE',
-      '37': 'PARTIN',
-      '11': 'UTILMD',
-      '25': 'UTILTS',
-      '91': 'CONTRL',
-      '92': 'APERAK',
-      '44': 'UTILMDG',
-      '55': 'UTILMDS',
-    };
-
-    const key = pruefi.substring(0, 2);
-    return mapping[key] || '';
   }
 
   // split before [<condition>] and remove empty strings
