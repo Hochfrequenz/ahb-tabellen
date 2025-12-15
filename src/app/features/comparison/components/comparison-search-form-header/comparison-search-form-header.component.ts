@@ -1,4 +1,4 @@
-import { Component, input, output, effect } from '@angular/core';
+import { Component, input, output, effect, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -11,11 +11,20 @@ import { PruefiInputComponent } from '../../../ahbs/components/pruefi-input/prue
 import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { PrufidentifikatorenService } from '../../../../core/api';
+import { forkJoin, map } from 'rxjs';
 
 @Component({
   selector: 'app-comparison-search-form-header',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, PruefiInputComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    PruefiInputComponent,
+    MatProgressSpinnerModule,
+  ],
   templateUrl: './comparison-search-form-header.component.html',
 })
 export class ComparisonSearchFormHeaderComponent {
@@ -27,8 +36,11 @@ export class ComparisonSearchFormHeaderComponent {
   formatVersionOldChange = output<string>();
   formatVersionNewChange = output<string>();
   pruefiChange = output<string>();
+  validationErrorChange = output<string | null>();
 
   formatVersions: string[] = [];
+  validationError = signal<string | null>(null);
+  isValidating = signal<boolean>(false);
 
   headerSearchForm = new FormGroup({
     formatVersionOld: new FormControl('', Validators.required),
@@ -59,7 +71,8 @@ export class ComparisonSearchFormHeaderComponent {
 
   constructor(
     private readonly router: Router,
-    private readonly formatVersionCacheService: FormatVersionCacheService
+    private readonly formatVersionCacheService: FormatVersionCacheService,
+    private readonly prufidentifikatorenService: PrufidentifikatorenService
   ) {
     // Load format versions
     this.formatVersionCacheService
@@ -148,12 +161,67 @@ export class ComparisonSearchFormHeaderComponent {
 
     // Navigate if we have all required values (pruefi must be 5 digits)
     if (pruefi?.match(/^\d{5}$/) && fvOld && fvNew) {
-      this.router.navigate(['/compare', pruefi], {
-        queryParams: {
-          'fv-old': fvOld,
-          'fv-new': fvNew,
-        },
-      });
+      this.validateAndNavigate(pruefi, fvOld, fvNew);
     }
+  }
+
+  private validateAndNavigate(pruefi: string, fvOld: string, fvNew: string): void {
+    this.setValidationError(null);
+    this.isValidating.set(true);
+
+    // Check if pruefi exists in both format versions
+    forkJoin({
+      oldVersionPruefis: this.prufidentifikatorenService
+        .getPruefis({ 'format-version': fvOld })
+        .pipe(map(pruefis => pruefis.map(p => p.pruefidentifikator))),
+      newVersionPruefis: this.prufidentifikatorenService
+        .getPruefis({ 'format-version': fvNew })
+        .pipe(map(pruefis => pruefis.map(p => p.pruefidentifikator))),
+    }).subscribe({
+      next: ({ oldVersionPruefis, newVersionPruefis }) => {
+        this.isValidating.set(false);
+
+        const existsInOld = oldVersionPruefis.includes(pruefi);
+        const existsInNew = newVersionPruefis.includes(pruefi);
+
+        if (!existsInOld && !existsInNew) {
+          this.setValidationError(
+            `Der Prüfidentifikator ${pruefi} ist weder in der Formatversion ${fvOld} noch in der ${fvNew} vorhanden.`
+          );
+          return;
+        }
+
+        if (!existsInOld) {
+          this.setValidationError(
+            `Der Prüfidentifikator ${pruefi} konnte nicht in der Formatversion ${fvOld} gefunden werden.`
+          );
+          return;
+        }
+
+        if (!existsInNew) {
+          this.setValidationError(
+            `Der Prüfidentifikator ${pruefi} konnte nicht in der Formatversion ${fvNew} gefunden werden.`
+          );
+          return;
+        }
+
+        // Both versions have the pruefi, navigate
+        this.router.navigate(['/compare', pruefi], {
+          queryParams: {
+            'fv-old': fvOld,
+            'fv-new': fvNew,
+          },
+        });
+      },
+      error: () => {
+        this.isValidating.set(false);
+        this.setValidationError('Ein Fehler ist bei der Validierung aufgetreten.');
+      },
+    });
+  }
+
+  private setValidationError(error: string | null): void {
+    this.validationError.set(error);
+    this.validationErrorChange.emit(error);
   }
 }
