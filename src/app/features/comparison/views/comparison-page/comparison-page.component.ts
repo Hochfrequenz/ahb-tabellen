@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  signal,
+  Injector,
+  runInInjectionContext,
+} from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -52,7 +60,14 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   /** Whether the viewport is at least medium (768px) - Tailwind's md breakpoint */
   isDesktop = signal<boolean>(false);
 
+  /** Filter visibility states (all visible by default) */
+  showUnchanged = signal(true);
+  showAdded = signal(true);
+  showDeleted = signal(true);
+  showModified = signal(true);
+
   diff$?: Observable<AhbDiff>;
+  filteredLines$?: Observable<AhbDiffLine[]>;
   stats$?: Observable<DiffStats>;
   description$?: Observable<DiffDescription>;
   errorOccurred = false;
@@ -67,7 +82,8 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     private readonly ahbService: AhbService,
     private readonly formatVersionCacheService: FormatVersionCacheService,
     private readonly title: Title,
-    private readonly breakpointObserver: BreakpointObserver
+    private readonly breakpointObserver: BreakpointObserver,
+    private readonly injector: Injector
   ) {}
 
   ngOnInit(): void {
@@ -184,6 +200,34 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
         descriptionNew: diff.meta?.description_new,
       }))
     );
+
+    // Create filtered lines observable based on filter toggles
+    runInInjectionContext(this.injector, () => {
+      this.filteredLines$ = combineLatest([
+        this.diff$!,
+        toObservable(this.showUnchanged),
+        toObservable(this.showAdded),
+        toObservable(this.showDeleted),
+        toObservable(this.showModified),
+      ]).pipe(
+        map(([diff, showUnchanged, showAdded, showDeleted, showModified]) => {
+          return (diff?.lines || []).filter(line => {
+            switch (line.diff_status) {
+              case 'unchanged':
+                return showUnchanged;
+              case 'added':
+                return showAdded;
+              case 'deleted':
+                return showDeleted;
+              case 'modified':
+                return showModified;
+              default:
+                return true;
+            }
+          });
+        })
+      );
+    });
   }
 
   private computeStats(lines: AhbDiffLine[]): DiffStats {
