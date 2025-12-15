@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { diffWords } from 'diff';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
 import { environment } from '../../../../environments/environment';
@@ -134,39 +135,40 @@ export class ComparisonTableComponent {
   }
 
   /**
-   * Compare two bedingung strings and return HTML with unique words wrapped in <strong> tags.
-   * Uses set-based comparison to highlight words that exist in one version but not the other.
+   * Compare two bedingung strings using proper diff algorithm.
+   * Highlights added words (in new) or removed words (in old) with <strong> tags.
    */
   getHighlightedBedingung(line: AhbDiffLine, side: 'old' | 'new'): string {
     const oldText = line.old?.bedingung ?? '';
     const newText = line.new?.bedingung ?? '';
     const currentText = side === 'old' ? oldText : newText;
-    const otherText = side === 'old' ? newText : oldText;
 
     if (!this.isColumnChanged(line, 'bedingung') || !currentText) {
       return this.escapeHtml(currentText) || '-';
     }
 
-    // Create a set of words from the other text for efficient lookup
-    const otherWordsSet = new Set(
-      otherText
-        .split(/\s+/)
-        .filter(w => w.trim())
-        .map(w => w.toLowerCase())
-    );
+    // diffWords returns an array of change objects with added/removed flags
+    const changes = diffWords(oldText, newText);
 
-    // Split current text into words while preserving whitespace for reconstruction
-    const currentTokens = currentText.split(/(\s+)/);
+    // Build the highlighted output for the requested side
+    return changes
+      .map(change => {
+        const escaped = this.escapeHtml(change.value);
 
-    // Build highlighted output - bold words that don't exist in the other text
-    return currentTokens
-      .map(token => {
-        const escaped = this.escapeHtml(token);
-        // Only highlight non-whitespace tokens that aren't in the other text
-        if (token.trim() && !otherWordsSet.has(token.toLowerCase())) {
+        if (side === 'old' && change.removed) {
+          // Word was removed (exists only in old)
           return `<strong>${escaped}</strong>`;
         }
-        return escaped;
+        if (side === 'new' && change.added) {
+          // Word was added (exists only in new)
+          return `<strong>${escaped}</strong>`;
+        }
+        if (!change.added && !change.removed) {
+          // Unchanged text - show on both sides
+          return escaped;
+        }
+        // Skip: added words when showing old side, removed words when showing new side
+        return '';
       })
       .join('');
   }
