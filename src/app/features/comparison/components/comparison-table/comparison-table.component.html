@@ -8,6 +8,7 @@
             class="px-3 py-3 text-center text-xs text-gray-600 uppercase bg-red-50 border-l border-gray-300">
             Alte Version
           </th>
+          <th class="w-6 bg-hf-pastell-rose"></th>
           <th
             colspan="6"
             class="px-3 py-3 text-center text-xs text-gray-600 uppercase bg-green-50 border-l border-gray-300">
@@ -22,6 +23,7 @@
           <th class="px-3 py-2 text-left bg-red-50">Qualifier</th>
           <th class="px-3 py-2 text-left bg-red-50">Name</th>
           <th class="px-3 py-2 text-left bg-red-50">Status</th>
+          <th class="w-6 bg-hf-pastell-rose"></th>
           <!-- New version columns -->
           <th class="px-3 py-2 text-left bg-green-50 border-l border-gray-300">Segmentgruppe</th>
           <th class="px-3 py-2 text-left bg-green-50">Segment</th>
@@ -84,6 +86,8 @@
                 {{ getAhbStatus(line, 'old') || '-' }}
               }
             </td>
+
+            <td class="bg-hf-pastell-rose"></td>
 
             <!-- New version columns (version A = new) -->
             <td
