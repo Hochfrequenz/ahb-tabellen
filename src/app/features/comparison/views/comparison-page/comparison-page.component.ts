@@ -168,7 +168,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     this.errorDetails.set(null);
     this.updateTitle();
 
-    this.diff$ = this.ahbService
+    const diff$ = this.ahbService
       .getAhbDiff({
         pruefi: this.pruefi(),
         'format-version-new': this.formatVersionNew(),
@@ -193,8 +193,9 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
         })
       );
 
-    this.stats$ = this.diff$.pipe(map(diff => this.computeStats(diff.lines || [])));
-    this.description$ = this.diff$.pipe(
+    this.diff$ = diff$;
+    this.stats$ = diff$.pipe(map(diff => this.computeStats(diff.lines || [])));
+    this.description$ = diff$.pipe(
       map(diff => ({
         descriptionOld: diff.meta?.description_old,
         descriptionNew: diff.meta?.description_new,
@@ -204,7 +205,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     // Create filtered lines observable based on filter toggles
     runInInjectionContext(this.injector, () => {
       this.filteredLines$ = combineLatest([
-        this.diff$!,
+        diff$,
         toObservable(this.showUnchanged),
         toObservable(this.showAdded),
         toObservable(this.showDeleted),
