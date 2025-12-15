@@ -3,11 +3,15 @@
     <table class="table-auto w-full text-sm text-hf-table-text">
       <thead>
         <tr>
-          <th colspan="6" class="px-3 py-3 text-center text-base uppercase bg-hf-grell-rose">
+          <th
+            [attr.colspan]="showConditionsColumn ? 7 : 6"
+            class="px-3 py-3 text-center text-base uppercase bg-hf-grell-rose">
             Alte Version ({{ formatVersionOld }})
           </th>
           <th class="w-6 bg-hf-pastell-rose"></th>
-          <th colspan="6" class="px-3 py-3 text-center text-base uppercase bg-hf-grell-rose">
+          <th
+            [attr.colspan]="showConditionsColumn ? 7 : 6"
+            class="px-3 py-3 text-center text-base uppercase bg-hf-grell-rose">
             Neue Version ({{ formatVersionNew }})
           </th>
         </tr>
@@ -19,6 +23,9 @@
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Qualifier</th>
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Name</th>
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Status</th>
+          @if (showConditionsColumn) {
+            <th class="px-3 py-2 text-left bg-hf-pastell-rose">Bedingung</th>
+          }
           <th class="w-6 bg-hf-pastell-rose"></th>
           <!-- New version columns -->
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Segmentgruppe</th>
@@ -27,6 +34,9 @@
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Qualifier</th>
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Name</th>
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Status</th>
+          @if (showConditionsColumn) {
+            <th class="px-3 py-2 text-left bg-hf-pastell-rose">Bedingung</th>
+          }
         </tr>
       </thead>
       <tbody>
@@ -61,9 +71,7 @@
             <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'line_name')">
               {{ getName(line, 'old') || '-' }}
             </td>
-            <td
-              class="px-3 py-2"
-              [class]="getChangedColumnClass(line, ['line_ahb_status', 'bedingung'])">
+            <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'line_ahb_status')">
               @if (
                 generateBedingungsbaumDeepLink(getAhbStatus(line, 'old'), formatVersionOld);
                 as treeLink
@@ -76,6 +84,11 @@
                 {{ getAhbStatus(line, 'old') || '-' }}
               }
             </td>
+            @if (showConditionsColumn) {
+              <td class="px-3 py-2">
+                <span [innerHTML]="getHighlightedBedingung(line, 'old')"></span>
+              </td>
+            }
 
             <td class="bg-hf-pastell-rose"></td>
 
@@ -108,9 +121,7 @@
             <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'line_name')">
               {{ getName(line, 'new') || '-' }}
             </td>
-            <td
-              class="px-3 py-2"
-              [class]="getChangedColumnClass(line, ['line_ahb_status', 'bedingung'])">
+            <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'line_ahb_status')">
               @if (
                 generateBedingungsbaumDeepLink(getAhbStatus(line, 'new'), formatVersionNew);
                 as treeLink
@@ -123,6 +134,11 @@
                 {{ getAhbStatus(line, 'new') || '-' }}
               }
             </td>
+            @if (showConditionsColumn) {
+              <td class="px-3 py-2">
+                <span [innerHTML]="getHighlightedBedingung(line, 'new')"></span>
+              </td>
+            }
           </tr>
         }
       </tbody>

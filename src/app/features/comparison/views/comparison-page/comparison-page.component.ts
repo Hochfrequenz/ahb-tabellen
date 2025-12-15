@@ -58,6 +58,9 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   showDeleted = signal(true);
   showModified = signal(true);
 
+  /** Column visibility: conditions/hints/formats column (hidden by default) */
+  showConditionsColumn = signal(false);
+
   /** Filter toggle button configurations */
   readonly filterToggles = [
     {
