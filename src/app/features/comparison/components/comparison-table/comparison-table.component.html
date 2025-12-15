@@ -4,13 +4,13 @@
       <thead>
         <tr>
           <th
-            [attr.colspan]="showConditionsColumn() ? 7 : 6"
+            [attr.colspan]="showConditionsColumn ? 7 : 6"
             class="px-3 py-3 text-center text-base uppercase bg-hf-grell-rose">
             Alte Version ({{ formatVersionOld }})
           </th>
           <th class="w-6 bg-hf-pastell-rose"></th>
           <th
-            [attr.colspan]="showConditionsColumn() ? 7 : 6"
+            [attr.colspan]="showConditionsColumn ? 7 : 6"
             class="px-3 py-3 text-center text-base uppercase bg-hf-grell-rose">
             Neue Version ({{ formatVersionNew }})
           </th>
@@ -23,7 +23,7 @@
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Qualifier</th>
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Name</th>
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Status</th>
-          @if (showConditionsColumn()) {
+          @if (showConditionsColumn) {
             <th class="px-3 py-2 text-left bg-hf-pastell-rose">Bedingung</th>
           }
           <th class="w-6 bg-hf-pastell-rose"></th>
@@ -34,7 +34,7 @@
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Qualifier</th>
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Name</th>
           <th class="px-3 py-2 text-left bg-hf-pastell-rose">Status</th>
-          @if (showConditionsColumn()) {
+          @if (showConditionsColumn) {
             <th class="px-3 py-2 text-left bg-hf-pastell-rose">Bedingung</th>
           }
         </tr>
@@ -84,7 +84,7 @@
                 {{ getAhbStatus(line, 'old') || '-' }}
               }
             </td>
-            @if (showConditionsColumn()) {
+            @if (showConditionsColumn) {
               <td class="px-3 py-2">
                 <span [innerHTML]="getHighlightedBedingung(line, 'old')"></span>
               </td>
@@ -134,7 +134,7 @@
                 {{ getAhbStatus(line, 'new') || '-' }}
               }
             </td>
-            @if (showConditionsColumn()) {
+            @if (showConditionsColumn) {
               <td class="px-3 py-2">
                 <span [innerHTML]="getHighlightedBedingung(line, 'new')"></span>
               </td>

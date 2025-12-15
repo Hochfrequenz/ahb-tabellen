@@ -1,4 +1,4 @@
-import { Component, Input, input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
@@ -18,7 +18,7 @@ export class ComparisonTableComponent {
   @Input() pruefi = '';
 
   /** Whether to show the conditions/hints/formats column */
-  showConditionsColumn = input(false);
+  @Input() showConditionsColumn = false;
 
   getRowClass(line: AhbDiffLine): string {
     switch (line.diff_status) {
