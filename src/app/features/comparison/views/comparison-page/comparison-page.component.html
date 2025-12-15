@@ -108,17 +108,25 @@
           }
         </div>
       } @else {
-        @if (diff$ | async; as diff) {
-          @if (diff.lines && diff.lines.length > 0) {
+        @if (filteredLines$ | async; as filteredLines) {
+          @if (filteredLines.length > 0) {
             <app-comparison-table
-              [lines]="diff.lines"
+              [lines]="filteredLines"
               [formatVersionOld]="formatVersionOld()"
               [formatVersionNew]="formatVersionNew()"
               [pruefi]="pruefi()" />
           } @else {
-            <div class="text-center py-12 text-gray-500">
-              Bitte wählen Sie zwei Formatversionen zum Vergleichen aus.
-            </div>
+            @if (diff$ | async; as diff) {
+              @if (diff.lines && diff.lines.length > 0) {
+                <div class="text-center py-12 text-gray-500">
+                  Alle Zeilen sind durch die aktiven Filter ausgeblendet.
+                </div>
+              } @else {
+                <div class="text-center py-12 text-gray-500">
+                  Bitte wählen Sie zwei Formatversionen zum Vergleichen aus.
+                </div>
+              }
+            }
           }
         } @else {
           <div class="text-center py-12">
