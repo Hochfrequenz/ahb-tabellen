@@ -42,7 +42,8 @@ export class PruefiOverviewComponent implements OnChanges {
     if (
       (changes['formatVersionOld'] || changes['formatVersionNew']) &&
       this.formatVersionOld &&
-      this.formatVersionNew
+      this.formatVersionNew &&
+      this.formatVersionOld !== this.formatVersionNew
     ) {
       this.loadComparison();
     }

@@ -9,6 +9,7 @@ import { SolutionsFooterComponent } from '../../../../shared/components/solution
 import { ComparisonSearchFormHeaderComponent } from '../../components/comparison-search-form-header/comparison-search-form-header.component';
 import { InputSearchEnhancedComponent } from '../../../../shared/components/input-search-enhanced/input-search-enhanced.component';
 import { PruefiOverviewComponent } from '../../components/pruefi-overview/pruefi-overview.component';
+import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
 
 @Component({
   selector: 'app-comparison-landing-page',
@@ -32,10 +33,24 @@ export class ComparisonLandingPageComponent implements OnInit {
   formatVersionNew = signal<string>('');
   validationError = signal<string | null>(null);
 
-  constructor(private readonly title: Title) {}
+  constructor(
+    private readonly title: Title,
+    private readonly formatVersionCacheService: FormatVersionCacheService
+  ) {}
 
   ngOnInit(): void {
     this.title.setTitle('AHB Vergleich - Formatversionen vergleichen');
+
+    // Load default format versions once at the landing page level
+    // to avoid race conditions from multiple search-form-header instances
+    this.formatVersionCacheService.getFormatVersions().subscribe(versions => {
+      if (versions.length >= 2 && !this.formatVersionOld()) {
+        this.formatVersionOld.set(versions[versions.length - 2]);
+      }
+      if (versions.length >= 1 && !this.formatVersionNew()) {
+        this.formatVersionNew.set(versions[versions.length - 1]);
+      }
+    });
   }
 
   onValidationError(error: string | null): void {

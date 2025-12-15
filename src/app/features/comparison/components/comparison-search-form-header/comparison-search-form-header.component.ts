@@ -76,26 +76,15 @@ export class ComparisonSearchFormHeaderComponent {
     private readonly formatVersionCacheService: FormatVersionCacheService,
     private readonly prufidentifikatorenService: PrufidentifikatorenService
   ) {
-    // Load format versions
+    // Load format versions for dropdown options
     this.formatVersionCacheService
       .getFormatVersions()
       .pipe(takeUntilDestroyed())
       .subscribe(versions => {
         // Keep original order (oldest first, newest last)
         this.formatVersions = versions;
-
-        // Set default values if not provided via inputs
-        // Most recent (last in list) as new, second most recent (second to last) as old
-        if (this.formatVersions.length >= 1 && !this.formatVersionNew()) {
-          const defaultNew = this.formatVersions[this.formatVersions.length - 1];
-          this.headerSearchForm.patchValue({ formatVersionNew: defaultNew }, { emitEvent: false });
-          this.formatVersionNewChange.emit(defaultNew);
-        }
-        if (this.formatVersions.length >= 2 && !this.formatVersionOld()) {
-          const defaultOld = this.formatVersions[this.formatVersions.length - 2];
-          this.headerSearchForm.patchValue({ formatVersionOld: defaultOld }, { emitEvent: false });
-          this.formatVersionOldChange.emit(defaultOld);
-        }
+        // Note: Default values are set by the parent component to avoid race conditions
+        // when multiple instances of this component exist (desktop + mobile)
       });
 
     // Update form when inputs change (only if input has a value)
