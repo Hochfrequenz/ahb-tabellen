@@ -360,5 +360,44 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       expect(component.isValidating()).toBe(false);
       expect(component.validationError()).toBe('Ein Fehler ist bei der Validierung aufgetreten.');
     }));
+
+    it('should emit validationErrorChange when validation error occurs', fakeAsync(() => {
+      // Mock empty pruefi lists for both versions
+      mockPrufidentifikatorenService.getPruefis.mockReturnValue(of([]));
+
+      fixture.detectChanges();
+      tick();
+
+      const validationErrorChangeSpy = jest.fn();
+      component.validationErrorChange.subscribe(validationErrorChangeSpy);
+
+      // Set pruefi value that doesn't exist
+      component.headerSearchForm.controls.pruefi.setValue('99999');
+      fixture.detectChanges();
+      tick();
+
+      // Should emit null first (clearing previous error), then the error message
+      expect(validationErrorChangeSpy).toHaveBeenCalledWith(null);
+      expect(validationErrorChangeSpy).toHaveBeenCalledWith(expect.stringContaining('weder'));
+    }));
+
+    it('should emit validationErrorChange with null when validation succeeds', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      const validationErrorChangeSpy = jest.fn();
+      component.validationErrorChange.subscribe(validationErrorChangeSpy);
+
+      // Set a pruefi that exists in mock data
+      component.headerSearchForm.controls.pruefi.setValue('12345');
+      fixture.detectChanges();
+      tick();
+
+      // Should emit null (clearing any previous error)
+      expect(validationErrorChangeSpy).toHaveBeenCalledWith(null);
+      // Should not emit any error message
+      expect(validationErrorChangeSpy).not.toHaveBeenCalledWith(expect.stringContaining('Fehler'));
+      expect(validationErrorChangeSpy).not.toHaveBeenCalledWith(expect.stringContaining('weder'));
+    }));
   });
 });
