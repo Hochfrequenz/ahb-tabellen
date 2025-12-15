@@ -26,7 +26,7 @@ export class ComparisonTableComponent {
       case 'modified':
         return 'bg-hf-neutral text-hf-neutral-dark';
       default:
-        return 'bg-white';
+        return 'bg-white text-hf-table-text';
     }
   }
 
