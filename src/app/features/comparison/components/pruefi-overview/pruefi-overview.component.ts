@@ -182,17 +182,6 @@ export class PruefiOverviewComponent implements OnChanges {
     }
   }
 
-  getChangeBadge(group: FormatGroup): string {
-    const parts: string[] = [];
-    if (group.addedCount > 0) {
-      parts.push(`+${group.addedCount}`);
-    }
-    if (group.removedCount > 0) {
-      parts.push(`-${group.removedCount}`);
-    }
-    return parts.length > 0 ? `(${parts.join(', ')})` : '';
-  }
-
   hasChanges(group: FormatGroup): boolean {
     return group.addedCount > 0 || group.removedCount > 0;
   }
