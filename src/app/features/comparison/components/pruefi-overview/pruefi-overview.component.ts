@@ -145,6 +145,9 @@ export class PruefiOverviewComponent implements OnChanges {
     });
 
     // Build format groups sorted by format name
+    // Note: Using two separate filter() calls for addedCount/removedCount rather than a single
+    // reduce() pass. While this iterates twice, the arrays are small (~10-50 items per format)
+    // and the declarative filter approach is more readable. The performance difference is negligible.
     const allFormats = getAllFormats();
     this.formatGroups = allFormats
       .filter(format => formatMap.has(format))
