@@ -87,7 +87,7 @@
       } @else if (isLoading()) {
         <div class="text-center py-12">
           <mat-spinner diameter="40" class="mx-auto"></mat-spinner>
-          <p class="mt-4 text-gray-500">Lade Vergleich...</p>
+          <p class="mt-4 text-gray-500">{{ currentLoadingMessage() }}</p>
         </div>
       } @else if (filteredLines().length > 0) {
         <app-comparison-table
