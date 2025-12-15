@@ -102,12 +102,16 @@
       }
     </div>
 
-    <!-- Solutions footer inside scroll: visible only on small screens -->
-    <app-solutions-footer class="block md:hidden" />
+    <!-- Solutions footer inside scroll: rendered only on mobile -->
+    @if (!isDesktop()) {
+      <app-solutions-footer />
+    }
   </div>
 
-  <!-- Solutions footer for desktop/tablet: visible on md+ screens at bottom -->
-  <app-solutions-footer class="flex-none hidden md:block" />
+  <!-- Solutions footer for desktop/tablet: rendered only on md+ screens -->
+  @if (isDesktop()) {
+    <app-solutions-footer class="flex-none" />
+  }
 
   <!-- Fixed Footer -->
   <app-footer class="flex-none" />
