@@ -81,8 +81,13 @@ export class PruefiOverviewComponent implements OnChanges {
     oldPruefis: Array<{ pruefidentifikator?: string; name?: string }>,
     newPruefis: Array<{ pruefidentifikator?: string; name?: string }>
   ): void {
-    const oldSet = new Set(oldPruefis.map(p => p.pruefidentifikator));
-    const newSet = new Set(newPruefis.map(p => p.pruefidentifikator));
+    // Filter out undefined values to ensure type safety in Set operations
+    const oldSet = new Set(
+      oldPruefis.map(p => p.pruefidentifikator).filter((id): id is string => id !== undefined)
+    );
+    const newSet = new Set(
+      newPruefis.map(p => p.pruefidentifikator).filter((id): id is string => id !== undefined)
+    );
 
     // Create a map for names (prefer new name, fallback to old)
     const nameMap = new Map<string, string>();
@@ -100,11 +105,9 @@ export class PruefiOverviewComponent implements OnChanges {
     // Get all unique pruefis
     const allPruefis = new Set([...oldSet, ...newSet]);
 
-    // Build comparison list
+    // Build comparison list (allPruefis is guaranteed to contain only strings)
     const comparisons: PruefiComparison[] = [];
     allPruefis.forEach(pruefi => {
-      if (!pruefi) return;
-
       const existsInOld = oldSet.has(pruefi);
       const existsInNew = newSet.has(pruefi);
 
