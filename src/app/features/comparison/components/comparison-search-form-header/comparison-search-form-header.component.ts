@@ -1,4 +1,4 @@
-import { Component, input, output, effect, signal } from '@angular/core';
+import { Component, DestroyRef, inject, input, output, effect, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -28,6 +28,8 @@ import { forkJoin, map } from 'rxjs';
   templateUrl: './comparison-search-form-header.component.html',
 })
 export class ComparisonSearchFormHeaderComponent {
+  private readonly destroyRef = inject(DestroyRef);
+
   formatVersionOld = input<string>('');
   formatVersionNew = input<string>('');
   pruefi = input<string>('');
@@ -177,47 +179,49 @@ export class ComparisonSearchFormHeaderComponent {
       newVersionPruefis: this.prufidentifikatorenService
         .getPruefis({ 'format-version': fvNew })
         .pipe(map(pruefis => pruefis.map(p => p.pruefidentifikator))),
-    }).subscribe({
-      next: ({ oldVersionPruefis, newVersionPruefis }) => {
-        this.isValidating.set(false);
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ oldVersionPruefis, newVersionPruefis }) => {
+          this.isValidating.set(false);
 
-        const existsInOld = oldVersionPruefis.includes(pruefi);
-        const existsInNew = newVersionPruefis.includes(pruefi);
+          const existsInOld = oldVersionPruefis.includes(pruefi);
+          const existsInNew = newVersionPruefis.includes(pruefi);
 
-        if (!existsInOld && !existsInNew) {
-          this.setValidationError(
-            `Der Prüfidentifikator ${pruefi} ist weder in der Formatversion ${fvOld} noch in der ${fvNew} vorhanden.`
-          );
-          return;
-        }
+          if (!existsInOld && !existsInNew) {
+            this.setValidationError(
+              `Der Prüfidentifikator ${pruefi} ist weder in der Formatversion ${fvOld} noch in der ${fvNew} vorhanden.`
+            );
+            return;
+          }
 
-        if (!existsInOld) {
-          this.setValidationError(
-            `Der Prüfidentifikator ${pruefi} konnte nicht in der Formatversion ${fvOld} gefunden werden.`
-          );
-          return;
-        }
+          if (!existsInOld) {
+            this.setValidationError(
+              `Der Prüfidentifikator ${pruefi} konnte nicht in der Formatversion ${fvOld} gefunden werden.`
+            );
+            return;
+          }
 
-        if (!existsInNew) {
-          this.setValidationError(
-            `Der Prüfidentifikator ${pruefi} konnte nicht in der Formatversion ${fvNew} gefunden werden.`
-          );
-          return;
-        }
+          if (!existsInNew) {
+            this.setValidationError(
+              `Der Prüfidentifikator ${pruefi} konnte nicht in der Formatversion ${fvNew} gefunden werden.`
+            );
+            return;
+          }
 
-        // Both versions have the pruefi, navigate
-        this.router.navigate(['/compare', pruefi], {
-          queryParams: {
-            'fv-old': fvOld,
-            'fv-new': fvNew,
-          },
-        });
-      },
-      error: () => {
-        this.isValidating.set(false);
-        this.setValidationError('Ein Fehler ist bei der Validierung aufgetreten.');
-      },
-    });
+          // Both versions have the pruefi, navigate
+          this.router.navigate(['/compare', pruefi], {
+            queryParams: {
+              'fv-old': fvOld,
+              'fv-new': fvNew,
+            },
+          });
+        },
+        error: () => {
+          this.isValidating.set(false);
+          this.setValidationError('Ein Fehler ist bei der Validierung aufgetreten.');
+        },
+      });
   }
 
   private setValidationError(error: string | null): void {
