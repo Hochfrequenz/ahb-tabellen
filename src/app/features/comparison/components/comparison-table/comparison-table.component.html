@@ -85,8 +85,8 @@
               }
             </td>
             @if (showConditionsColumn()) {
-              <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'bedingung')">
-                {{ getBedingung(line, 'old') || '-' }}
+              <td class="px-3 py-2">
+                <span [innerHTML]="getHighlightedBedingung(line, 'old')"></span>
               </td>
             }
 
@@ -135,8 +135,8 @@
               }
             </td>
             @if (showConditionsColumn()) {
-              <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'bedingung')">
-                {{ getBedingung(line, 'new') || '-' }}
+              <td class="px-3 py-2">
+                <span [innerHTML]="getHighlightedBedingung(line, 'new')"></span>
               </td>
             }
           </tr>

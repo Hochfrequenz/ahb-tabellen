@@ -137,6 +137,41 @@ export class ComparisonTableComponent {
     return this.getSide(line, side)?.bedingung ?? '';
   }
 
+  /**
+   * Compare two bedingung strings word-by-word and return HTML with differences wrapped in <strong> tags
+   */
+  getHighlightedBedingung(line: AhbDiffLine, side: 'old' | 'new'): string {
+    const oldText = line.old?.bedingung ?? '';
+    const newText = line.new?.bedingung ?? '';
+    const currentText = side === 'old' ? oldText : newText;
+    const otherText = side === 'old' ? newText : oldText;
+
+    if (!this.isColumnChanged(line, 'bedingung') || !currentText) {
+      return this.escapeHtml(currentText) || '-';
+    }
+
+    // Split into words (preserving whitespace)
+    const currentWords = currentText.split(/(\s+)/);
+    const otherWords = otherText.split(/(\s+)/);
+
+    // Build highlighted output
+    return currentWords
+      .map((word, i) => {
+        const escaped = this.escapeHtml(word);
+        if (otherWords[i] !== word && word.trim()) {
+          return `<strong>${escaped}</strong>`;
+        }
+        return escaped;
+      })
+      .join('');
+  }
+
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   generateBedingungsbaumDeepLink(expression: string, formatVersion: string): string | null {
     if (!expression || !expression.includes('[')) {
       return null;
