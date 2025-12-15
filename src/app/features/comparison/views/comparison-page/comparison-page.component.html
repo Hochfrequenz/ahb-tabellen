@@ -52,7 +52,7 @@
 
         <!-- Statistics / Filter Toggles -->
         @if (stats(); as stats) {
-          <div class="flex flex-wrap gap-2 text-sm">
+          <div class="flex flex-wrap items-center gap-2 text-sm">
             @for (toggle of filterToggles; track toggle.key) {
               <button
                 type="button"
@@ -66,6 +66,25 @@
                 {{ toggle.symbol }}{{ stats[toggle.key] }}
               </button>
             }
+
+            <!-- Divider -->
+            <span class="mx-1 h-6 w-px bg-gray-300"></span>
+
+            <!-- Column visibility toggle -->
+            <button
+              type="button"
+              (click)="showConditionsColumn.set(!showConditionsColumn())"
+              class="px-3 py-1.5 rounded font-medium cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2 border-2"
+              [class]="
+                showConditionsColumn()
+                  ? 'bg-hf-dunkel-rose text-white border-hf-dunkel-rose focus:ring-hf-dunkel-rose hover:ring-hf-dunkel-rose'
+                  : 'bg-white text-gray-700 border-gray-300 focus:ring-gray-400 hover:ring-gray-400'
+              "
+              [attr.aria-pressed]="showConditionsColumn() ? 'true' : 'false'"
+              aria-label="Bedingungen-Spalte ein-/ausblenden"
+              title="Bedingungen-Spalte ein-/ausblenden">
+              Bedingungen
+            </button>
           </div>
         }
       </div>
@@ -94,7 +113,8 @@
           [lines]="filteredLines()"
           [formatVersionOld]="formatVersionOld()"
           [formatVersionNew]="formatVersionNew()"
-          [pruefi]="pruefi()" />
+          [pruefi]="pruefi()"
+          [showConditionsColumn]="showConditionsColumn()" />
       } @else if (stats()) {
         <!-- Has data but all filtered out -->
         <div class="text-center py-12 text-gray-500">
