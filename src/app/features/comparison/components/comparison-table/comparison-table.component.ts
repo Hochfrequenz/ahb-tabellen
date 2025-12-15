@@ -77,7 +77,7 @@ export class ComparisonTableComponent {
     const columnsToCheck = Array.isArray(columns) ? columns : [columns];
     const hasChange = columnsToCheck.some(col => this.isColumnChanged(line, col));
     if (hasChange) {
-      return 'font-semibold text-yellow-700';
+      return 'font-bold';
     }
     return '';
   }
