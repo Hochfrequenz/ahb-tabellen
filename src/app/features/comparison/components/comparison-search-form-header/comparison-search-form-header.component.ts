@@ -171,7 +171,11 @@ export class ComparisonSearchFormHeaderComponent {
     this.setValidationError(null);
     this.isValidating.set(true);
 
-    // Check if pruefi exists in both format versions
+    // Check if pruefi exists in both format versions.
+    // Note: We fetch the full pruefi lists rather than using a dedicated existsPruefi() endpoint
+    // because no such endpoint currently exists in the API. The pruefi lists are relatively small
+    // (~200-300 entries per format version) and are likely already cached by the browser from
+    // the pruefi-input autocomplete, so the performance impact is minimal.
     forkJoin({
       oldVersionPruefis: this.prufidentifikatorenService
         .getPruefis({ 'format-version': fvOld })
