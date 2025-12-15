@@ -30,7 +30,7 @@
     <div class="max-w-screen-2xl mx-auto">
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800 mb-1">AHB Vergleich: {{ pruefi() }}</h1>
-        @if (description$ | async; as desc) {
+        @if (description(); as desc) {
           @if (desc.descriptionOld || desc.descriptionNew) {
             <p class="text-gray-600 mb-4">
               @if (desc.descriptionOld === desc.descriptionNew) {
@@ -51,7 +51,7 @@
         }
 
         <!-- Statistics / Filter Toggles -->
-        @if (stats$ | async; as stats) {
+        @if (stats(); as stats) {
           <div class="flex flex-wrap gap-2 text-sm">
             @for (toggle of filterToggles; track toggle.key) {
               <button
@@ -83,33 +83,26 @@
             <p class="mb-4">{{ errorMessage }}</p>
           }
         </div>
+      } @else if (isLoading()) {
+        <div class="text-center py-12">
+          <mat-spinner diameter="40" class="mx-auto"></mat-spinner>
+          <p class="mt-4 text-gray-500">Lade Vergleich...</p>
+        </div>
+      } @else if (filteredLines().length > 0) {
+        <app-comparison-table
+          [lines]="filteredLines()"
+          [formatVersionOld]="formatVersionOld()"
+          [formatVersionNew]="formatVersionNew()"
+          [pruefi]="pruefi()" />
+      } @else if (stats()) {
+        <!-- Has data but all filtered out -->
+        <div class="text-center py-12 text-gray-500">
+          Alle Zeilen sind durch die aktiven Filter ausgeblendet.
+        </div>
       } @else {
-        @if (filteredLines$ | async; as filteredLines) {
-          @if (filteredLines.length > 0) {
-            <app-comparison-table
-              [lines]="filteredLines"
-              [formatVersionOld]="formatVersionOld()"
-              [formatVersionNew]="formatVersionNew()"
-              [pruefi]="pruefi()" />
-          } @else {
-            @if (diff$ | async; as diff) {
-              @if (diff.lines && diff.lines.length > 0) {
-                <div class="text-center py-12 text-gray-500">
-                  Alle Zeilen sind durch die aktiven Filter ausgeblendet.
-                </div>
-              } @else {
-                <div class="text-center py-12 text-gray-500">
-                  Bitte wählen Sie zwei Formatversionen zum Vergleichen aus.
-                </div>
-              }
-            }
-          }
-        } @else {
-          <div class="text-center py-12">
-            <mat-spinner diameter="40" class="mx-auto"></mat-spinner>
-            <p class="mt-4 text-gray-500">Lade Vergleich...</p>
-          </div>
-        }
+        <div class="text-center py-12 text-gray-500">
+          Bitte wählen Sie zwei Formatversionen zum Vergleichen aus.
+        </div>
       }
     </div>
 

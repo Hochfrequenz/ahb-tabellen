@@ -1,17 +1,9 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  signal,
-  Injector,
-  runInInjectionContext,
-} from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, Observable, of, combineLatest } from 'rxjs';
-import { takeUntil, catchError, shareReplay, map } from 'rxjs/operators';
+import { Subject, of, combineLatest } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -101,10 +93,48 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     },
   ];
 
-  diff$?: Observable<AhbDiff>;
-  filteredLines$?: Observable<AhbDiffLine[]>;
-  stats$?: Observable<DiffStats>;
-  description$?: Observable<DiffDescription>;
+  /** Current diff data as a signal for reactive filtering */
+  private readonly diffData = signal<AhbDiff | null>(null);
+
+  /** Computed filtered lines based on filter toggle states - automatically updates when filters or diff data change */
+  readonly filteredLines = computed(() => {
+    const diff = this.diffData();
+    if (!diff?.lines) return [];
+
+    return diff.lines.filter(line => {
+      switch (line.diff_status) {
+        case 'unchanged':
+          return this.showUnchanged();
+        case 'added':
+          return this.showAdded();
+        case 'deleted':
+          return this.showDeleted();
+        case 'modified':
+          return this.showModified();
+        default:
+          return true;
+      }
+    });
+  });
+
+  /** Computed statistics from diff data */
+  readonly stats = computed(() => {
+    const diff = this.diffData();
+    return diff?.lines ? this.computeStats(diff.lines) : null;
+  });
+
+  /** Computed description from diff data */
+  readonly description = computed(() => {
+    const diff = this.diffData();
+    return diff?.meta
+      ? {
+          descriptionOld: diff.meta.description_old,
+          descriptionNew: diff.meta.description_new,
+        }
+      : null;
+  });
+
+  isLoading = signal(false);
   errorOccurred = false;
   errorMessage = '';
   errorDetails = signal<{ pruefi: string; fvNew: string; fvOld: string } | null>(null);
@@ -117,8 +147,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     private readonly ahbService: AhbService,
     private readonly formatVersionCacheService: FormatVersionCacheService,
     private readonly title: Title,
-    private readonly breakpointObserver: BreakpointObserver,
-    private readonly injector: Injector
+    private readonly breakpointObserver: BreakpointObserver
   ) {}
 
   ngOnInit(): void {
@@ -201,16 +230,18 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     this.errorOccurred = false;
     this.errorMessage = '';
     this.errorDetails.set(null);
+    this.isLoading.set(true);
+    this.diffData.set(null);
     this.updateTitle();
 
-    const diff$ = this.ahbService
+    this.ahbService
       .getAhbDiff({
         pruefi: this.pruefi(),
         'format-version-new': this.formatVersionNew(),
         'format-version-old': this.formatVersionOld(),
       })
       .pipe(
-        shareReplay(1),
+        takeUntil(this.destroy$),
         catchError(error => {
           this.errorOccurred = true;
           if (error.status === 404) {
@@ -224,46 +255,13 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
             this.errorDetails.set(null);
             this.errorMessage = 'Ein Fehler ist aufgetreten.';
           }
-          return of({} as AhbDiff);
+          return of(null);
         })
-      );
-
-    this.diff$ = diff$;
-    this.stats$ = diff$.pipe(map(diff => this.computeStats(diff.lines || [])));
-    this.description$ = diff$.pipe(
-      map(diff => ({
-        descriptionOld: diff.meta?.description_old,
-        descriptionNew: diff.meta?.description_new,
-      }))
-    );
-
-    // Create filtered lines observable based on filter toggles
-    runInInjectionContext(this.injector, () => {
-      this.filteredLines$ = combineLatest([
-        diff$,
-        toObservable(this.showUnchanged),
-        toObservable(this.showAdded),
-        toObservable(this.showDeleted),
-        toObservable(this.showModified),
-      ]).pipe(
-        map(([diff, showUnchanged, showAdded, showDeleted, showModified]) => {
-          return (diff?.lines || []).filter(line => {
-            switch (line.diff_status) {
-              case 'unchanged':
-                return showUnchanged;
-              case 'added':
-                return showAdded;
-              case 'deleted':
-                return showDeleted;
-              case 'modified':
-                return showModified;
-              default:
-                return true;
-            }
-          });
-        })
-      );
-    });
+      )
+      .subscribe(diff => {
+        this.diffData.set(diff);
+        this.isLoading.set(false);
+      });
   }
 
   private computeStats(lines: AhbDiffLine[]): DiffStats {
