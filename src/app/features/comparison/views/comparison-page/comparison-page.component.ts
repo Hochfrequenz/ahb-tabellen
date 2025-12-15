@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { Subject, Observable, of, combineLatest } from 'rxjs';
 import { takeUntil, catchError, shareReplay, map } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { BreakpointObserver } from '@angular/cdk/layout';
 
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
@@ -44,9 +45,14 @@ export interface DiffDescription {
   templateUrl: './comparison-page.component.html',
 })
 export class ComparisonPageComponent implements OnInit, OnDestroy {
+  private readonly breakpointObserver = inject(BreakpointObserver);
+
   pruefi = signal<string>('');
   formatVersionOld = signal<string>('');
   formatVersionNew = signal<string>('');
+
+  /** Whether the viewport is at least medium (768px) - Tailwind's md breakpoint */
+  isDesktop = signal<boolean>(false);
 
   diff$?: Observable<AhbDiff>;
   stats$?: Observable<DiffStats>;
@@ -67,6 +73,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadFormatVersions();
+    this.initBreakpointObserver();
 
     // Combine params and queryParams to avoid race condition
     combineLatest([this.route.params, this.route.queryParams])
@@ -104,6 +111,16 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
             this.formatVersionOld.set(versions[versions.length - 2]);
           }
         },
+      });
+  }
+
+  private initBreakpointObserver(): void {
+    // Tailwind's md breakpoint is 768px
+    this.breakpointObserver
+      .observe(['(min-width: 768px)'])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(result => {
+        this.isDesktop.set(result.matches);
       });
   }
 
