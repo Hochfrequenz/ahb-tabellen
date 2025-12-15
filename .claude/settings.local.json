@@ -18,7 +18,8 @@
       "Bash(findstr:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(npx prettier:*)"
+      "Bash(npx prettier:*)",
+      "Skill(superpowers:brainstorming)"
     ],
     "deny": [],
     "ask": []
