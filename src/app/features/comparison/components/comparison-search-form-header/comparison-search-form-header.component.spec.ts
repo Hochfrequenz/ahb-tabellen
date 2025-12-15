@@ -3,7 +3,7 @@ import { ComparisonSearchFormHeaderComponent } from './comparison-search-form-he
 import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
 import { PrufidentifikatorenService } from '../../../../core/api';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -341,6 +341,24 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       // After tick, validation should complete
       tick();
       expect(component.isValidating()).toBe(false);
+    }));
+
+    it('should handle API errors gracefully', fakeAsync(() => {
+      // Mock API to throw an error
+      mockPrufidentifikatorenService.getPruefis.mockReturnValue(
+        throwError(() => new Error('API Error'))
+      );
+
+      fixture.detectChanges();
+      tick();
+
+      component.headerSearchForm.controls.pruefi.setValue('12345');
+      fixture.detectChanges();
+      tick();
+
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
+      expect(component.isValidating()).toBe(false);
+      expect(component.validationError()).toBe('Ein Fehler ist bei der Validierung aufgetreten.');
     }));
   });
 });
