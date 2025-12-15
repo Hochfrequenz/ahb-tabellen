@@ -68,7 +68,15 @@
       <div
         class="text-center p-8 bg-hf-grell-rose text-hf-weiches-schwarz rounded-lg max-w-4xl mx-auto">
         <h2 class="text-2xl font-bold mb-4">Fehler</h2>
-        <p class="mb-4">{{ errorMessage }}</p>
+        @if (errorDetails(); as details) {
+          <p class="mb-4">
+            Prüfidentifikator <strong>{{ details.pruefi }}</strong> in beiden Formatversionen
+            <strong>{{ details.fvNew }}</strong> und <strong>{{ details.fvOld }}</strong> nicht
+            gefunden.
+          </p>
+        } @else {
+          <p class="mb-4">{{ errorMessage }}</p>
+        }
       </div>
     } @else {
       @if (diff$ | async; as diff) {

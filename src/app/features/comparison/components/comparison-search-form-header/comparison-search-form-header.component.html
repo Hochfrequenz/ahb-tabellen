@@ -40,4 +40,9 @@
     class="inline-block h-16 w-64"
     formControlName="pruefi"
     [formatVersion]="formatVersionForPruefi" />
+
+  <!-- Validation Spinner -->
+  @if (isValidating()) {
+    <mat-spinner diameter="24"></mat-spinner>
+  }
 </form>

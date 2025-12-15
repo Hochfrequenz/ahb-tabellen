@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ComparisonSearchFormHeaderComponent } from './comparison-search-form-header.component';
 import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
+import { PrufidentifikatorenService } from '../../../../core/api';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -11,14 +12,24 @@ describe('ComparisonSearchFormHeaderComponent', () => {
   let component: ComparisonSearchFormHeaderComponent;
   let fixture: ComponentFixture<ComparisonSearchFormHeaderComponent>;
   let mockFormatVersionCacheService: jest.Mocked<FormatVersionCacheService>;
+  let mockPrufidentifikatorenService: jest.Mocked<PrufidentifikatorenService>;
   let mockRouter: jest.Mocked<Router>;
 
   const mockVersions = ['FV2304', 'FV2310', 'FV2404', 'FV2410', 'FV2504'];
+  const mockPruefis = [
+    { pruefidentifikator: '11001', name: 'Test Pruefi 1' },
+    { pruefidentifikator: '12345', name: 'Test Pruefi 2' },
+    { pruefidentifikator: '11042', name: 'Test Pruefi 3' },
+  ];
 
   beforeEach(async () => {
     mockFormatVersionCacheService = {
       getFormatVersions: jest.fn().mockReturnValue(of(mockVersions)),
     } as unknown as jest.Mocked<FormatVersionCacheService>;
+
+    mockPrufidentifikatorenService = {
+      getPruefis: jest.fn().mockReturnValue(of(mockPruefis)),
+    } as unknown as jest.Mocked<PrufidentifikatorenService>;
 
     mockRouter = {
       navigate: jest.fn(),
@@ -30,6 +41,7 @@ describe('ComparisonSearchFormHeaderComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: FormatVersionCacheService, useValue: mockFormatVersionCacheService },
+        { provide: PrufidentifikatorenService, useValue: mockPrufidentifikatorenService },
         { provide: Router, useValue: mockRouter },
       ],
     }).compileComponents();
@@ -197,10 +209,18 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       // Verify navigateOnSubmit is true by default
       expect(component.navigateOnSubmit()).toBe(true);
 
-      // Set pruefi value - this should trigger navigation
+      // Set pruefi value - this should trigger validation and then navigation
       component.headerSearchForm.controls.pruefi.setValue('12345');
       fixture.detectChanges();
       tick();
+
+      // Validation should have been called for both format versions
+      expect(mockPrufidentifikatorenService.getPruefis).toHaveBeenCalledWith({
+        'format-version': 'FV2410',
+      });
+      expect(mockPrufidentifikatorenService.getPruefis).toHaveBeenCalledWith({
+        'format-version': 'FV2504',
+      });
 
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/compare', '12345'], {
         queryParams: {
@@ -230,6 +250,154 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       tick();
 
       expect(mockRouter.navigate).not.toHaveBeenCalled();
+    }));
+  });
+
+  describe('pruefi validation', () => {
+    it('should show error when pruefi does not exist in either format version', fakeAsync(() => {
+      // Mock empty pruefi lists for both versions
+      mockPrufidentifikatorenService.getPruefis.mockReturnValue(of([]));
+
+      fixture.detectChanges();
+      tick();
+
+      // Set pruefi value that doesn't exist
+      component.headerSearchForm.controls.pruefi.setValue('99999');
+      fixture.detectChanges();
+      tick();
+
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
+      expect(component.validationError()).toContain('weder');
+      expect(component.validationError()).toContain('FV2410');
+      expect(component.validationError()).toContain('FV2504');
+    }));
+
+    it('should show error when pruefi does not exist in old format version only', fakeAsync(() => {
+      // Mock pruefi exists in new version but not in old
+      mockPrufidentifikatorenService.getPruefis.mockImplementation(params => {
+        if (params['format-version'] === 'FV2504') {
+          return of([{ pruefidentifikator: '12345', name: 'Test' }]);
+        }
+        return of([]);
+      });
+
+      fixture.detectChanges();
+      tick();
+
+      component.headerSearchForm.controls.pruefi.setValue('12345');
+      fixture.detectChanges();
+      tick();
+
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
+      expect(component.validationError()).toContain('FV2410');
+      expect(component.validationError()).not.toContain('weder');
+    }));
+
+    it('should show error when pruefi does not exist in new format version only', fakeAsync(() => {
+      // Mock pruefi exists in old version but not in new
+      mockPrufidentifikatorenService.getPruefis.mockImplementation(params => {
+        if (params['format-version'] === 'FV2410') {
+          return of([{ pruefidentifikator: '12345', name: 'Test' }]);
+        }
+        return of([]);
+      });
+
+      fixture.detectChanges();
+      tick();
+
+      component.headerSearchForm.controls.pruefi.setValue('12345');
+      fixture.detectChanges();
+      tick();
+
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
+      expect(component.validationError()).toContain('FV2504');
+      expect(component.validationError()).not.toContain('weder');
+    }));
+
+    it('should clear validation error when pruefi exists in both versions', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      // Set a pruefi that exists in mock data
+      component.headerSearchForm.controls.pruefi.setValue('12345');
+      fixture.detectChanges();
+      tick();
+
+      expect(component.validationError()).toBeNull();
+      expect(mockRouter.navigate).toHaveBeenCalled();
+    }));
+
+    it('should set isValidating while validation is in progress', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      // Initially not validating
+      expect(component.isValidating()).toBe(false);
+
+      // Start validation
+      component.headerSearchForm.controls.pruefi.setValue('12345');
+      fixture.detectChanges();
+
+      // After tick, validation should complete
+      tick();
+      expect(component.isValidating()).toBe(false);
+    }));
+
+    it('should handle API errors gracefully', fakeAsync(() => {
+      // Mock API to throw an error
+      mockPrufidentifikatorenService.getPruefis.mockReturnValue(
+        throwError(() => new Error('API Error'))
+      );
+
+      fixture.detectChanges();
+      tick();
+
+      component.headerSearchForm.controls.pruefi.setValue('12345');
+      fixture.detectChanges();
+      tick();
+
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
+      expect(component.isValidating()).toBe(false);
+      expect(component.validationError()).toBe('Ein Fehler ist bei der Validierung aufgetreten.');
+    }));
+
+    it('should emit validationErrorChange when validation error occurs', fakeAsync(() => {
+      // Mock empty pruefi lists for both versions
+      mockPrufidentifikatorenService.getPruefis.mockReturnValue(of([]));
+
+      fixture.detectChanges();
+      tick();
+
+      const validationErrorChangeSpy = jest.fn();
+      component.validationErrorChange.subscribe(validationErrorChangeSpy);
+
+      // Set pruefi value that doesn't exist
+      component.headerSearchForm.controls.pruefi.setValue('99999');
+      fixture.detectChanges();
+      tick();
+
+      // Should emit null first (clearing previous error), then the error message
+      expect(validationErrorChangeSpy).toHaveBeenCalledWith(null);
+      expect(validationErrorChangeSpy).toHaveBeenCalledWith(expect.stringContaining('weder'));
+    }));
+
+    it('should emit validationErrorChange with null when validation succeeds', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      const validationErrorChangeSpy = jest.fn();
+      component.validationErrorChange.subscribe(validationErrorChangeSpy);
+
+      // Set a pruefi that exists in mock data
+      component.headerSearchForm.controls.pruefi.setValue('12345');
+      fixture.detectChanges();
+      tick();
+
+      // Should emit null (clearing any previous error)
+      expect(validationErrorChangeSpy).toHaveBeenCalledWith(null);
+      // Should not emit any error message
+      expect(validationErrorChangeSpy).not.toHaveBeenCalledWith(expect.stringContaining('Fehler'));
+      expect(validationErrorChangeSpy).not.toHaveBeenCalledWith(expect.stringContaining('weder'));
     }));
   });
 });

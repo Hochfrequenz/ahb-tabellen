@@ -28,10 +28,15 @@ export class ComparisonLandingPageComponent implements OnInit {
   pruefiControl = new FormControl<string>('');
   formatVersionOld = signal<string>('');
   formatVersionNew = signal<string>('');
+  validationError = signal<string | null>(null);
 
   constructor(private readonly title: Title) {}
 
   ngOnInit(): void {
     this.title.setTitle('AHB Vergleich - Formatversionen vergleichen');
+  }
+
+  onValidationError(error: string | null): void {
+    this.validationError.set(error);
   }
 }
