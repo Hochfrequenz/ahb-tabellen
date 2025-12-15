@@ -1,0 +1,115 @@
+<!-- Loading State -->
+@if (isLoading) {
+  <div class="flex justify-center items-center py-12">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+}
+
+<!-- Error State -->
+@if (errorMessage) {
+  <div class="text-center p-8 bg-hf-grell-rose text-hf-weiches-schwarz rounded-lg">
+    <h2 class="text-xl font-bold mb-2">Fehler</h2>
+    <p>{{ errorMessage }}</p>
+  </div>
+}
+
+<!-- Content -->
+@if (!isLoading && !errorMessage && formatGroups.length > 0) {
+  <div class="space-y-2">
+    <mat-accordion multi>
+      @for (group of formatGroups; track group.format) {
+        <mat-expansion-panel [expanded]="hasChanges(group)">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <span class="font-semibold">{{ group.format }}</span>
+              @if (hasChanges(group)) {
+                <span class="ml-2 text-sm">
+                  @if (group.addedCount > 0) {
+                    <span class="text-green-600">+{{ group.addedCount }}</span>
+                  }
+                  @if (group.addedCount > 0 && group.removedCount > 0) {
+                    <span class="text-gray-400">, </span>
+                  }
+                  @if (group.removedCount > 0) {
+                    <span class="text-red-600">-{{ group.removedCount }}</span>
+                  }
+                </span>
+              }
+            </mat-panel-title>
+            <mat-panel-description>
+              {{ group.pruefis.length }} Prüfidentifikatoren
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-gray-300 bg-gray-50">
+                  <th class="px-3 py-2 text-left font-medium">Prüfidentifikator</th>
+                  <th class="px-3 py-2 text-left font-medium">Name</th>
+                  <th class="px-3 py-2 text-center font-medium">{{ formatVersionOld }}</th>
+                  <th class="px-3 py-2 text-center font-medium">{{ formatVersionNew }}</th>
+                  <th class="px-3 py-2 text-center font-medium">Vergleichen</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pruefi of group.pruefis; track pruefi.pruefidentifikator) {
+                  <tr class="border-b border-gray-200" [ngClass]="getRowClass(pruefi.status)">
+                    <td class="px-3 py-2 font-mono">{{ pruefi.pruefidentifikator }}</td>
+                    <td class="px-3 py-2">{{ pruefi.name }}</td>
+                    <td class="px-3 py-2 text-center">
+                      @if (pruefi.existsInOld) {
+                        <a
+                          [routerLink]="['/ahb', formatVersionOld, pruefi.pruefidentifikator]"
+                          class="text-hf-dunkel-rose hover:underline"
+                          title="AHB in {{ formatVersionOld }} anzeigen">
+                          Anzeigen
+                        </a>
+                      } @else {
+                        <span class="text-gray-400">-</span>
+                      }
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                      @if (pruefi.existsInNew) {
+                        <a
+                          [routerLink]="['/ahb', formatVersionNew, pruefi.pruefidentifikator]"
+                          class="text-hf-dunkel-rose hover:underline"
+                          title="AHB in {{ formatVersionNew }} anzeigen">
+                          Anzeigen
+                        </a>
+                      } @else {
+                        <span class="text-gray-400">-</span>
+                      }
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                      @if (pruefi.existsInOld && pruefi.existsInNew) {
+                        <a
+                          [routerLink]="['/compare', pruefi.pruefidentifikator]"
+                          [queryParams]="{ 'fv-old': formatVersionOld, 'fv-new': formatVersionNew }"
+                          class="text-hf-dunkel-rose hover:underline font-medium"
+                          title="Vergleich anzeigen">
+                          Vergleichen
+                        </a>
+                      } @else {
+                        <span class="text-gray-400">-</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </mat-expansion-panel>
+      }
+    </mat-accordion>
+  </div>
+}
+
+<!-- Empty State -->
+@if (
+  !isLoading && !errorMessage && formatGroups.length === 0 && formatVersionOld && formatVersionNew
+) {
+  <div class="text-center p-8 bg-white rounded-lg shadow-sm">
+    <p class="text-gray-500">Keine Prüfidentifikatoren gefunden.</p>
+  </div>
+}

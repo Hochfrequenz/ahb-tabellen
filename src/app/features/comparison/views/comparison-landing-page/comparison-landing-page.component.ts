@@ -8,6 +8,7 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
 import { ComparisonSearchFormHeaderComponent } from '../../components/comparison-search-form-header/comparison-search-form-header.component';
 import { InputSearchEnhancedComponent } from '../../../../shared/components/input-search-enhanced/input-search-enhanced.component';
+import { PruefiOverviewComponent } from '../../components/pruefi-overview/pruefi-overview.component';
 
 @Component({
   selector: 'app-comparison-landing-page',
@@ -21,6 +22,7 @@ import { InputSearchEnhancedComponent } from '../../../../shared/components/inpu
     SolutionsFooterComponent,
     ComparisonSearchFormHeaderComponent,
     InputSearchEnhancedComponent,
+    PruefiOverviewComponent,
   ],
   templateUrl: './comparison-landing-page.component.html',
 })

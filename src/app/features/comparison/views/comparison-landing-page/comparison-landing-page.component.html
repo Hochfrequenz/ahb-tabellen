@@ -67,8 +67,8 @@
           </div>
         }
 
-        <!-- Info box -->
-        @if (!validationError()) {
+        <!-- Info box (shown when no format versions selected) -->
+        @if (!validationError() && (!formatVersionOld() || !formatVersionNew())) {
           <div class="bg-white rounded-lg p-4 md:p-6 mb-6 shadow-sm">
             <div class="flex items-start space-x-3">
               <svg
@@ -94,6 +94,13 @@
               </div>
             </div>
           </div>
+        }
+
+        <!-- Pruefi Overview (shown when both format versions are selected) -->
+        @if (!validationError() && formatVersionOld() && formatVersionNew()) {
+          <app-pruefi-overview
+            [formatVersionOld]="formatVersionOld()"
+            [formatVersionNew]="formatVersionNew()" />
         }
       </div>
     </div>
