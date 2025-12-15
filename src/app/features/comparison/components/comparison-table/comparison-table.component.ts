@@ -17,16 +17,15 @@ export class ComparisonTableComponent {
   @Input() pruefi = '';
 
   getRowClass(line: AhbDiffLine): string {
-    const baseClass = 'border-b border-gray-200';
     switch (line.diff_status) {
       case 'added':
-        return `${baseClass} bg-green-50`;
+        return 'bg-hf-positive text-hf-positive-dark font-bold';
       case 'deleted':
-        return `${baseClass} bg-red-50`;
+        return 'bg-hf-negative text-hf-negative-dark font-bold';
       case 'modified':
-        return `${baseClass} bg-yellow-50`;
+        return 'bg-hf-neutral text-hf-neutral-dark';
       default:
-        return `${baseClass} bg-white`;
+        return 'bg-white';
     }
   }
 
@@ -46,11 +45,11 @@ export class ComparisonTableComponent {
   getDiffStatusClass(status: string | undefined): string {
     switch (status) {
       case 'added':
-        return 'text-green-600 font-bold';
+        return 'text-hf-positive-dark font-bold';
       case 'deleted':
-        return 'text-red-600 font-bold';
+        return 'text-hf-negative-dark font-bold';
       case 'modified':
-        return 'text-yellow-600 font-bold';
+        return 'text-hf-neutral-dark font-bold';
       default:
         return 'text-gray-400';
     }
