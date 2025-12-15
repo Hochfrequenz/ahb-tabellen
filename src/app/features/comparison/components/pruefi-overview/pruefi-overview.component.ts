@@ -1,9 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, DestroyRef, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { forkJoin } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PrufidentifikatorenService } from '../../../../core/api';
 import { getFormatFromPruefi, getAllFormats } from '../../../../shared/utils/pruefi-format.utils';
 
@@ -29,6 +30,8 @@ interface FormatGroup {
   templateUrl: './pruefi-overview.component.html',
 })
 export class PruefiOverviewComponent implements OnChanges {
+  private readonly destroyRef = inject(DestroyRef);
+
   @Input() formatVersionOld = '';
   @Input() formatVersionNew = '';
 
@@ -60,16 +63,18 @@ export class PruefiOverviewComponent implements OnChanges {
       newPruefis: this.prufidentifikatorenService.getPruefis({
         'format-version': this.formatVersionNew,
       }),
-    }).subscribe({
-      next: ({ oldPruefis, newPruefis }) => {
-        this.processComparison(oldPruefis, newPruefis);
-        this.isLoading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Fehler beim Laden der Prüfidentifikatoren.';
-        this.isLoading = false;
-      },
-    });
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ oldPruefis, newPruefis }) => {
+          this.processComparison(oldPruefis, newPruefis);
+          this.isLoading = false;
+        },
+        error: () => {
+          this.errorMessage = 'Fehler beim Laden der Prüfidentifikatoren.';
+          this.isLoading = false;
+        },
+      });
   }
 
   private processComparison(
