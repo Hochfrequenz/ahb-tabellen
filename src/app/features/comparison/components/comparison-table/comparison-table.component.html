@@ -3,7 +3,6 @@
     <table class="table-auto w-full text-sm text-gray-500">
       <thead>
         <tr class="bg-gray-100 border-b-2 border-gray-300">
-          <th class="px-2 py-3 text-center text-xs text-gray-600 uppercase w-10">Diff</th>
           <th
             colspan="6"
             class="px-3 py-3 text-center text-xs text-gray-600 uppercase bg-red-50 border-l border-gray-300">
@@ -16,7 +15,6 @@
           </th>
         </tr>
         <tr class="bg-gray-50 border-b border-gray-200 text-xs">
-          <th class="px-2 py-2"></th>
           <!-- Old version columns -->
           <th class="px-3 py-2 text-left bg-red-50 border-l border-gray-300">Segmentgruppe</th>
           <th class="px-3 py-2 text-left bg-red-50">Segment</th>
@@ -36,11 +34,6 @@
       <tbody>
         @for (line of lines; track line.id_path) {
           <tr [class]="getRowClass(line)">
-            <!-- Diff status indicator -->
-            <td class="px-2 py-2 text-center" [class]="getDiffStatusClass(line.diff_status)">
-              {{ getDiffStatusLabel(line.diff_status) }}
-            </td>
-
             <!-- Old version columns (version B = old) -->
             <td
               class="px-3 py-2 border-l border-gray-200"
