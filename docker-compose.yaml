@@ -5,6 +5,7 @@ services:
       context: .
       args:
         BUILD_DATE: dummy
+        COMMIT_DATE: dummy
         COMMIT_ID: wip
         VERSION: v0.0.0-local
     ports:

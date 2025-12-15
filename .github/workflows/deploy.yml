@@ -4,6 +4,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   BUILD_DATE: 'set by build_release_info step'
+  COMMIT_DATE: 'set by build_release_info step'
   COMMIT_ID: 'set by build_release_info step'
   VERSION_TAG: 'set by build_release_info step'
   DOCKER_TAG: 'set by extract-tag step'
@@ -56,9 +57,11 @@ jobs:
         id: build_release_info
         run: |
           BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          COMMIT_DATE=$(git log -1 --format='%cI')
           COMMIT_ID=$(git rev-parse HEAD)
           VERSION_TAG=${GITHUB_REF#refs/tags/}
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
+          echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
           echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
 
@@ -108,6 +111,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_DATE=${{ env.BUILD_DATE }}
+            COMMIT_DATE=${{ env.COMMIT_DATE }}
             COMMIT_ID=${{ env.COMMIT_ID }}
             VERSION=${{ env.VERSION_TAG }}
 
@@ -140,9 +144,11 @@ jobs:
         id: build_release_info
         run: |
           BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          COMMIT_DATE=$(git log -1 --format='%cI')
           COMMIT_ID=$(git rev-parse HEAD)
           VERSION_TAG=${GITHUB_REF#refs/tags/}
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
+          echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
           echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
 
@@ -182,6 +188,7 @@ jobs:
           fi
           echo "Extracted Docker tag: $DOCKER_TAG"
           echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image for Production
         id: push
         uses: docker/build-push-action@v6.18.0
@@ -192,6 +199,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_DATE=${{ env.BUILD_DATE }}
+            COMMIT_DATE=${{ env.COMMIT_DATE }}
             COMMIT_ID=${{ env.COMMIT_ID }}
             VERSION=${{ env.VERSION_TAG }}
 
