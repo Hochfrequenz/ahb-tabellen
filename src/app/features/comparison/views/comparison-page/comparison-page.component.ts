@@ -146,10 +146,17 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
         shareReplay(1),
         catchError(error => {
           this.errorOccurred = true;
-          this.errorMessage =
-            error.status === 404
-              ? `Prüfidentifikator ${this.pruefi()} nicht in beiden Formatversionen gefunden.`
-              : 'Ein Fehler ist aufgetreten.';
+          if (error.status === 404) {
+            this.errorDetails.set({
+              pruefi: this.pruefi(),
+              fvNew: this.formatVersionNew(),
+              fvOld: this.formatVersionOld(),
+            });
+            this.errorMessage = '';
+          } else {
+            this.errorDetails.set(null);
+            this.errorMessage = 'Ein Fehler ist aufgetreten.';
+          }
           return of({} as AhbDiff);
         })
       );
