@@ -143,3 +143,8 @@ body {
 .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
 }
+
+/* Angular Material Spinner color override */
+mat-spinner circle {
+  stroke: var(--dunkel-rose);
+}
