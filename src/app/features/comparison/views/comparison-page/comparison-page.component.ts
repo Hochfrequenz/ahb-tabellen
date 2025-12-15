@@ -6,6 +6,7 @@ import { Subject, Observable, of, combineLatest } from 'rxjs';
 import { takeUntil, catchError, shareReplay, map } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { BreakpointObserver } from '@angular/cdk/layout';
 
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
@@ -48,6 +49,9 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   formatVersionOld = signal<string>('');
   formatVersionNew = signal<string>('');
 
+  /** Whether the viewport is at least medium (768px) - Tailwind's md breakpoint */
+  isDesktop = signal<boolean>(false);
+
   diff$?: Observable<AhbDiff>;
   stats$?: Observable<DiffStats>;
   description$?: Observable<DiffDescription>;
@@ -62,11 +66,13 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly ahbService: AhbService,
     private readonly formatVersionCacheService: FormatVersionCacheService,
-    private readonly title: Title
+    private readonly title: Title,
+    private readonly breakpointObserver: BreakpointObserver
   ) {}
 
   ngOnInit(): void {
     this.loadFormatVersions();
+    this.initBreakpointObserver();
 
     // Combine params and queryParams to avoid race condition
     combineLatest([this.route.params, this.route.queryParams])
@@ -104,6 +110,16 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
             this.formatVersionOld.set(versions[versions.length - 2]);
           }
         },
+      });
+  }
+
+  private initBreakpointObserver(): void {
+    // Tailwind's md breakpoint is 768px
+    this.breakpointObserver
+      .observe(['(min-width: 768px)'])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(result => {
+        this.isDesktop.set(result.matches);
       });
   }
 
