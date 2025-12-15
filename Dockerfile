@@ -3,11 +3,13 @@ FROM node:25.2-alpine
 
 # Set environment arguments and variables
 ARG BUILD_DATE
+ARG COMMIT_DATE
 ARG COMMIT_ID
 ARG VERSION
 
 # Environment variables
 ENV BUILD_DATE=$BUILD_DATE \
+  COMMIT_DATE=$COMMIT_DATE \
   COMMIT_ID=$COMMIT_ID \
   VERSION=$VERSION
 
