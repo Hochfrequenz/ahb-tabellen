@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
@@ -16,6 +16,9 @@ export class ComparisonTableComponent {
   @Input() formatVersionOld = '';
   @Input() formatVersionNew = '';
   @Input() pruefi = '';
+
+  /** Whether to show the conditions/hints/formats column */
+  showConditionsColumn = input(false);
 
   getRowClass(line: AhbDiffLine): string {
     switch (line.diff_status) {
@@ -128,6 +131,10 @@ export class ComparisonTableComponent {
 
   getAhbStatus(line: AhbDiffLine, side: 'old' | 'new'): string {
     return this.getSide(line, side)?.line_ahb_status ?? '';
+  }
+
+  getBedingung(line: AhbDiffLine, side: 'old' | 'new'): string {
+    return this.getSide(line, side)?.bedingung ?? '';
   }
 
   generateBedingungsbaumDeepLink(expression: string, formatVersion: string): string | null {
