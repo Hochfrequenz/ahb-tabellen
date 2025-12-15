@@ -119,7 +119,12 @@ export class ComparisonTableComponent {
   }
 
   getDataElement(line: AhbDiffLine, side: 'old' | 'new'): string {
-    return this.getSide(line, side)?.data_element ?? '';
+    const value = this.getSide(line, side)?.data_element ?? '';
+    // Remove "D_" prefix if present
+    if (value.startsWith('D_')) {
+      return value.substring(2);
+    }
+    return value;
   }
 
   getQualifier(line: AhbDiffLine, side: 'old' | 'new'): string {
