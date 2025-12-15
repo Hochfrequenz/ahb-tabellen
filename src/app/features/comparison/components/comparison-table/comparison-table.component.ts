@@ -133,10 +133,6 @@ export class ComparisonTableComponent {
     return this.getSide(line, side)?.line_ahb_status ?? '';
   }
 
-  getBedingung(line: AhbDiffLine, side: 'old' | 'new'): string {
-    return this.getSide(line, side)?.bedingung ?? '';
-  }
-
   /**
    * Compare two bedingung strings word-by-word and return HTML with differences wrapped in <strong> tags
    */
