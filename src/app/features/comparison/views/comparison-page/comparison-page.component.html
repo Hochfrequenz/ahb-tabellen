@@ -53,42 +53,18 @@
         <!-- Statistics / Filter Toggles -->
         @if (stats$ | async; as stats) {
           <div class="flex flex-wrap gap-2 text-sm">
-            <button
-              type="button"
-              (click)="showUnchanged.set(!showUnchanged())"
-              [class.opacity-40]="!showUnchanged()"
-              class="px-3 py-1.5 rounded bg-gray-200 text-gray-700 font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 hover:ring-2 hover:ring-gray-400"
-              [attr.aria-pressed]="showUnchanged()"
-              title="Unveränderte Zeilen ein-/ausblenden">
-              ={{ stats.unchanged }}
-            </button>
-            <button
-              type="button"
-              (click)="showAdded.set(!showAdded())"
-              [class.opacity-40]="!showAdded()"
-              class="px-3 py-1.5 rounded bg-hf-positive text-hf-positive-dark font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-hf-positive-dark focus:ring-offset-1 hover:ring-2 hover:ring-hf-positive-dark"
-              [attr.aria-pressed]="showAdded()"
-              title="Hinzugefügte Zeilen ein-/ausblenden">
-              +{{ stats.added }}
-            </button>
-            <button
-              type="button"
-              (click)="showDeleted.set(!showDeleted())"
-              [class.opacity-40]="!showDeleted()"
-              class="px-3 py-1.5 rounded bg-hf-negative text-hf-negative-dark font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-hf-negative-dark focus:ring-offset-1 hover:ring-2 hover:ring-hf-negative-dark"
-              [attr.aria-pressed]="showDeleted()"
-              title="Gelöschte Zeilen ein-/ausblenden">
-              -{{ stats.deleted }}
-            </button>
-            <button
-              type="button"
-              (click)="showModified.set(!showModified())"
-              [class.opacity-40]="!showModified()"
-              class="px-3 py-1.5 rounded bg-hf-neutral text-hf-neutral-dark font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-hf-neutral-dark focus:ring-offset-1 hover:ring-2 hover:ring-hf-neutral-dark"
-              [attr.aria-pressed]="showModified()"
-              title="Geänderte Zeilen ein-/ausblenden">
-              ~{{ stats.modified }}
-            </button>
+            @for (toggle of filterToggles; track toggle.key) {
+              <button
+                type="button"
+                (click)="toggle.signal.set(!toggle.signal())"
+                [class.opacity-40]="!toggle.signal()"
+                class="px-3 py-1.5 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
+                [ngClass]="toggle.colorClasses"
+                [attr.aria-pressed]="toggle.signal()"
+                [title]="toggle.title">
+                {{ toggle.symbol }}{{ stats[toggle.key] }}
+              </button>
+            }
           </div>
         }
       </div>

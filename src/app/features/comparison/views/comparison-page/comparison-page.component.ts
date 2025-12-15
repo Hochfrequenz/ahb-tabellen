@@ -66,6 +66,41 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   showDeleted = signal(true);
   showModified = signal(true);
 
+  /** Filter toggle button configurations */
+  readonly filterToggles = [
+    {
+      key: 'unchanged' as const,
+      signal: this.showUnchanged,
+      symbol: '=',
+      title: 'Unveränderte Zeilen ein-/ausblenden',
+      colorClasses: 'bg-gray-200 text-gray-700 focus:ring-gray-400 hover:ring-gray-400',
+    },
+    {
+      key: 'added' as const,
+      signal: this.showAdded,
+      symbol: '+',
+      title: 'Hinzugefügte Zeilen ein-/ausblenden',
+      colorClasses:
+        'bg-hf-positive text-hf-positive-dark focus:ring-hf-positive-dark hover:ring-hf-positive-dark',
+    },
+    {
+      key: 'deleted' as const,
+      signal: this.showDeleted,
+      symbol: '-',
+      title: 'Gelöschte Zeilen ein-/ausblenden',
+      colorClasses:
+        'bg-hf-negative text-hf-negative-dark focus:ring-hf-negative-dark hover:ring-hf-negative-dark',
+    },
+    {
+      key: 'modified' as const,
+      signal: this.showModified,
+      symbol: '~',
+      title: 'Geänderte Zeilen ein-/ausblenden',
+      colorClasses:
+        'bg-hf-neutral text-hf-neutral-dark focus:ring-hf-neutral-dark hover:ring-hf-neutral-dark',
+    },
+  ];
+
   diff$?: Observable<AhbDiff>;
   filteredLines$?: Observable<AhbDiffLine[]>;
   stats$?: Observable<DiffStats>;
