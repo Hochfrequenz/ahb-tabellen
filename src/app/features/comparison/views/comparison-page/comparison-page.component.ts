@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -45,8 +45,6 @@ export interface DiffDescription {
   templateUrl: './comparison-page.component.html',
 })
 export class ComparisonPageComponent implements OnInit, OnDestroy {
-  private readonly breakpointObserver = inject(BreakpointObserver);
-
   pruefi = signal<string>('');
   formatVersionOld = signal<string>('');
   formatVersionNew = signal<string>('');
@@ -68,7 +66,8 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly ahbService: AhbService,
     private readonly formatVersionCacheService: FormatVersionCacheService,
-    private readonly title: Title
+    private readonly title: Title,
+    private readonly breakpointObserver: BreakpointObserver
   ) {}
 
   ngOnInit(): void {
