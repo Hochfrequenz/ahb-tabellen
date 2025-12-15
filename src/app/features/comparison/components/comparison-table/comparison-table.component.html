@@ -1,46 +1,37 @@
 <div class="relative bg-hf-pastell-rose">
   <div class="overflow-x-auto">
-    <table class="table-auto w-full text-sm text-gray-500">
+    <table class="table-auto w-full text-sm text-gray-800">
       <thead>
-        <tr class="bg-gray-100 border-b-2 border-gray-300">
-          <th class="px-2 py-3 text-center text-xs text-gray-600 uppercase w-10">Diff</th>
-          <th
-            colspan="6"
-            class="px-3 py-3 text-center text-xs text-gray-600 uppercase bg-red-50 border-l border-gray-300">
+        <tr>
+          <th colspan="6" class="px-3 py-3 text-center text-base uppercase bg-hf-grell-rose">
             Alte Version
           </th>
-          <th
-            colspan="6"
-            class="px-3 py-3 text-center text-xs text-gray-600 uppercase bg-green-50 border-l border-gray-300">
+          <th class="w-6 bg-hf-pastell-rose"></th>
+          <th colspan="6" class="px-3 py-3 text-center text-base uppercase bg-hf-grell-rose">
             Neue Version
           </th>
         </tr>
-        <tr class="bg-gray-50 border-b border-gray-200 text-xs">
-          <th class="px-2 py-2"></th>
+        <tr class="text-sm">
           <!-- Old version columns -->
-          <th class="px-3 py-2 text-left bg-red-50 border-l border-gray-300">Segmentgruppe</th>
-          <th class="px-3 py-2 text-left bg-red-50">Segment</th>
-          <th class="px-3 py-2 text-left bg-red-50">Datenelement</th>
-          <th class="px-3 py-2 text-left bg-red-50">Qualifier</th>
-          <th class="px-3 py-2 text-left bg-red-50">Name</th>
-          <th class="px-3 py-2 text-left bg-red-50">Status</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Segmentgruppe</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Segment</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Datenelement</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Qualifier</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Name</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Status</th>
+          <th class="w-6 bg-hf-pastell-rose"></th>
           <!-- New version columns -->
-          <th class="px-3 py-2 text-left bg-green-50 border-l border-gray-300">Segmentgruppe</th>
-          <th class="px-3 py-2 text-left bg-green-50">Segment</th>
-          <th class="px-3 py-2 text-left bg-green-50">Datenelement</th>
-          <th class="px-3 py-2 text-left bg-green-50">Qualifier</th>
-          <th class="px-3 py-2 text-left bg-green-50">Name</th>
-          <th class="px-3 py-2 text-left bg-green-50">Status</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Segmentgruppe</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Segment</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Datenelement</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Qualifier</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Name</th>
+          <th class="px-3 py-2 text-left bg-hf-pastell-rose">Status</th>
         </tr>
       </thead>
       <tbody>
         @for (line of lines; track line.id_path) {
           <tr [class]="getRowClass(line)">
-            <!-- Diff status indicator -->
-            <td class="px-2 py-2 text-center" [class]="getDiffStatusClass(line.diff_status)">
-              {{ getDiffStatusLabel(line.diff_status) }}
-            </td>
-
             <!-- Old version columns (version B = old) -->
             <td
               class="px-3 py-2 border-l border-gray-200"
@@ -59,10 +50,7 @@
             </td>
             <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'qualifier')">
               @if (generateEbdDeepLink(getQualifier(line, 'old'), formatVersionOld); as ebdLink) {
-                <a
-                  [href]="ebdLink"
-                  target="_blank"
-                  class="hover:underline text-hf-dunkel-blau flex flex-row gap-1 items-center">
+                <a [href]="ebdLink" target="_blank" [class]="getLinkClass(line, 'ebd')">
                   <span>{{ getQualifier(line, 'old') }}</span>
                   <app-icon-link />
                 </a>
@@ -80,10 +68,7 @@
                 generateBedingungsbaumDeepLink(getAhbStatus(line, 'old'), formatVersionOld);
                 as treeLink
               ) {
-                <a
-                  [href]="treeLink"
-                  target="_blank"
-                  class="hover:underline text-hf-dunkel-gelb flex flex-row gap-1 items-center">
+                <a [href]="treeLink" target="_blank" [class]="getLinkClass(line, 'bedingung')">
                   <span>{{ getAhbStatus(line, 'old') }}</span>
                   <app-icon-link />
                 </a>
@@ -91,6 +76,8 @@
                 {{ getAhbStatus(line, 'old') || '-' }}
               }
             </td>
+
+            <td class="bg-hf-pastell-rose"></td>
 
             <!-- New version columns (version A = new) -->
             <td
@@ -110,10 +97,7 @@
             </td>
             <td class="px-3 py-2" [class]="getChangedColumnClass(line, 'qualifier')">
               @if (generateEbdDeepLink(getQualifier(line, 'new'), formatVersionNew); as ebdLink) {
-                <a
-                  [href]="ebdLink"
-                  target="_blank"
-                  class="hover:underline text-hf-dunkel-blau flex flex-row gap-1 items-center">
+                <a [href]="ebdLink" target="_blank" [class]="getLinkClass(line, 'ebd')">
                   <span>{{ getQualifier(line, 'new') }}</span>
                   <app-icon-link />
                 </a>
@@ -131,10 +115,7 @@
                 generateBedingungsbaumDeepLink(getAhbStatus(line, 'new'), formatVersionNew);
                 as treeLink
               ) {
-                <a
-                  [href]="treeLink"
-                  target="_blank"
-                  class="hover:underline text-hf-dunkel-gelb flex flex-row gap-1 items-center">
+                <a [href]="treeLink" target="_blank" [class]="getLinkClass(line, 'bedingung')">
                   <span>{{ getAhbStatus(line, 'new') }}</span>
                   <app-icon-link />
                 </a>

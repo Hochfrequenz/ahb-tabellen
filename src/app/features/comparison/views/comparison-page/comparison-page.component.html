@@ -53,13 +53,13 @@
         <!-- Statistics -->
         @if (stats$ | async; as stats) {
           <div class="flex gap-2 text-sm">
-            <span class="px-3 py-1.5 rounded bg-green-100 text-green-800 font-medium">
+            <span class="px-3 py-1.5 rounded bg-hf-positive text-hf-positive-dark font-medium">
               +{{ stats.added }}
             </span>
-            <span class="px-3 py-1.5 rounded bg-red-100 text-red-800 font-medium">
+            <span class="px-3 py-1.5 rounded bg-hf-negative text-hf-negative-dark font-medium">
               -{{ stats.deleted }}
             </span>
-            <span class="px-3 py-1.5 rounded bg-yellow-100 text-yellow-800 font-medium">
+            <span class="px-3 py-1.5 rounded bg-hf-neutral text-hf-neutral-dark font-medium">
               ~{{ stats.modified }}
             </span>
           </div>
