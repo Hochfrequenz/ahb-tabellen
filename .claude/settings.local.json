@@ -19,7 +19,15 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(npx prettier:*)",
-      "Skill(superpowers:brainstorming)"
+      "Skill(superpowers:brainstorming)",
+      "Bash(npx ng lint:*)",
+      "Bash(git reset:*)",
+      "Bash(git push:*)",
+      "Bash(npx ng build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
