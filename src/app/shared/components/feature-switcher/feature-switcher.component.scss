@@ -66,14 +66,14 @@
       }
 
       &.selected {
-        background-color: var(--hf-pastell-rose, #fce7f3);
-        color: var(--hf-dunkel-rose, #be185d);
+        background-color: white;
+        color: var(--hf-dunkel-rose, #cf939a);
         font-weight: 500;
       }
 
       &:hover:not(.selected) {
-        background-color: var(--hf-pastell-rose, #fce7f3);
-        opacity: 0.8;
+        background-color: white;
+        color: var(--hf-dunkel-rose, #cf939a);
       }
     }
   }
