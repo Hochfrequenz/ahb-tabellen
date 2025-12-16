@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { diffWords } from 'diff';
+import { diffWords, Change } from 'diff';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
 import { environment } from '../../../../environments/environment';
@@ -157,7 +157,7 @@ export class ComparisonTableComponent {
 
     // Build the highlighted output for the requested side
     return changes
-      .map(change => {
+      .map((change: Change) => {
         const escaped = this.escapeHtml(change.value);
 
         if (side === 'old' && change.removed) {
