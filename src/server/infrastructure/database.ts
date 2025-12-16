@@ -18,26 +18,29 @@ const dataSourceConfig = {
 // Export the DataSource for use in other files
 export const AppDataSource = new DataSource(dataSourceConfig);
 
-// Track whether PRAGMAs have been applied
-let pragmasApplied = false;
+// Promise that resolves when PRAGMAs are applied. Used to ensure PRAGMAs are
+// applied exactly once, even if multiple callers race to initialize.
+let pragmasPromise: Promise<void> | null = null;
 
 // Apply performance PRAGMAs for read-only workload
 async function applyPerformancePragmas(dataSource: DataSource): Promise<void> {
-  if (pragmasApplied) return;
+  if (pragmasPromise) return pragmasPromise;
 
-  // Prevent accidental writes and allow SQLite to skip write-related overhead
-  await dataSource.query('PRAGMA query_only = ON');
+  pragmasPromise = (async () => {
+    // Prevent accidental writes and allow SQLite to skip write-related overhead
+    await dataSource.query('PRAGMA query_only = ON');
 
-  // Increase page cache from default ~2MB to 64MB (negative value = KB).
-  // Keeps frequently accessed pages in memory, reducing disk I/O for repeated queries.
-  await dataSource.query('PRAGMA cache_size = -64000');
+    // Increase page cache from default ~2MB to 64MB (negative value = KB).
+    // Keeps frequently accessed pages in memory, reducing disk I/O for repeated queries.
+    await dataSource.query('PRAGMA cache_size = -64000');
 
-  // Memory-map up to 2GB of the database file for direct memory access.
-  // For our 900MB database, this maps the entire file, avoiding read() syscalls
-  // and letting the OS manage caching efficiently. Can yield 2-5x speedup for random reads.
-  await dataSource.query('PRAGMA mmap_size = 2147483648');
+    // Memory-map up to 2GB of the database file for direct memory access.
+    // For our 900MB database, this maps the entire file, avoiding read() syscalls
+    // and letting the OS manage caching efficiently. Can yield 2-5x speedup for random reads.
+    await dataSource.query('PRAGMA mmap_size = 2147483648');
+  })();
 
-  pragmasApplied = true;
+  return pragmasPromise;
 }
 
 // Wrap the original initialize to apply PRAGMAs after connection
