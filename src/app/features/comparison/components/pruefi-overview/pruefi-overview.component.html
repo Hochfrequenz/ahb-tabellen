@@ -18,7 +18,7 @@
   <div class="space-y-2">
     <mat-accordion multi>
       @for (group of formatGroups; track group.format) {
-        <mat-expansion-panel [expanded]="false">
+        <mat-expansion-panel [expanded]="false" class="mat-elevation-z0">
           <mat-expansion-panel-header>
             <mat-panel-title>
               <span class="font-semibold">{{ group.format }}</span>
@@ -139,7 +139,7 @@
 @if (
   !isLoading && !errorMessage && formatGroups.length === 0 && formatVersionOld && formatVersionNew
 ) {
-  <div class="text-center p-8 bg-white rounded-lg shadow-sm">
+  <div class="text-center p-8 bg-white rounded-lg">
     <p class="text-gray-500">Keine Prüfidentifikatoren gefunden.</p>
   </div>
 }
