@@ -12,13 +12,6 @@
       (formatVersionNewChange)="formatVersionNew.set($event)"
       (pruefiChange)="pruefiControl.setValue($event)"
       (validationErrorChange)="onValidationError($event)" />
-    <app-input-search-enhanced
-      slot="search"
-      class="inline-block w-full md:w-96 pointer-events-none opacity-50"
-      [searchQuery]="''"
-      [selectedPosition]="0"
-      [totalResults]="0" />
-
     <!-- Mobile projection -->
     <app-comparison-search-form-header
       slot="search-form-mobile"
@@ -30,12 +23,6 @@
       (formatVersionNewChange)="formatVersionNew.set($event)"
       (pruefiChange)="pruefiControl.setValue($event)"
       (validationErrorChange)="onValidationError($event)" />
-    <app-input-search-enhanced
-      slot="search-mobile"
-      class="w-full"
-      [searchQuery]="''"
-      [selectedPosition]="0"
-      [totalResults]="0" />
   </app-header>
 
   <!-- Main Content -->
@@ -43,21 +30,6 @@
     <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
       <!-- Mobile: Full width, Desktop: Aligned with Prüfidentifikator input -->
       <div class="md:col-start-2 md:col-span-10 lg:col-start-2 lg:col-span-10">
-        <!-- Arrow pointing up -->
-        <div class="flex justify-center md:justify-start mb-8 md:mb-0">
-          <div class="relative top-4 md:-top-16 md:ml-[340px]">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="w-8 h-8 text-hf-dunkel-rose animate-bounce">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-            </svg>
-          </div>
-        </div>
-
         <!-- Validation Error -->
         @if (validationError()) {
           <div
