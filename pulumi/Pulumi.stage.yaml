@@ -1,8 +1,9 @@
 config:
   ahb-tabellen:appPath: app
+  ahb-tabellen:appServicePlanSkuName: "B2"
+  ahb-tabellen:appServicePlanSkuTier: "Basic"
   ahb-tabellen:bedingungsbaumBaseUrl: https://bedingungsbaum.stage.hochfrequenz.de
   ahb-tabellen:containerPort: "80"
-  ahb-tabellen:cpu: "1"
   ahb-tabellen:db_7z_archive_password:
     secure: AAABAKCZGXsqn3HVUmLUZYH/9jIIsqbvOJ50Vt4YCacdUABfog63VkVqStKJDYgXTve9Ny0hO1UaIUqKRPU=
   ahb-tabellen:ebdBaseUrl: https://ebd.stage.hochfrequenz.de
@@ -11,7 +12,6 @@ config:
     secure: AAABABkZ6JHu21N1Q6+hgJVXWzz7KkywfdZ84phM1XkWy6aTrm5zvSibf6PIxCcUJsJgeqDU3aexWUGI7ZH3nFOEIGtpoyKa
   ahb-tabellen:imageName: ghcr.io/hochfrequenz/ahb-tabellen
   ahb-tabellen:imageTag: v1.4.0-rc02
-  ahb-tabellen:memory: "2"
   ahb-tabellen:ohDearHealthCheckSecret:
     secure: AAABAFE/v/fLv99CnNg0sBE42GYr5nMYhNJoa1prN9EgomNzl9D0B3vgse7uW3w6
   ahb-tabellen:websitesContainerStartTimeLimit: "300"
