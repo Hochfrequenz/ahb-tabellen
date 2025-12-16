@@ -29,22 +29,14 @@
   <div class="flex-1 overflow-auto relative bg-hf-pastell-rose p-6">
     <div class="max-w-screen-2xl mx-auto">
       <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-1">AHB Vergleich: {{ pruefi() }}</h1>
+        <h1 class="text-2xl font-bold text-hf-text-color mb-1">AHB Vergleich: {{ pruefi() }}</h1>
         @if (description(); as desc) {
           @if (desc.descriptionOld || desc.descriptionNew) {
-            <p class="text-gray-600 mb-4">
+            <p class="text-hf-text-color mb-4">
               @if (desc.descriptionOld === desc.descriptionNew) {
                 {{ desc.descriptionNew }}
               } @else {
-                @if (desc.descriptionOld) {
-                  <span class="text-red-700">{{ desc.descriptionOld }}</span>
-                }
-                @if (desc.descriptionOld && desc.descriptionNew) {
-                  <span class="text-gray-400 mx-2">→</span>
-                }
-                @if (desc.descriptionNew) {
-                  <span class="text-green-700">{{ desc.descriptionNew }}</span>
-                }
+                {{ desc.descriptionOld }} → {{ desc.descriptionNew }}
               }
             </p>
           }
@@ -68,17 +60,17 @@
             }
 
             <!-- Divider -->
-            <span class="mx-1 h-6 w-px bg-gray-300"></span>
+            <span class="mx-1 h-6 w-px bg-hf-text-color"></span>
 
             <!-- Column visibility toggle -->
             <button
               type="button"
               (click)="showConditionsColumn.set(!showConditionsColumn())"
-              class="px-3 py-1.5 rounded font-medium cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2 border-2"
+              class="px-3 py-1.5 rounded font-medium cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
               [class]="
                 showConditionsColumn()
                   ? 'bg-hf-dunkel-rose text-white border-hf-dunkel-rose focus:ring-hf-dunkel-rose hover:ring-hf-dunkel-rose'
-                  : 'bg-white text-gray-700 border-gray-300 focus:ring-gray-400 hover:ring-gray-400'
+                  : 'bg-white text-hf-text-color border-gray-300 focus:ring-gray-400 hover:ring-gray-400'
               "
               [attr.aria-pressed]="showConditionsColumn() ? 'true' : 'false'"
               aria-label="Bedingungen-Spalte ein-/ausblenden"
