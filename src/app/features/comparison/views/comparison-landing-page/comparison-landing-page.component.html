@@ -29,52 +29,52 @@
   <div class="flex-1 overflow-auto">
     <div class="container mx-auto px-4 md:px-6 py-8 md:py-12">
       <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-      <!-- Mobile: Full width, Desktop: Aligned with Prüfidentifikator input -->
-      <div class="md:col-start-2 md:col-span-10 lg:col-start-2 lg:col-span-10">
-        <!-- Validation Error -->
-        @if (validationError()) {
-          <div
-            class="text-center p-8 bg-hf-grell-rose text-hf-weiches-schwarz rounded-lg mb-6 shadow-sm">
-            <h2 class="text-2xl font-bold mb-4">Fehler</h2>
-            <p class="mb-4">{{ validationError() }}</p>
-          </div>
-        }
+        <!-- Mobile: Full width, Desktop: Aligned with Prüfidentifikator input -->
+        <div class="md:col-start-2 md:col-span-10 lg:col-start-2 lg:col-span-10">
+          <!-- Validation Error -->
+          @if (validationError()) {
+            <div
+              class="text-center p-8 bg-hf-grell-rose text-hf-weiches-schwarz rounded-lg mb-6 shadow-sm">
+              <h2 class="text-2xl font-bold mb-4">Fehler</h2>
+              <p class="mb-4">{{ validationError() }}</p>
+            </div>
+          }
 
-        <!-- Info box (shown when no format versions selected) -->
-        @if (!validationError() && (!formatVersionOld() || !formatVersionNew())) {
-          <div class="bg-white rounded-lg p-4 md:p-6 mb-6 shadow-sm">
-            <div class="flex items-start space-x-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-6 h-6 text-hf-dunkel-rose flex-shrink-0 mt-0.5">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-              </svg>
-              <div>
-                <p class="text-sm md:text-base text-hf-weiches-schwarz font-medium">
-                  Prüfidentifikator angeben
-                </p>
-                <p class="text-sm text-hf-weiches-schwarz mt-1 opacity-75">
-                  Wählen Sie zwei Formatversionen aus und geben Sie einen Prüfidentifikator ein, um
-                  die Änderungen zwischen den Versionen zu visualisieren.
-                </p>
+          <!-- Info box (shown when no format versions selected) -->
+          @if (!validationError() && (!formatVersionOld() || !formatVersionNew())) {
+            <div class="bg-white rounded-lg p-4 md:p-6 mb-6 shadow-sm">
+              <div class="flex items-start space-x-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-6 h-6 text-hf-dunkel-rose flex-shrink-0 mt-0.5">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+                <div>
+                  <p class="text-sm md:text-base text-hf-weiches-schwarz font-medium">
+                    Prüfidentifikator angeben
+                  </p>
+                  <p class="text-sm text-hf-weiches-schwarz mt-1 opacity-75">
+                    Wählen Sie zwei Formatversionen aus und geben Sie einen Prüfidentifikator ein,
+                    um die Änderungen zwischen den Versionen zu visualisieren.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        }
+          }
 
-        <!-- Pruefi Overview (shown when both format versions are selected) -->
-        @if (!validationError() && formatVersionOld() && formatVersionNew()) {
-          <app-pruefi-overview
-            [formatVersionOld]="formatVersionOld()"
-            [formatVersionNew]="formatVersionNew()" />
-        }
+          <!-- Pruefi Overview (shown when both format versions are selected) -->
+          @if (!validationError() && formatVersionOld() && formatVersionNew()) {
+            <app-pruefi-overview
+              [formatVersionOld]="formatVersionOld()"
+              [formatVersionNew]="formatVersionNew()" />
+          }
         </div>
       </div>
     </div>
