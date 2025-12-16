@@ -91,7 +91,12 @@
                           [routerLink]="['/ahb', formatVersionOld, pruefi.pruefidentifikator]"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="text-hf-dunkel-rose hover:underline"
+                          class="hover:underline font-semibold"
+                          [ngClass]="
+                            pruefi.status === 'removed'
+                              ? 'text-hf-negative-dark'
+                              : 'text-hf-dunkel-rose'
+                          "
                           title="AHB in {{ formatVersionOld }} anzeigen">
                           Anzeigen
                         </a>
@@ -105,7 +110,12 @@
                           [routerLink]="['/ahb', formatVersionNew, pruefi.pruefidentifikator]"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="text-hf-dunkel-rose hover:underline"
+                          class="hover:underline font-semibold"
+                          [ngClass]="
+                            pruefi.status === 'added'
+                              ? 'text-hf-positive-dark'
+                              : 'text-hf-dunkel-rose'
+                          "
                           title="AHB in {{ formatVersionNew }} anzeigen">
                           Anzeigen
                         </a>
@@ -120,7 +130,7 @@
                           [queryParams]="{ 'fv-old': formatVersionOld, 'fv-new': formatVersionNew }"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="text-hf-dunkel-rose hover:underline font-medium"
+                          class="text-hf-dunkel-rose hover:underline font-semibold"
                           title="Vergleich anzeigen">
                           Vergleichen
                         </a>
