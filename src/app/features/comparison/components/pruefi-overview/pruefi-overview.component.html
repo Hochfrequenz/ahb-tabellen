@@ -1,7 +1,7 @@
 <!-- Loading State -->
 @if (isLoading) {
   <div class="flex justify-center items-center py-12">
-    <mat-spinner diameter="40"></mat-spinner>
+    <mat-spinner diameter="40" aria-label="Lade Prüfidentifikatoren"></mat-spinner>
   </div>
 }
 
@@ -49,6 +49,7 @@
               >
               <thead>
                 <tr class="border-b border-gray-300 bg-gray-50">
+                  <th class="px-3 py-2 text-left font-medium">Status</th>
                   <th class="px-3 py-2 text-left font-medium">Prüfidentifikator</th>
                   <th class="px-3 py-2 text-left font-medium">Name</th>
                   <th class="px-3 py-2 text-center font-medium">{{ formatVersionOld }}</th>
@@ -59,6 +60,15 @@
               <tbody>
                 @for (pruefi of group.pruefis; track pruefi.pruefidentifikator) {
                   <tr class="border-b border-gray-200" [ngClass]="getRowClass(pruefi.status)">
+                    <td class="px-3 py-2 text-center">
+                      @if (pruefi.status === 'added') {
+                        <span class="text-green-600" title="Neu hinzugefügt">+ Neu</span>
+                      } @else if (pruefi.status === 'removed') {
+                        <span class="text-red-600" title="Entfernt">− Entfernt</span>
+                      } @else {
+                        <span class="text-gray-400" title="Unverändert">―</span>
+                      }
+                    </td>
                     <td class="px-3 py-2 font-mono">{{ pruefi.pruefidentifikator }}</td>
                     <td class="px-3 py-2">{{ pruefi.name }}</td>
                     <td class="px-3 py-2 text-center">
