@@ -23,9 +23,10 @@ export const AppDataSource = new DataSource(dataSourceConfig);
 let pragmasPromise: Promise<void> | null = null;
 
 // Apply performance PRAGMAs for read-only workload
-async function applyPerformancePragmas(dataSource: DataSource): Promise<void> {
+function applyPerformancePragmas(dataSource: DataSource): Promise<void> {
   if (pragmasPromise) return pragmasPromise;
 
+  // Assign promise synchronously before async work begins to prevent race conditions
   pragmasPromise = (async () => {
     // Prevent accidental writes and allow SQLite to skip write-related overhead
     await dataSource.query('PRAGMA query_only = ON');
