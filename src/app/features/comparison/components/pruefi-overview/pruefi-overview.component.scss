@@ -2,17 +2,32 @@
 // Panels appear connected when collapsed, but separate visually when expanded
 
 $border-radius: 0.5rem;
+$background-color: #faeeee; // hf-sub-header-background-color
+$hover-color: #ebbec1; // hf-grell-rose
 
 .mat-expansion-panel {
   // Reset all corners by default (connected/stacked look)
   border-radius: 0 !important;
+  background-color: $background-color !important;
 
   .mat-expansion-panel-header {
     border-radius: 0 !important;
+    background-color: $background-color !important;
+
+    // Hover effect for collapsed panels
+    &:hover {
+      background-color: $hover-color !important;
+    }
   }
 
   .mat-expansion-panel-content {
     border-radius: 0 !important;
+    background-color: $background-color !important;
+
+    .mat-expansion-panel-body {
+      background-color: $background-color !important;
+      padding: 0 !important;
+    }
   }
 
   // First panel: always has rounded top corners
