@@ -4,19 +4,20 @@
     <mat-form-field appearance="fill" class="search-field">
       <mat-label>Globale Suche</mat-label>
       <input matInput formControlName="q" placeholder="Durchsuche alle AHBs…" />
-      <button
-        mat-icon-button
-        matSuffix
-        type="button"
-        class="wildcard-info-button"
-        cdkOverlayOrigin
-        #wildcardInfoTrigger="cdkOverlayOrigin"
-        (click)="wildcardInfoOpen = !wildcardInfoOpen"
-        [attr.aria-expanded]="wildcardInfoOpen"
-        aria-label="Informationen zur Platzhalter-Suche">
-        <mat-icon fontSet="mdi" fontIcon="mdi-information-outline"></mat-icon>
-      </button>
-      <mat-icon matSuffix fontSet="mdi" fontIcon="mdi-magnify"></mat-icon>
+      <span matSuffix class="search-suffix-container">
+        <button
+          mat-icon-button
+          type="button"
+          class="wildcard-info-button"
+          cdkOverlayOrigin
+          #wildcardInfoTrigger="cdkOverlayOrigin"
+          (click)="wildcardInfoOpen = !wildcardInfoOpen"
+          [attr.aria-expanded]="wildcardInfoOpen"
+          aria-label="Informationen zur Platzhalter-Suche">
+          <mat-icon fontSet="mdi" fontIcon="mdi-information-outline"></mat-icon>
+        </button>
+        <mat-icon fontSet="mdi" fontIcon="mdi-magnify"></mat-icon>
+      </span>
     </mat-form-field>
 
     <ng-template

@@ -10,6 +10,12 @@
     max-width: 400px;
   }
 
+  .search-suffix-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   .wildcard-info-button {
     opacity: 0.6;
     transition: opacity 0.2s ease;
