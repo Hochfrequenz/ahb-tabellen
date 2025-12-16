@@ -316,9 +316,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  private checkPruefiExistence(): ReturnType<
-    typeof forkJoin<{ existsInOld: boolean; existsInNew: boolean }>
-  > {
+  private checkPruefiExistence() {
     const pruefi = this.pruefi();
     return forkJoin({
       existsInOld: this.prufidentifikatorenService
