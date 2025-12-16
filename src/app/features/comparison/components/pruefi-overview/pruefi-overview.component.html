@@ -18,7 +18,7 @@
   <div class="space-y-2">
     <mat-accordion multi>
       @for (group of formatGroups; track group.format) {
-        <mat-expansion-panel [expanded]="hasChanges(group)">
+        <mat-expansion-panel [expanded]="false">
           <mat-expansion-panel-header>
             <mat-panel-title>
               <span class="font-semibold">{{ group.format }}</span>
