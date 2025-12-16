@@ -50,7 +50,7 @@ describe('ComparisonSearchFormHeaderComponent', () => {
     component = fixture.componentInstance;
   });
 
-  describe('format version loading and defaults', () => {
+  describe('format version loading', () => {
     it('should load format versions from cache service', fakeAsync(() => {
       fixture.detectChanges();
       tick();
@@ -67,24 +67,19 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       expect(component.formatVersions[4]).toBe('FV2504');
     }));
 
-    it('should set default new version to most recent (last in list)', fakeAsync(() => {
+    it('should sync form values from inputs', fakeAsync(() => {
+      // Set inputs before detectChanges
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
-      const formValue = component.headerSearchForm.controls.formatVersionNew.value;
-      expect(formValue).toBe('FV2504');
+      expect(component.headerSearchForm.controls.formatVersionOld.value).toBe('FV2410');
+      expect(component.headerSearchForm.controls.formatVersionNew.value).toBe('FV2504');
     }));
 
-    it('should set default old version to second most recent (second to last in list)', fakeAsync(() => {
-      fixture.detectChanges();
-      tick();
-
-      const formValue = component.headerSearchForm.controls.formatVersionOld.value;
-      expect(formValue).toBe('FV2410');
-    }));
-
-    // Note: emit tests are skipped because the subscription runs in the constructor
-    // before we can set up spies. The important behavior (form values being set) is tested above.
+    // Note: Default values are now set by the parent component (landing page)
+    // to avoid race conditions when multiple instances exist (desktop + mobile)
   });
 
   describe('availableOldVersions', () => {
@@ -140,27 +135,31 @@ describe('ComparisonSearchFormHeaderComponent', () => {
   });
 
   describe('initial dropdown options', () => {
-    it('should have available old versions after defaults are set', fakeAsync(() => {
+    it('should have available old versions when new version is set via input', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
-      // With default new version FV2504, old versions should include FV2410, FV2404, etc.
+      // With new version FV2504, old versions should include FV2410, FV2404, etc.
       const available = component.availableOldVersions;
       expect(available.length).toBeGreaterThan(0);
       expect(available).toContain('FV2410');
     }));
 
-    it('should have available new versions after defaults are set', fakeAsync(() => {
+    it('should have available new versions when old version is set via input', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
       fixture.detectChanges();
       tick();
 
-      // With default old version FV2410, new versions should include FV2504
+      // With old version FV2410, new versions should include FV2504
       const available = component.availableNewVersions;
       expect(available.length).toBeGreaterThan(0);
       expect(available).toContain('FV2504');
     }));
 
     it('should have selected old version in availableOldVersions', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -172,6 +171,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
     }));
 
     it('should have selected new version in availableNewVersions', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -185,6 +186,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
 
   describe('pruefi navigation', () => {
     it('should emit pruefiChange when pruefi form control value changes', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -199,12 +202,14 @@ describe('ComparisonSearchFormHeaderComponent', () => {
     }));
 
     it('should navigate when pruefi is set and navigateOnSubmit is true', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
-      // Ensure format versions are set (they should be by default)
-      expect(component.headerSearchForm.controls.formatVersionOld.value).toBeTruthy();
-      expect(component.headerSearchForm.controls.formatVersionNew.value).toBeTruthy();
+      // Ensure format versions are set via inputs
+      expect(component.headerSearchForm.controls.formatVersionOld.value).toBe('FV2410');
+      expect(component.headerSearchForm.controls.formatVersionNew.value).toBe('FV2504');
 
       // Verify navigateOnSubmit is true by default
       expect(component.navigateOnSubmit()).toBe(true);
@@ -231,6 +236,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
     }));
 
     it('should NOT navigate when pruefi has less than 5 digits', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -242,6 +249,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
     }));
 
     it('should NOT navigate when pruefi contains letters', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -258,6 +267,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       // Mock empty pruefi lists for both versions
       mockPrufidentifikatorenService.getPruefis.mockReturnValue(of([]));
 
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -281,6 +292,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
         return of([]);
       });
 
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -302,6 +315,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
         return of([]);
       });
 
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -315,6 +330,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
     }));
 
     it('should clear validation error when pruefi exists in both versions', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -328,6 +345,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
     }));
 
     it('should set isValidating while validation is in progress', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -349,6 +368,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
         throwError(() => new Error('API Error'))
       );
 
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -365,6 +386,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
       // Mock empty pruefi lists for both versions
       mockPrufidentifikatorenService.getPruefis.mockReturnValue(of([]));
 
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
@@ -382,6 +405,8 @@ describe('ComparisonSearchFormHeaderComponent', () => {
     }));
 
     it('should emit validationErrorChange with null when validation succeeds', fakeAsync(() => {
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
       fixture.detectChanges();
       tick();
 
