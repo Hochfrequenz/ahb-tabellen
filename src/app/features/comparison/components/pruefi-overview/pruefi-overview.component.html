@@ -15,7 +15,7 @@
 
 <!-- Content -->
 @if (!isLoading && !errorMessage && formatGroups.length > 0) {
-  <div class="space-y-2">
+  <div>
     <mat-accordion multi>
       @for (group of formatGroups; track group.format) {
         <mat-expansion-panel [expanded]="false" class="mat-elevation-z0">

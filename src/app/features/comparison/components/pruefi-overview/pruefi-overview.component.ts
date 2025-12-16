@@ -28,6 +28,7 @@ interface FormatGroup {
   standalone: true,
   imports: [CommonModule, RouterModule, MatExpansionModule, MatProgressSpinnerModule],
   templateUrl: './pruefi-overview.component.html',
+  styleUrl: './pruefi-overview.component.scss',
 })
 export class PruefiOverviewComponent implements OnChanges {
   private readonly destroyRef = inject(DestroyRef);
