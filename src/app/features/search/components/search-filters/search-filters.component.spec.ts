@@ -214,6 +214,33 @@ describe('SearchFiltersComponent', () => {
     });
   });
 
+  describe('wildcard info popover', () => {
+    it('should initialize wildcardInfoOpen as false', () => {
+      expect(component.wildcardInfoOpen).toBe(false);
+    });
+
+    it('should have wildcard info positions defined', () => {
+      expect(component.wildcardInfoPositions).toBeDefined();
+      expect(component.wildcardInfoPositions.length).toBeGreaterThan(0);
+    });
+
+    it('should close popover when Escape key is pressed', () => {
+      component.wildcardInfoOpen = true;
+
+      component.onEscapeKey();
+
+      expect(component.wildcardInfoOpen).toBe(false);
+    });
+
+    it('should not change state when Escape is pressed and popover is already closed', () => {
+      component.wildcardInfoOpen = false;
+
+      component.onEscapeKey();
+
+      expect(component.wildcardInfoOpen).toBe(false);
+    });
+  });
+
   describe('format loading', () => {
     it('should handle format version loading error gracefully', () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
