@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, of, combineLatest } from 'rxjs';
-import { takeUntil, catchError } from 'rxjs/operators';
+import { Subject, of, combineLatest, forkJoin } from 'rxjs';
+import { takeUntil, catchError, switchMap } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -13,7 +13,7 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
 import { ComparisonTableComponent } from '../../components/comparison-table/comparison-table.component';
 import { ComparisonSearchFormHeaderComponent } from '../../components/comparison-search-form-header/comparison-search-form-header.component';
-import { AhbService, AhbDiff, AhbDiffLine } from '../../../../core/api';
+import { AhbService, AhbDiff, AhbDiffLine, PrufidentifikatorenService } from '../../../../core/api';
 import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
 
 export interface DiffStats {
@@ -140,7 +140,13 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   isLoading = signal(false);
   errorOccurred = false;
   errorMessage = '';
-  errorDetails = signal<{ pruefi: string; fvNew: string; fvOld: string } | null>(null);
+  errorDetails = signal<{
+    pruefi: string;
+    fvNew: string;
+    fvOld: string;
+    existsInOld: boolean;
+    existsInNew: boolean;
+  } | null>(null);
 
   /** Entertaining loading messages that rotate while waiting */
   readonly loadingMessages = [
@@ -165,6 +171,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly ahbService: AhbService,
+    private readonly prufidentifikatorenService: PrufidentifikatorenService,
     private readonly formatVersionCacheService: FormatVersionCacheService,
     private readonly title: Title,
     private readonly breakpointObserver: BreakpointObserver
@@ -281,17 +288,25 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
         catchError(error => {
           this.errorOccurred = true;
           if (error.status === 404) {
-            this.errorDetails.set({
-              pruefi: this.pruefi(),
-              fvNew: this.formatVersionNew(),
-              fvOld: this.formatVersionOld(),
-            });
-            this.errorMessage = '';
+            // Check which version(s) contain the pruefi to provide accurate error message
+            return this.checkPruefiExistence().pipe(
+              switchMap(({ existsInOld, existsInNew }) => {
+                this.errorDetails.set({
+                  pruefi: this.pruefi(),
+                  fvNew: this.formatVersionNew(),
+                  fvOld: this.formatVersionOld(),
+                  existsInOld,
+                  existsInNew,
+                });
+                this.errorMessage = '';
+                return of(null);
+              })
+            );
           } else {
             this.errorDetails.set(null);
             this.errorMessage = 'Ein Fehler ist aufgetreten.';
+            return of(null);
           }
-          return of(null);
         })
       )
       .subscribe(diff => {
@@ -299,6 +314,26 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
         this.diffData.set(diff);
         this.isLoading.set(false);
       });
+  }
+
+  private checkPruefiExistence(): ReturnType<
+    typeof forkJoin<{ existsInOld: boolean; existsInNew: boolean }>
+  > {
+    const pruefi = this.pruefi();
+    return forkJoin({
+      existsInOld: this.prufidentifikatorenService
+        .getPruefis({ 'format-version': this.formatVersionOld() })
+        .pipe(
+          catchError(() => of([])),
+          switchMap(pruefis => of(pruefis.some(p => p.pruefidentifikator === pruefi)))
+        ),
+      existsInNew: this.prufidentifikatorenService
+        .getPruefis({ 'format-version': this.formatVersionNew() })
+        .pipe(
+          catchError(() => of([])),
+          switchMap(pruefis => of(pruefis.some(p => p.pruefidentifikator === pruefi)))
+        ),
+    });
   }
 
   private computeStats(lines: AhbDiffLine[]): DiffStats {

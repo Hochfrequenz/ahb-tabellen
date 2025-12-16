@@ -95,9 +95,22 @@
           <h2 class="text-2xl font-bold mb-4">Fehler</h2>
           @if (errorDetails(); as details) {
             <p class="mb-4">
-              Prüfidentifikator <strong>{{ details.pruefi }}</strong> in beiden Formatversionen
-              <strong>{{ details.fvNew }}</strong> und <strong>{{ details.fvOld }}</strong> nicht
-              gefunden.
+              @if (!details.existsInOld && !details.existsInNew) {
+                Prüfidentifikator <strong>{{ details.pruefi }}</strong> wurde weder in
+                <strong>{{ details.fvOld }}</strong> noch in <strong>{{ details.fvNew }}</strong>
+                gefunden.
+              } @else if (!details.existsInOld && details.existsInNew) {
+                Prüfidentifikator <strong>{{ details.pruefi }}</strong> existiert nur in
+                <strong>{{ details.fvNew }}</strong> (neu hinzugefügt). In
+                <strong>{{ details.fvOld }}</strong> ist dieser Prüfidentifikator nicht vorhanden.
+              } @else if (details.existsInOld && !details.existsInNew) {
+                Prüfidentifikator <strong>{{ details.pruefi }}</strong> existiert nur in
+                <strong>{{ details.fvOld }}</strong
+                >. In <strong>{{ details.fvNew }}</strong> wurde dieser Prüfidentifikator entfernt.
+              } @else {
+                Ein unerwarteter Fehler ist beim Vergleich von
+                <strong>{{ details.pruefi }}</strong> aufgetreten.
+              }
             </p>
           } @else {
             <p class="mb-4">{{ errorMessage }}</p>
