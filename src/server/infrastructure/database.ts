@@ -30,9 +30,11 @@ async function applyPerformancePragmas(dataSource: DataSource): Promise<void> {
     // Prevent accidental writes and allow SQLite to skip write-related overhead
     await dataSource.query('PRAGMA query_only = ON');
 
-    // Increase page cache from default ~2MB to 64MB (negative value = KB).
+    // Increase page cache from default ~2MB to 64MB.
+    // Negative value specifies size in KB (SQLite convention).
     // Keeps frequently accessed pages in memory, reducing disk I/O for repeated queries.
-    await dataSource.query('PRAGMA cache_size = -64000');
+    const CACHE_SIZE_64MB_IN_KB = -64000;
+    await dataSource.query(`PRAGMA cache_size = ${CACHE_SIZE_64MB_IN_KB}`);
 
     // Memory-map up to 2GB of the database file for direct memory access.
     // For our 900MB database, this maps the entire file, avoiding read() syscalls
