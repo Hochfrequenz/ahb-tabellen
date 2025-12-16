@@ -1,8 +1,9 @@
 config:
   ahb-tabellen:appPath: app
+  ahb-tabellen:appServicePlanSkuName: "B1"
+  ahb-tabellen:appServicePlanSkuTier: "Basic"
   ahb-tabellen:bedingungsbaumBaseUrl: https://bedingungsbaum.hochfrequenz.de
   ahb-tabellen:containerPort: "80"
-  ahb-tabellen:cpu: "1"
   ahb-tabellen:db_7z_archive_password:
     secure: AAABAG9VAmOftI7npdJm+AxiHDF90IWlsDdCQxNGeJImf4j21yqJi+GDTxI71zYlQ38da4IAEuzc/fXW1p4=
   ahb-tabellen:ebdBaseUrl: https://ebd.hochfrequenz.de
@@ -11,7 +12,6 @@ config:
     secure: AAABAPxqz5l9dn9CRjuSdmBw1dz+WQpoqfXJ1pRz5SzsxAuKHMB8mOo+Ir3nCllS0u8VjraFpDnDqGq1SA5a6RbNeOl49eJ+
   ahb-tabellen:imageName: ghcr.io/hochfrequenz/ahb-tabellen
   ahb-tabellen:imageTag: v1.4.0
-  ahb-tabellen:memory: "2"
   ahb-tabellen:ohDearHealthCheckSecret:
     secure: AAABANrflh/RuuKGiZEPld6MZksWHZZsRfivLLSXEW7gMaC0k+omHcGtixSle5ok
   ahb-tabellen:websitesContainerStartTimeLimit: "300"

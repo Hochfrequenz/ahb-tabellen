@@ -38,8 +38,10 @@ assert oh_dear_health_check_secret, "ohDearHealthCheckSecret must be set"
 db_7z_archive_password = config.require_secret("db_7z_archive_password")
 assert db_7z_archive_password, "db_7z_archive_password must be set"
 
-cpu = config.get_int("cpu", 1)
-memory = config.get_int("memory", 2)
+# App Service Plan SKU configuration (see https://azure.microsoft.com/pricing/details/app-service/)
+# Common SKUs: B1/B2/B3 (Basic), S1/S2/S3 (Standard), P1v2/P2v2/P3v2 (PremiumV2)
+app_service_plan_sku_name = config.get("appServicePlanSkuName") or "B1"
+app_service_plan_sku_tier = config.get("appServicePlanSkuTier") or "Basic"
 
 # Get location from azure-native config
 azure_config = pulumi.Config("azure-native")
@@ -72,8 +74,8 @@ app_service_plan = azure_native.web.AppServicePlan(
     kind="Linux",
     reserved=True,  # Required for Linux App Service Plans, see https://stackoverflow.com/questions/66520937/pulumi-azure-native-provider-azure-webapp-the-parameter-linuxfxversion-has-an
     sku=azure_native.web.SkuDescriptionArgs(
-        name="B1",
-        tier="Basic",
+        name=app_service_plan_sku_name,
+        tier=app_service_plan_sku_tier,
     ),
 )
 
