@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { OverlayModule, ConnectedPosition } from '@angular/cdk/overlay';
@@ -269,5 +269,12 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
       }
       return typeof value === 'string' && value.trim();
     }).length;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.wildcardInfoOpen) {
+      this.wildcardInfoOpen = false;
+    }
   }
 }
