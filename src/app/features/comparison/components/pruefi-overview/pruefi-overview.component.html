@@ -85,6 +85,7 @@
                       @if (pruefi.existsInOld) {
                         <a
                           [routerLink]="['/ahb', formatVersionOld, pruefi.pruefidentifikator]"
+                          target="_blank"
                           class="text-hf-dunkel-rose hover:underline"
                           title="AHB in {{ formatVersionOld }} anzeigen">
                           Anzeigen
@@ -97,6 +98,7 @@
                       @if (pruefi.existsInNew) {
                         <a
                           [routerLink]="['/ahb', formatVersionNew, pruefi.pruefidentifikator]"
+                          target="_blank"
                           class="text-hf-dunkel-rose hover:underline"
                           title="AHB in {{ formatVersionNew }} anzeigen">
                           Anzeigen
@@ -110,6 +112,7 @@
                         <a
                           [routerLink]="['/compare', pruefi.pruefidentifikator]"
                           [queryParams]="{ 'fv-old': formatVersionOld, 'fv-new': formatVersionNew }"
+                          target="_blank"
                           class="text-hf-dunkel-rose hover:underline font-medium"
                           title="Vergleich anzeigen">
                           Vergleichen
