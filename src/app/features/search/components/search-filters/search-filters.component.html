@@ -31,12 +31,16 @@
         <div class="wildcard-info-header">Platzhalter-Suche</div>
         <p>Verwenden Sie <code>*</code> als Platzhalter für beliebige Zeichen.</p>
         <div class="wildcard-info-examples">
-          <strong>Beispiele:</strong>
+          <strong>Beispiel:</strong>
           <ul>
             <li><code>Konfig*ID</code> → findet "Konfigurations-ID" und "Konfig-ID"</li>
-            <li><code>Konfig*</code> → findet "Konfiguration", "Konfig-ID", usw.</li>
           </ul>
         </div>
+        <p class="wildcard-info-note">
+          <strong>Hinweis:</strong> <code>Konfig</code> und <code>*Konfig*</code> liefern
+          dasselbe Ergebnis, da ohne <code>*</code> automatisch eine "enthält"-Suche
+          durchgeführt wird.
+        </p>
       </div>
     </ng-template>
   </div>
