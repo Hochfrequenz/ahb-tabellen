@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
+import { OverlayModule, ConnectedPosition } from '@angular/cdk/overlay';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -21,6 +22,7 @@ import { RichtungCacheService } from '../../services/richtung-cache.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    OverlayModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -36,6 +38,24 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   searchForm: FormGroup;
+
+  wildcardInfoOpen = false;
+  wildcardInfoPositions: ConnectedPosition[] = [
+    {
+      originX: 'end',
+      originY: 'bottom',
+      overlayX: 'end',
+      overlayY: 'top',
+      offsetY: 8,
+    },
+    {
+      originX: 'start',
+      originY: 'bottom',
+      overlayX: 'start',
+      overlayY: 'top',
+      offsetY: 8,
+    },
+  ];
 
   filterFields: Array<{
     key: string;
@@ -249,5 +269,12 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
       }
       return typeof value === 'string' && value.trim();
     }).length;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.wildcardInfoOpen) {
+      this.wildcardInfoOpen = false;
+    }
   }
 }

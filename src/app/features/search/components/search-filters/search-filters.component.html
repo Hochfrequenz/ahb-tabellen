@@ -4,8 +4,50 @@
     <mat-form-field appearance="fill" class="search-field">
       <mat-label>Globale Suche</mat-label>
       <input matInput formControlName="q" placeholder="Durchsuche alle AHBs…" />
-      <mat-icon matSuffix fontSet="mdi" fontIcon="mdi-magnify"></mat-icon>
+      <span matSuffix class="search-suffix-container">
+        <button
+          mat-icon-button
+          type="button"
+          class="wildcard-info-button"
+          cdkOverlayOrigin
+          #wildcardInfoTrigger="cdkOverlayOrigin"
+          (click)="wildcardInfoOpen = !wildcardInfoOpen"
+          [attr.aria-expanded]="wildcardInfoOpen"
+          aria-label="Informationen zur Platzhalter-Suche">
+          <mat-icon fontSet="mdi" fontIcon="mdi-information-outline"></mat-icon>
+        </button>
+        <mat-icon fontSet="mdi" fontIcon="mdi-magnify"></mat-icon>
+      </span>
     </mat-form-field>
+
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="wildcardInfoTrigger"
+      [cdkConnectedOverlayOpen]="wildcardInfoOpen"
+      [cdkConnectedOverlayHasBackdrop]="true"
+      [cdkConnectedOverlayBackdropClass]="'cdk-overlay-transparent-backdrop'"
+      (backdropClick)="wildcardInfoOpen = false"
+      [cdkConnectedOverlayPositions]="wildcardInfoPositions">
+      <div class="wildcard-info-popover" role="dialog" aria-labelledby="wildcard-info-title">
+        <div id="wildcard-info-title" class="wildcard-info-header">Platzhalter-Suche</div>
+        <p>Verwende <code>*</code> als Platzhalter für beliebige Zeichen.</p>
+        <div class="wildcard-info-examples">
+          <strong>Beispiel:</strong>
+          <ul>
+            <li><code>Konfig*ID</code> → findet "Konfigurations-ID" und "Konfig-ID"</li>
+            <li><code>Konfig*</code> → findet "Konfigurations-ID" und "Konfigurationsprodukt"</li>
+            <li>
+              <code>*produkt</code> → findet "Konfigurationsprodukt" und "Messprodukt" aber nicht
+              "Produkt-/Leistungsbeschreibung"
+            </li>
+          </ul>
+        </div>
+        <p class="wildcard-info-note">
+          <strong>Hinweis:</strong> <code>Konfig</code> und <code>*Konfig*</code> liefern dasselbe
+          Ergebnis, da ohne <code>*</code> automatisch eine "enthält"-Suche durchgeführt wird.
+        </p>
+      </div>
+    </ng-template>
   </div>
 
   <!-- Individual Filters -->
