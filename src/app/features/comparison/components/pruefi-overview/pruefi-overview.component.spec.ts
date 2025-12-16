@@ -138,7 +138,9 @@ describe('PruefiOverviewComponent', () => {
       tick();
 
       expect(component.isLoading).toBe(false);
-      expect(component.errorMessage).toBe('Fehler beim Laden der Prüfidentifikatoren.');
+      expect(component.errorMessage).toContain('Fehler beim Laden der Prüfidentifikatoren');
+      expect(component.errorMessage).toContain('FV2410');
+      expect(component.errorMessage).toContain('FV2504');
       expect(component.formatGroups).toEqual([]);
     }));
   });
