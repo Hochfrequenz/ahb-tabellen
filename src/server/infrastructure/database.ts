@@ -37,7 +37,8 @@ async function applyPerformancePragmas(dataSource: DataSource): Promise<void> {
     // Memory-map up to 2GB of the database file for direct memory access.
     // For our 900MB database, this maps the entire file, avoiding read() syscalls
     // and letting the OS manage caching efficiently. Can yield 2-5x speedup for random reads.
-    await dataSource.query('PRAGMA mmap_size = 2147483648');
+    const MMAP_SIZE_2GB = 2 * 1024 * 1024 * 1024;
+    await dataSource.query(`PRAGMA mmap_size = ${MMAP_SIZE_2GB}`);
   })();
 
   return pragmasPromise;
