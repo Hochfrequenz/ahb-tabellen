@@ -239,6 +239,18 @@ describe('SearchFiltersComponent', () => {
 
       expect(component.wildcardInfoOpen).toBe(false);
     });
+
+    it('should toggle wildcardInfoOpen when clicking info button', () => {
+      expect(component.wildcardInfoOpen).toBe(false);
+
+      // Toggle open
+      component.wildcardInfoOpen = !component.wildcardInfoOpen;
+      expect(component.wildcardInfoOpen).toBe(true);
+
+      // Toggle closed
+      component.wildcardInfoOpen = !component.wildcardInfoOpen;
+      expect(component.wildcardInfoOpen).toBe(false);
+    });
   });
 
   describe('format loading', () => {
