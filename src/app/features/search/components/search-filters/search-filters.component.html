@@ -4,8 +4,41 @@
     <mat-form-field appearance="fill" class="search-field">
       <mat-label>Globale Suche</mat-label>
       <input matInput formControlName="q" placeholder="Durchsuche alle AHBs…" />
+      <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        class="wildcard-info-button"
+        cdkOverlayOrigin
+        #wildcardInfoTrigger="cdkOverlayOrigin"
+        (click)="wildcardInfoOpen = !wildcardInfoOpen"
+        [attr.aria-expanded]="wildcardInfoOpen"
+        aria-label="Informationen zur Platzhalter-Suche">
+        <mat-icon fontSet="mdi" fontIcon="mdi-information-outline"></mat-icon>
+      </button>
       <mat-icon matSuffix fontSet="mdi" fontIcon="mdi-magnify"></mat-icon>
     </mat-form-field>
+
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="wildcardInfoTrigger"
+      [cdkConnectedOverlayOpen]="wildcardInfoOpen"
+      [cdkConnectedOverlayHasBackdrop]="true"
+      [cdkConnectedOverlayBackdropClass]="'cdk-overlay-transparent-backdrop'"
+      (backdropClick)="wildcardInfoOpen = false"
+      [cdkConnectedOverlayPositions]="wildcardInfoPositions">
+      <div class="wildcard-info-popover">
+        <div class="wildcard-info-header">Platzhalter-Suche</div>
+        <p>Verwenden Sie <code>*</code> als Platzhalter für beliebige Zeichen.</p>
+        <div class="wildcard-info-examples">
+          <strong>Beispiele:</strong>
+          <ul>
+            <li><code>Konfig*ID</code> → findet "Konfigurations-ID" und "Konfig-ID"</li>
+            <li><code>Konfig*</code> → findet "Konfiguration", "Konfig-ID", usw.</li>
+          </ul>
+        </div>
+      </div>
+    </ng-template>
   </div>
 
   <!-- Individual Filters -->
