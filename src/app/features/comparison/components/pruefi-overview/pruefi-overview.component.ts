@@ -70,8 +70,9 @@ export class PruefiOverviewComponent implements OnChanges {
           this.processComparison(oldPruefis, newPruefis);
           this.isLoading = false;
         },
-        error: () => {
-          this.errorMessage = 'Fehler beim Laden der Prüfidentifikatoren.';
+        error: error => {
+          const statusText = error?.status ? ` (Status: ${error.status})` : '';
+          this.errorMessage = `Fehler beim Laden der Prüfidentifikatoren für ${this.formatVersionOld} und ${this.formatVersionNew}${statusText}. Bitte versuchen Sie es später erneut.`;
           this.isLoading = false;
         },
       });
