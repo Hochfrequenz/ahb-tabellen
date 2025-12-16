@@ -129,10 +129,10 @@ export class PruefiOverviewComponent implements OnChanges {
       });
     });
 
-    // Group by format
+    // Group by format (use 'Unbekannt' for unknown prefixes that return empty string)
     const formatMap = new Map<string, PruefiComparison[]>();
     comparisons.forEach(comp => {
-      const format = getFormatFromPruefi(comp.pruefidentifikator);
+      const format = getFormatFromPruefi(comp.pruefidentifikator) || 'Unbekannt';
       if (!formatMap.has(format)) {
         formatMap.set(format, []);
       }
@@ -161,11 +161,11 @@ export class PruefiOverviewComponent implements OnChanges {
         };
       });
 
-    // Add any formats not in the known list (shouldn't happen, but just in case)
+    // Add any formats not in the known list (e.g., 'Unbekannt' for unknown prefixes)
     formatMap.forEach((pruefis, format) => {
       if (!allFormats.includes(format)) {
         this.formatGroups.push({
-          format: format || 'Unbekannt',
+          format,
           pruefis,
           addedCount: pruefis.filter(p => p.status === 'added').length,
           removedCount: pruefis.filter(p => p.status === 'removed').length,
