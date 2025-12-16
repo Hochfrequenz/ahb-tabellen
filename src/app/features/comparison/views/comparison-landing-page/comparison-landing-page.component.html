@@ -1,6 +1,6 @@
-<div class="min-h-screen flex flex-col bg-hf-pastell-rose">
+<div class="h-screen flex flex-col bg-hf-pastell-rose">
   <!-- Fixed Main Header -->
-  <app-header class="flex-none">
+  <app-header class="flex-none sticky top-0 z-50">
     <!-- Desktop projection -->
     <app-comparison-search-form-header
       slot="search-form"
@@ -26,8 +26,9 @@
   </app-header>
 
   <!-- Main Content -->
-  <div class="flex-1 container mx-auto px-4 md:px-6 py-8 md:py-24">
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+  <div class="flex-1 overflow-auto">
+    <div class="container mx-auto px-4 md:px-6 py-8 md:py-12">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
       <!-- Mobile: Full width, Desktop: Aligned with Prüfidentifikator input -->
       <div class="md:col-start-2 md:col-span-10 lg:col-start-2 lg:col-span-10">
         <!-- Validation Error -->
@@ -74,12 +75,15 @@
             [formatVersionOld]="formatVersionOld()"
             [formatVersionNew]="formatVersionNew()" />
         }
+        </div>
       </div>
     </div>
   </div>
 
-  <app-solutions-footer />
-  <app-footer>
-    <span class="block p-3">&nbsp;</span>
-  </app-footer>
+  <div class="flex-none">
+    <app-solutions-footer />
+    <app-footer>
+      <span class="block p-3">&nbsp;</span>
+    </app-footer>
+  </div>
 </div>
