@@ -34,7 +34,12 @@
       "Bash(npm audit:*)",
       "Bash(npm view:*)",
       "Bash(find:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Skill(superpowers:writing-plans)",
+      "Bash(gh pr view:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh auth login:*)",
+      "Bash(gh api:*)"
     ],
     "deny": [],
     "ask": []
