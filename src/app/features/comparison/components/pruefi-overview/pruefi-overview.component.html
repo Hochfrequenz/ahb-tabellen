@@ -76,17 +76,11 @@
                           >+</span
                         >
                       } @else if (pruefi.status === 'removed') {
-                        <span class="text-hf-negative-dark font-bold" title="Entfernt"
-                          >−</span
-                        >
+                        <span class="text-hf-negative-dark font-bold" title="Entfernt">−</span>
                       } @else if (hasLineChanges(pruefi.pruefidentifikator)) {
-                        <span class="text-hf-neutral-dark font-bold" title="Geändert"
-                          >~</span
-                        >
+                        <span class="text-hf-neutral-dark font-bold" title="Geändert">~</span>
                       } @else if (hasNoLineChanges(pruefi.pruefidentifikator)) {
-                        <span class="text-gray-400" title="Identisch"
-                          >=</span
-                        >
+                        <span class="text-gray-400" title="Identisch">=</span>
                       } @else {
                         <span class="text-gray-400" title="Wird geladen..."></span>
                       }

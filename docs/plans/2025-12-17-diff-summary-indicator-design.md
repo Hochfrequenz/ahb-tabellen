@@ -25,6 +25,7 @@ GET /api/ahb-diff-summary?format-version-new=FV2410&format-version-old=FV2404
 ```
 
 **Response:**
+
 ```json
 {
   "11001": { "added": 0, "deleted": 0, "modified": 0 },
@@ -254,12 +255,11 @@ After the compare link, add:
 
 ```html
 @if (hasNoChanges(pruefi.pruefidentifikator)) {
-  <span
-    class="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-gray-400 text-xs"
-    matTooltip="No differences between versions"
-  >
-    =
-  </span>
+<span
+  class="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-gray-400 text-xs"
+  matTooltip="No differences between versions">
+  =
+</span>
 }
 ```
 
