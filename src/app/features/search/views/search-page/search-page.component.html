@@ -29,41 +29,43 @@
           </mat-card-content>
         </mat-card>
 
-        <!-- Search Results -->
-        <mat-card class="results-card">
-          <mat-card-header>
-            <mat-card-title>
-              Ergebnisse
-              <span *ngIf="searchResults" class="result-count">
-                ({{ searchResults.total }} items)
-              </span>
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div *ngIf="loading" class="loading-container">
-              <mat-spinner diameter="40"></mat-spinner>
-              <p>Suche läuft…</p>
-            </div>
+        <!-- Search Results Header (scrolls away) -->
+        <div class="results-header">
+          <h2 class="text-xl font-medium text-hf-text-color">
+            Ergebnisse
+            <span *ngIf="searchResults" class="result-count">
+              ({{ searchResults.total }} items)
+            </span>
+          </h2>
+        </div>
+      </div>
+    </div>
 
-            <div *ngIf="error" class="error-container">
-              <mat-icon color="warn" fontSet="mdi" fontIcon="mdi-alert"></mat-icon>
-              <p>{{ error }}</p>
-            </div>
-
-            <app-search-table
-              *ngIf="searchResults && !loading && !error"
-              [data]="searchResults.items || []"
-              [totalItems]="searchResults.total || 0"
-              [page]="searchResults.page || 1"
-              [pageSize]="searchResults.pageSize || 25"
-              (pageChange)="onPageChange($event)"
-              (pageSizeChange)="onPageSizeChange($event)"
-              (sortChange)="onSortChange($event)">
-            </app-search-table>
-          </mat-card-content>
-        </mat-card>
+    <!-- Search Results Table (header sticks to top) -->
+    <div class="search-page !pt-0">
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Suche läuft…</p>
       </div>
 
+      <div *ngIf="error" class="error-container">
+        <mat-icon color="warn" fontSet="mdi" fontIcon="mdi-alert"></mat-icon>
+        <p>{{ error }}</p>
+      </div>
+
+      <app-search-table
+        *ngIf="searchResults && !loading && !error"
+          [data]="searchResults.items || []"
+          [totalItems]="searchResults.total || 0"
+          [page]="searchResults.page || 1"
+          [pageSize]="searchResults.pageSize || 25"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+          (sortChange)="onSortChange($event)">
+      </app-search-table>
+    </div>
+
+    <div class="search-page !pt-0">
       <!-- Solutions footer inside scroll: visible only on small screens -->
       <app-solutions-footer class="block md:hidden"></app-solutions-footer>
     </div>
