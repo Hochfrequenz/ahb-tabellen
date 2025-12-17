@@ -43,31 +43,28 @@
           <tr [class]="getRowClass(line)">
             <!-- Old version columns (version B = old) -->
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[80px]"
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
               [class.font-bold]="isSegmentGroup(line)"
-              [class]="getChangedColumnClass(line, 'segmentgroup_key')"
-              [title]="getSegmentGroupKey(line, 'old') || '-'">
+              [class]="getChangedColumnClass(line, 'segmentgroup_key')">
               {{ getSegmentGroupKey(line, 'old') || '-' }}
             </td>
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[60px]"
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
               [class.font-bold]="isSegmentGroup(line)"
-              [class]="getChangedColumnClass(line, 'segment_code')"
-              [title]="getSegmentCode(line, 'old') || '-'">
+              [class]="getChangedColumnClass(line, 'segment_code')">
               {{ getSegmentCode(line, 'old') || '-' }}
             </td>
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[70px]"
-              [class]="getChangedColumnClass(line, 'data_element')"
-              [title]="getDataElement(line, 'old') || '-'">
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
+              [class]="getChangedColumnClass(line, 'data_element')">
               {{ getDataElement(line, 'old') || '-' }}
             </td>
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[80px]"
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
               [class]="getChangedColumnClass(line, 'qualifier')">
               @if (generateEbdDeepLink(getQualifier(line, 'old'), formatVersionOld); as ebdLink) {
-                <a [href]="ebdLink" target="_blank" [class]="getLinkClass(line, 'ebd')" class="flex items-center gap-0.5">
-                  <span class="truncate">{{ getQualifier(line, 'old') }}</span>
+                <a [href]="ebdLink" target="_blank" [class]="getLinkClass(line, 'ebd')" class="inline-flex items-center gap-0.5">
+                  <span>{{ getQualifier(line, 'old') }}</span>
                   <app-icon-link class="flex-shrink-0" />
                 </a>
               } @else {
@@ -75,20 +72,19 @@
               }
             </td>
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[100px]"
-              [class]="getChangedColumnClass(line, 'line_name')"
-              [title]="getName(line, 'old') || '-'">
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
+              [class]="getChangedColumnClass(line, 'line_name')">
               {{ getName(line, 'old') || '-' }}
             </td>
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[80px]"
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
               [class]="getChangedColumnClass(line, 'line_ahb_status')">
               @if (
                 generateBedingungsbaumDeepLink(getAhbStatus(line, 'old'), formatVersionOld);
                 as treeLink
               ) {
-                <a [href]="treeLink" target="_blank" [class]="getLinkClass(line, 'bedingung')" class="flex items-center gap-0.5">
-                  <span class="truncate">{{ getAhbStatus(line, 'old') }}</span>
+                <a [href]="treeLink" target="_blank" [class]="getLinkClass(line, 'bedingung')" class="inline-flex items-center gap-0.5">
+                  <span>{{ getAhbStatus(line, 'old') }}</span>
                   <app-icon-link class="flex-shrink-0" />
                 </a>
               } @else {
@@ -96,7 +92,7 @@
               }
             </td>
             @if (showConditionsColumn) {
-              <td class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[120px]" [title]="getHighlightedBedingung(line, 'old')">
+              <td class="px-1 py-1 border-b border-hf-grell-rose break-words">
                 <span [innerHTML]="getHighlightedBedingung(line, 'old')"></span>
               </td>
             }
@@ -106,31 +102,28 @@
 
             <!-- New version columns (version A = new) -->
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[80px]"
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
               [class.font-bold]="isSegmentGroup(line)"
-              [class]="getChangedColumnClass(line, 'segmentgroup_key')"
-              [title]="getSegmentGroupKey(line, 'new') || '-'">
+              [class]="getChangedColumnClass(line, 'segmentgroup_key')">
               {{ getSegmentGroupKey(line, 'new') || '-' }}
             </td>
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[60px]"
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
               [class.font-bold]="isSegmentGroup(line)"
-              [class]="getChangedColumnClass(line, 'segment_code')"
-              [title]="getSegmentCode(line, 'new') || '-'">
+              [class]="getChangedColumnClass(line, 'segment_code')">
               {{ getSegmentCode(line, 'new') || '-' }}
             </td>
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[70px]"
-              [class]="getChangedColumnClass(line, 'data_element')"
-              [title]="getDataElement(line, 'new') || '-'">
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
+              [class]="getChangedColumnClass(line, 'data_element')">
               {{ getDataElement(line, 'new') || '-' }}
             </td>
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[80px]"
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
               [class]="getChangedColumnClass(line, 'qualifier')">
               @if (generateEbdDeepLink(getQualifier(line, 'new'), formatVersionNew); as ebdLink) {
-                <a [href]="ebdLink" target="_blank" [class]="getLinkClass(line, 'ebd')" class="flex items-center gap-0.5">
-                  <span class="truncate">{{ getQualifier(line, 'new') }}</span>
+                <a [href]="ebdLink" target="_blank" [class]="getLinkClass(line, 'ebd')" class="inline-flex items-center gap-0.5">
+                  <span>{{ getQualifier(line, 'new') }}</span>
                   <app-icon-link class="flex-shrink-0" />
                 </a>
               } @else {
@@ -138,20 +131,19 @@
               }
             </td>
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[100px]"
-              [class]="getChangedColumnClass(line, 'line_name')"
-              [title]="getName(line, 'new') || '-'">
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
+              [class]="getChangedColumnClass(line, 'line_name')">
               {{ getName(line, 'new') || '-' }}
             </td>
             <td
-              class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[80px]"
+              class="px-1 py-1 border-b border-hf-grell-rose break-words"
               [class]="getChangedColumnClass(line, 'line_ahb_status')">
               @if (
                 generateBedingungsbaumDeepLink(getAhbStatus(line, 'new'), formatVersionNew);
                 as treeLink
               ) {
-                <a [href]="treeLink" target="_blank" [class]="getLinkClass(line, 'bedingung')" class="flex items-center gap-0.5">
-                  <span class="truncate">{{ getAhbStatus(line, 'new') }}</span>
+                <a [href]="treeLink" target="_blank" [class]="getLinkClass(line, 'bedingung')" class="inline-flex items-center gap-0.5">
+                  <span>{{ getAhbStatus(line, 'new') }}</span>
                   <app-icon-link class="flex-shrink-0" />
                 </a>
               } @else {
@@ -159,7 +151,7 @@
               }
             </td>
             @if (showConditionsColumn) {
-              <td class="px-1 py-1 border-b border-hf-grell-rose truncate max-w-[120px]" [title]="getHighlightedBedingung(line, 'new')">
+              <td class="px-1 py-1 border-b border-hf-grell-rose break-words">
                 <span [innerHTML]="getHighlightedBedingung(line, 'new')"></span>
               </td>
             }
