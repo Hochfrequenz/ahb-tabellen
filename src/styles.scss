@@ -13,9 +13,19 @@
 }
 
 :root {
-  /* Sticky positioning offsets for comparison page */
-  /* Filter bar height: py-2 (16px) + button height (~28px) = ~44px */
-  --comparison-filter-height: 2.75rem; /* 44px - matches filter toggle bar height */
+  /*
+   * Sticky positioning offset for comparison table header.
+   * This value must match the height of the filter toggle bar in comparison-page.component.html.
+   *
+   * Calculation: py-2 (0.5rem × 2 = 1rem = 16px) + button height (~28px) = ~44px = 2.75rem
+   *
+   * Dependencies:
+   * - Used by: comparison-table.component.html (thead sticky top offset)
+   * - Defined by: comparison-page.component.html (filter bar with class "py-2")
+   *
+   * If the filter bar padding or button size changes, update this value accordingly.
+   */
+  --comparison-filter-height: 2.75rem;
 
   /* copied from /assets/companystylesheet/css/hochfrequenz.css, because I didn't manage to import/include it properly */
   /* X [ERROR] Could not resolve "/assets/companystylesheet/css/hochfrequenz.css" */
