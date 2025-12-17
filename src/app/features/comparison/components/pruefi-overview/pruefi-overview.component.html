@@ -69,7 +69,7 @@
               </thead>
               <tbody>
                 @for (pruefi of group.pruefis; track pruefi.pruefidentifikator) {
-                  <tr class="border-b border-gray-200" [ngClass]="getRowClass(pruefi.status)">
+                  <tr class="border-b border-gray-200" [ngClass]="getRowClass(pruefi)">
                     <td class="px-3 py-2 text-center">
                       @if (pruefi.status === 'added') {
                         <span class="text-hf-positive-dark font-bold" title="Neu hinzugefügt"

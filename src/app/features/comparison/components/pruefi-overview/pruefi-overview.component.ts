@@ -199,13 +199,16 @@ export class PruefiOverviewComponent implements OnChanges {
     });
   }
 
-  getRowClass(status: 'added' | 'removed' | 'unchanged'): string {
-    switch (status) {
+  getRowClass(pruefi: PruefiComparison): string {
+    switch (pruefi.status) {
       case 'added':
         return 'bg-hf-positive-light';
       case 'removed':
         return 'bg-hf-negative-light';
-      default:
+      case 'unchanged':
+        if (this.hasLineChanges(pruefi.pruefidentifikator)) {
+          return 'bg-hf-neutral-light';
+        }
         return '';
     }
   }
