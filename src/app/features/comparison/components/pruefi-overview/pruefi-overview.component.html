@@ -33,7 +33,9 @@
                   @if (getChangedCount(group) > 0) {
                     <span class="text-hf-neutral">~{{ getChangedCount(group) }}</span>
                   }
-                  @if ((group.addedCount > 0 || getChangedCount(group) > 0) && group.removedCount > 0) {
+                  @if (
+                    (group.addedCount > 0 || getChangedCount(group) > 0) && group.removedCount > 0
+                  ) {
                     <span class="text-hf-text-color">, </span>
                   }
                   @if (group.removedCount > 0) {
@@ -107,7 +109,7 @@
                               hasLineChanges(pruefi.pruefidentifikator),
                             'text-hf-dunkel-rose':
                               pruefi.status !== 'removed' &&
-                              !hasLineChanges(pruefi.pruefidentifikator)
+                              !hasLineChanges(pruefi.pruefidentifikator),
                           }"
                           title="AHB in {{ formatVersionOld }} anzeigen">
                           Anzeigen
@@ -126,9 +128,11 @@
                           [ngClass]="{
                             'text-hf-positive-dark': pruefi.status === 'added',
                             'text-hf-neutral-dark':
-                              pruefi.status !== 'added' && hasLineChanges(pruefi.pruefidentifikator),
+                              pruefi.status !== 'added' &&
+                              hasLineChanges(pruefi.pruefidentifikator),
                             'text-hf-dunkel-rose':
-                              pruefi.status !== 'added' && !hasLineChanges(pruefi.pruefidentifikator)
+                              pruefi.status !== 'added' &&
+                              !hasLineChanges(pruefi.pruefidentifikator),
                           }"
                           title="AHB in {{ formatVersionNew }} anzeigen">
                           Anzeigen
@@ -147,7 +151,7 @@
                           class="hover:underline font-semibold"
                           [ngClass]="{
                             'text-hf-neutral-dark': hasLineChanges(pruefi.pruefidentifikator),
-                            'text-hf-dunkel-rose': !hasLineChanges(pruefi.pruefidentifikator)
+                            'text-hf-dunkel-rose': !hasLineChanges(pruefi.pruefidentifikator),
                           }"
                           title="Vergleich anzeigen">
                           Vergleichen
