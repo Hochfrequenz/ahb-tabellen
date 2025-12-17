@@ -16,6 +16,23 @@
 <!-- Content -->
 @if (!isLoading && !errorMessage && formatGroups.length > 0) {
   <div>
+    <!-- Filter Toggles -->
+    <div class="flex flex-wrap items-center gap-2 text-sm mb-4">
+      @for (toggle of filterToggles; track toggle.key) {
+        <button
+          type="button"
+          (click)="toggleFilter(toggle)"
+          [class.opacity-40]="!toggle.signal()"
+          class="px-3 py-1.5 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
+          [ngClass]="toggle.colorClasses"
+          [attr.aria-pressed]="toggle.signal() ? 'true' : 'false'"
+          [attr.aria-label]="toggle.title"
+          [title]="toggle.title">
+          {{ toggle.symbol }}{{ getFilterCount(toggle.key) }}
+        </button>
+      }
+    </div>
+
     <mat-accordion multi>
       @for (group of formatGroups; track group.format) {
         <mat-expansion-panel [expanded]="false" class="mat-elevation-z0">
@@ -45,7 +62,7 @@
               }
             </mat-panel-title>
             <mat-panel-description>
-              {{ group.pruefis.length }} Prüfidentifikatoren
+              {{ getFilteredCount(group) }} / {{ group.pruefis.length }} Prüfidentifikatoren
             </mat-panel-description>
           </mat-expansion-panel-header>
 
@@ -76,7 +93,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (pruefi of group.pruefis; track pruefi.pruefidentifikator) {
+                @for (pruefi of getFilteredPruefis(group); track pruefi.pruefidentifikator) {
                   <tr class="border-b border-hf-pastell-rose" [ngClass]="getRowClass(pruefi)">
                     <td class="px-3 py-2 text-center">
                       @if (pruefi.status === PruefiStatus.ADDED) {
