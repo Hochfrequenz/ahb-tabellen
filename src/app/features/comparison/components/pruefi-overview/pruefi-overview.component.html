@@ -23,7 +23,7 @@
           type="button"
           (click)="toggleFilter(toggle)"
           [class.opacity-40]="!toggle.signal()"
-          class="px-3 py-1.5 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2 hover:ring-offset-1"
+          class="px-3 py-1.5 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
           [ngClass]="toggle.colorClasses"
           [attr.aria-pressed]="toggle.signal() ? 'true' : 'false'"
           [attr.aria-label]="toggle.title"
