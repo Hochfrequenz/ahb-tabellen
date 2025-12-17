@@ -28,11 +28,12 @@
   <!-- Scrollable Content -->
   <div class="flex-1 overflow-auto relative bg-hf-pastell-rose p-6">
     <div class="max-w-screen-2xl mx-auto">
-      <div class="mb-6">
+      <!-- Title and description (scrolls away) -->
+      <div class="mb-4">
         <h1 class="text-2xl font-bold text-hf-text-color mb-1">AHB Vergleich: {{ pruefi() }}</h1>
         @if (description(); as desc) {
           @if (desc.descriptionOld || desc.descriptionNew) {
-            <p class="text-hf-text-color mb-4">
+            <p class="text-hf-text-color">
               @if (desc.descriptionOld === desc.descriptionNew) {
                 {{ desc.descriptionNew }}
               } @else {
@@ -41,9 +42,11 @@
             </p>
           }
         }
+      </div>
 
-        <!-- Statistics / Filter Toggles -->
-        @if (stats(); as stats) {
+      <!-- Statistics / Filter Toggles (sticky below header) -->
+      @if (stats(); as stats) {
+        <div class="sticky top-0 z-20 bg-hf-pastell-rose py-2 -mx-6 px-6 mb-2">
           <div class="flex flex-wrap items-center gap-2 text-sm">
             @for (toggle of filterToggles; track toggle.key) {
               <button
@@ -78,8 +81,8 @@
               Bedingungen
             </button>
           </div>
-        }
-      </div>
+        </div>
+      }
 
       @if (errorOccurred) {
         <div
