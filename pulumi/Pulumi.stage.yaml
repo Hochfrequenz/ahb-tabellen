@@ -1,6 +1,6 @@
 config:
   ahb-tabellen:appPath: app
-  ahb-tabellen:appServicePlanSkuName: "B2"
+  ahb-tabellen:appServicePlanSkuName: "B1"
   ahb-tabellen:appServicePlanSkuTier: "Basic"
   ahb-tabellen:bedingungsbaumBaseUrl: https://bedingungsbaum.stage.hochfrequenz.de
   ahb-tabellen:containerPort: "80"
