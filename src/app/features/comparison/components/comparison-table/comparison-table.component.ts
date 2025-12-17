@@ -11,6 +11,7 @@ import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.util
   standalone: true,
   imports: [CommonModule, IconLinkComponent],
   templateUrl: './comparison-table.component.html',
+  styleUrl: './comparison-table.component.scss',
 })
 export class ComparisonTableComponent {
   @Input() lines: AhbDiffLine[] = [];

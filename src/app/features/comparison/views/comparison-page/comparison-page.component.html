@@ -26,61 +26,65 @@
   </app-header>
 
   <!-- Scrollable Content -->
-  <div class="flex-1 overflow-auto relative bg-hf-pastell-rose p-6">
-    <div class="max-w-screen-2xl mx-auto">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-hf-text-color mb-1">AHB Vergleich: {{ pruefi() }}</h1>
-        @if (description(); as desc) {
-          @if (desc.descriptionOld || desc.descriptionNew) {
-            <p class="text-hf-text-color mb-4">
-              @if (desc.descriptionOld === desc.descriptionNew) {
-                {{ desc.descriptionNew }}
-              } @else {
-                {{ desc.descriptionOld }} → {{ desc.descriptionNew }}
-              }
-            </p>
-          }
-        }
-
-        <!-- Statistics / Filter Toggles -->
-        @if (stats(); as stats) {
-          <div class="flex flex-wrap items-center gap-2 text-sm">
-            @for (toggle of filterToggles; track toggle.key) {
-              <button
-                type="button"
-                (click)="toggle.signal.set(!toggle.signal())"
-                [class.opacity-40]="!toggle.signal()"
-                class="px-3 py-1.5 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
-                [ngClass]="toggle.colorClasses"
-                [attr.aria-pressed]="toggle.signal() ? 'true' : 'false'"
-                [attr.aria-label]="toggle.title"
-                [title]="toggle.title">
-                {{ toggle.symbol }}{{ stats[toggle.key] }}
-              </button>
+  <div class="flex-1 overflow-auto relative bg-hf-pastell-rose">
+    <!-- Title and description (scrolls away) -->
+    <div class="px-4 md:px-6 lg:px-8 pt-6 mb-4">
+      <h1 class="text-2xl font-bold text-hf-text-color mb-1">AHB Vergleich: {{ pruefi() }}</h1>
+      @if (description(); as desc) {
+        @if (desc.descriptionOld || desc.descriptionNew) {
+          <p class="text-hf-text-color">
+            @if (desc.descriptionOld === desc.descriptionNew) {
+              {{ desc.descriptionNew }}
+            } @else {
+              {{ desc.descriptionOld }} → {{ desc.descriptionNew }}
             }
+          </p>
+        }
+      }
+    </div>
 
-            <!-- Divider -->
-            <span class="mx-1 h-6 w-px bg-hf-text-color"></span>
-
-            <!-- Column visibility toggle -->
+    <!-- Statistics / Filter Toggles (sticky directly below header) -->
+    @if (stats(); as stats) {
+      <div class="sticky top-0 z-20 bg-hf-pastell-rose py-2 px-4 md:px-6 lg:px-8 mb-2">
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+          @for (toggle of filterToggles; track toggle.key) {
             <button
               type="button"
-              (click)="showConditionsColumn.set(!showConditionsColumn())"
-              class="px-3 py-1.5 rounded font-medium cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
-              [class]="
-                showConditionsColumn()
-                  ? 'bg-hf-dunkel-rose text-white border-hf-dunkel-rose focus:ring-hf-dunkel-rose hover:ring-hf-dunkel-rose'
-                  : 'bg-white text-hf-text-color border-gray-300 focus:ring-gray-400 hover:ring-gray-400'
-              "
-              [attr.aria-pressed]="showConditionsColumn() ? 'true' : 'false'"
-              aria-label="Bedingungen-Spalte ein-/ausblenden"
-              title="Bedingungen-Spalte ein-/ausblenden">
-              Bedingungen
+              (click)="toggle.signal.set(!toggle.signal())"
+              [class.opacity-40]="!toggle.signal()"
+              class="px-3 py-1.5 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
+              [ngClass]="toggle.colorClasses"
+              [attr.aria-pressed]="toggle.signal() ? 'true' : 'false'"
+              [attr.aria-label]="toggle.title"
+              [title]="toggle.title">
+              {{ toggle.symbol }}{{ stats[toggle.key] }}
             </button>
-          </div>
-        }
-      </div>
+          }
 
+          <!-- Divider -->
+          <span class="mx-1 h-6 w-px bg-hf-text-color"></span>
+
+          <!-- Column visibility toggle -->
+          <button
+            type="button"
+            (click)="showConditionsColumn.set(!showConditionsColumn())"
+            class="px-3 py-1.5 rounded font-medium cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
+            [class]="
+              showConditionsColumn()
+                ? 'bg-hf-dunkel-rose text-white border-hf-dunkel-rose focus:ring-hf-dunkel-rose hover:ring-hf-dunkel-rose'
+                : 'bg-white text-hf-text-color border-gray-300 focus:ring-gray-400 hover:ring-gray-400'
+            "
+            [attr.aria-pressed]="showConditionsColumn() ? 'true' : 'false'"
+            aria-label="Bedingungen-Spalte ein-/ausblenden"
+            title="Bedingungen-Spalte ein-/ausblenden">
+            Bedingungen
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Main content area -->
+    <div class="px-4 md:px-6 lg:px-8 pb-6">
       @if (errorOccurred) {
         <div
           class="text-center p-8 bg-hf-grell-rose text-hf-weiches-schwarz rounded-lg max-w-4xl mx-auto">
