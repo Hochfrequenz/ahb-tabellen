@@ -26,10 +26,10 @@
   </app-header>
 
   <!-- Scrollable Content -->
-  <div class="flex-1 overflow-auto relative bg-hf-pastell-rose p-6">
-    <div class="max-w-screen-2xl mx-auto">
+  <div class="flex-1 overflow-auto relative bg-hf-pastell-rose">
+    <div class="max-w-screen-2xl mx-auto px-6 pb-6">
       <!-- Title and description (scrolls away) -->
-      <div class="mb-4">
+      <div class="mb-4 pt-6">
         <h1 class="text-2xl font-bold text-hf-text-color mb-1">AHB Vergleich: {{ pruefi() }}</h1>
         @if (description(); as desc) {
           @if (desc.descriptionOld || desc.descriptionNew) {
@@ -44,7 +44,7 @@
         }
       </div>
 
-      <!-- Statistics / Filter Toggles (sticky below header) -->
+      <!-- Statistics / Filter Toggles (sticky directly below header) -->
       @if (stats(); as stats) {
         <div class="sticky top-0 z-20 bg-hf-pastell-rose py-2 -mx-6 px-6 mb-2">
           <div class="flex flex-wrap items-center gap-2 text-sm">
