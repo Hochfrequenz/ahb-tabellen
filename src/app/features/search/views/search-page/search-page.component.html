@@ -39,8 +39,10 @@
           </h2>
         </div>
       </div>
+    </div>
 
-      <!-- Search Results Table (header sticks to top) -->
+    <!-- Search Results Table (header sticks to top) -->
+    <div class="search-page !pt-0">
       <div *ngIf="loading" class="loading-container">
         <mat-spinner diameter="40"></mat-spinner>
         <p>Suche läuft…</p>
@@ -61,7 +63,9 @@
         (pageSizeChange)="onPageSizeChange($event)"
         (sortChange)="onSortChange($event)">
       </app-search-table>
+    </div>
 
+    <div class="search-page !pt-0">
       <!-- Solutions footer inside scroll: visible only on small screens -->
       <app-solutions-footer class="block md:hidden"></app-solutions-footer>
     </div>
