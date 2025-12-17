@@ -13,6 +13,10 @@
 }
 
 :root {
+  /* Sticky positioning offsets for comparison page */
+  /* Filter bar height: py-2 (16px) + button height (~28px) = ~44px */
+  --comparison-filter-height: 2.75rem; /* 44px - matches filter toggle bar height */
+
   /* copied from /assets/companystylesheet/css/hochfrequenz.css, because I didn't manage to import/include it properly */
   /* X [ERROR] Could not resolve "/assets/companystylesheet/css/hochfrequenz.css" */
   /* Greens, lind-grün, oben rechts */
