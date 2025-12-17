@@ -62,6 +62,7 @@ export class PruefiOverviewComponent implements OnChanges {
     this.errorMessage = null;
     this.diffSummary.set({});
 
+    // Load prüfi lists first (required for display)
     forkJoin({
       oldPruefis: this.prufidentifikatorenService.getPruefis({
         'format-version': this.formatVersionOld,
@@ -69,22 +70,35 @@ export class PruefiOverviewComponent implements OnChanges {
       newPruefis: this.prufidentifikatorenService.getPruefis({
         'format-version': this.formatVersionNew,
       }),
-      diffSummary: this.ahbService.getAhbDiffSummary({
-        'format-version-new': this.formatVersionNew,
-        'format-version-old': this.formatVersionOld,
-      }),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ oldPruefis, newPruefis, diffSummary }) => {
+        next: ({ oldPruefis, newPruefis }) => {
           this.processComparison(oldPruefis, newPruefis);
-          this.diffSummary.set(diffSummary);
           this.isLoading = false;
+
+          // Load diff summary lazily in the background (for "=" badges)
+          this.loadDiffSummary();
         },
         error: error => {
           const statusText = error?.status ? ` (Status: ${error.status})` : '';
           this.errorMessage = `Fehler beim Laden der Prüfidentifikatoren für ${this.formatVersionOld} und ${this.formatVersionNew}${statusText}. Bitte versuchen Sie es später erneut.`;
           this.isLoading = false;
+        },
+      });
+  }
+
+  private loadDiffSummary(): void {
+    this.ahbService
+      .getAhbDiffSummary({
+        'format-version-new': this.formatVersionNew,
+        'format-version-old': this.formatVersionOld,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: diffSummary => this.diffSummary.set(diffSummary),
+        error: () => {
+          // Silently fail - badges are optional enhancement
         },
       });
   }
