@@ -17,12 +17,20 @@ import { AhbService, PrufidentifikatorenService } from '../../../../core/api';
 import { AhbDiffSummary } from '../../../../core/api/models';
 import { getFormatFromPruefi, getAllFormats } from '../../../../shared/utils/pruefi-format.utils';
 
+export const PruefiStatus = {
+  ADDED: 'added',
+  REMOVED: 'removed',
+  UNCHANGED: 'unchanged',
+} as const;
+
+export type PruefiStatusType = (typeof PruefiStatus)[keyof typeof PruefiStatus];
+
 interface PruefiComparison {
   pruefidentifikator: string;
   name: string;
   existsInOld: boolean;
   existsInNew: boolean;
-  status: 'added' | 'removed' | 'unchanged';
+  status: PruefiStatusType;
 }
 
 interface FormatGroup {
@@ -42,6 +50,9 @@ interface FormatGroup {
 export class PruefiOverviewComponent implements OnChanges {
   private readonly destroyRef = inject(DestroyRef);
   private readonly ahbService = inject(AhbService);
+
+  // Expose status constants to template
+  readonly PruefiStatus = PruefiStatus;
 
   @Input() formatVersionOld = '';
   @Input() formatVersionNew = '';
@@ -144,13 +155,13 @@ export class PruefiOverviewComponent implements OnChanges {
       const existsInOld = oldSet.has(pruefi);
       const existsInNew = newSet.has(pruefi);
 
-      let status: 'added' | 'removed' | 'unchanged';
+      let status: PruefiStatusType;
       if (existsInOld && existsInNew) {
-        status = 'unchanged';
+        status = PruefiStatus.UNCHANGED;
       } else if (existsInNew) {
-        status = 'added';
+        status = PruefiStatus.ADDED;
       } else {
-        status = 'removed';
+        status = PruefiStatus.REMOVED;
       }
 
       comparisons.push({
@@ -189,8 +200,8 @@ export class PruefiOverviewComponent implements OnChanges {
         return {
           format,
           pruefis,
-          addedCount: pruefis.filter(p => p.status === 'added').length,
-          removedCount: pruefis.filter(p => p.status === 'removed').length,
+          addedCount: pruefis.filter(p => p.status === PruefiStatus.ADDED).length,
+          removedCount: pruefis.filter(p => p.status === PruefiStatus.REMOVED).length,
         };
       });
 
@@ -200,8 +211,8 @@ export class PruefiOverviewComponent implements OnChanges {
         this.formatGroups.push({
           format,
           pruefis,
-          addedCount: pruefis.filter(p => p.status === 'added').length,
-          removedCount: pruefis.filter(p => p.status === 'removed').length,
+          addedCount: pruefis.filter(p => p.status === PruefiStatus.ADDED).length,
+          removedCount: pruefis.filter(p => p.status === PruefiStatus.REMOVED).length,
         });
       }
     });
@@ -209,11 +220,11 @@ export class PruefiOverviewComponent implements OnChanges {
 
   getRowClass(pruefi: PruefiComparison): string {
     switch (pruefi.status) {
-      case 'added':
+      case PruefiStatus.ADDED:
         return 'bg-hf-positive-light';
-      case 'removed':
+      case PruefiStatus.REMOVED:
         return 'bg-hf-negative-light';
-      case 'unchanged':
+      case PruefiStatus.UNCHANGED:
         if (this.hasLineChanges(pruefi.pruefidentifikator)) {
           return 'bg-hf-neutral-light';
         }
@@ -227,7 +238,7 @@ export class PruefiOverviewComponent implements OnChanges {
 
   getChangedCount(group: FormatGroup): number {
     return group.pruefis.filter(
-      p => p.status === 'unchanged' && this.hasLineChanges(p.pruefidentifikator)
+      p => p.status === PruefiStatus.UNCHANGED && this.hasLineChanges(p.pruefidentifikator)
     ).length;
   }
 

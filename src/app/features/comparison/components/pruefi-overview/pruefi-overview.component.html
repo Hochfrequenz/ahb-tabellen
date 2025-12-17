@@ -79,11 +79,11 @@
                 @for (pruefi of group.pruefis; track pruefi.pruefidentifikator) {
                   <tr class="border-b border-hf-pastell-rose" [ngClass]="getRowClass(pruefi)">
                     <td class="px-3 py-2 text-center">
-                      @if (pruefi.status === 'added') {
+                      @if (pruefi.status === PruefiStatus.ADDED) {
                         <span class="text-hf-positive-dark font-bold" title="Neu hinzugefügt"
                           >+</span
                         >
-                      } @else if (pruefi.status === 'removed') {
+                      } @else if (pruefi.status === PruefiStatus.REMOVED) {
                         <span class="text-hf-negative-dark font-bold" title="Entfernt">−</span>
                       } @else if (hasLineChanges(pruefi.pruefidentifikator)) {
                         <span class="text-hf-neutral-dark font-bold" title="Geändert">~</span>
@@ -103,12 +103,12 @@
                           rel="noopener noreferrer"
                           class="hover:underline font-semibold"
                           [ngClass]="{
-                            'text-hf-negative-dark': pruefi.status === 'removed',
+                            'text-hf-negative-dark': pruefi.status === PruefiStatus.REMOVED,
                             'text-hf-neutral-dark':
-                              pruefi.status !== 'removed' &&
+                              pruefi.status !== PruefiStatus.REMOVED &&
                               hasLineChanges(pruefi.pruefidentifikator),
                             'text-hf-dunkel-rose':
-                              pruefi.status !== 'removed' &&
+                              pruefi.status !== PruefiStatus.REMOVED &&
                               !hasLineChanges(pruefi.pruefidentifikator),
                           }"
                           title="AHB in {{ formatVersionOld }} anzeigen">
@@ -126,12 +126,12 @@
                           rel="noopener noreferrer"
                           class="hover:underline font-semibold"
                           [ngClass]="{
-                            'text-hf-positive-dark': pruefi.status === 'added',
+                            'text-hf-positive-dark': pruefi.status === PruefiStatus.ADDED,
                             'text-hf-neutral-dark':
-                              pruefi.status !== 'added' &&
+                              pruefi.status !== PruefiStatus.ADDED &&
                               hasLineChanges(pruefi.pruefidentifikator),
                             'text-hf-dunkel-rose':
-                              pruefi.status !== 'added' &&
+                              pruefi.status !== PruefiStatus.ADDED &&
                               !hasLineChanges(pruefi.pruefidentifikator),
                           }"
                           title="AHB in {{ formatVersionNew }} anzeigen">
