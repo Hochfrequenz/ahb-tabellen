@@ -27,6 +27,10 @@ router.get('/ahb/:formatVersion/:pruefi', (req, res, next) => {
   ahbController.get(req, res, next);
 });
 
+router.get('/ahb-diff-summary', (req, res, next) => {
+  ahbDiffController.getSummary(req, res, next);
+});
+
 router.get('/ahb-diff/:pruefi', (req, res, next) => {
   ahbDiffController.get(req, res, next);
 });

@@ -1,11 +1,13 @@
-import { Component, DestroyRef, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, DestroyRef, inject, Input, OnChanges, signal, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { forkJoin } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { PrufidentifikatorenService } from '../../../../core/api';
+import { AhbService, PrufidentifikatorenService } from '../../../../core/api';
+import { AhbDiffSummary } from '../../../../core/api/models';
 import { getFormatFromPruefi, getAllFormats } from '../../../../shared/utils/pruefi-format.utils';
 
 interface PruefiComparison {
@@ -26,12 +28,13 @@ interface FormatGroup {
 @Component({
   selector: 'app-pruefi-overview',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatExpansionModule, MatProgressSpinnerModule],
+  imports: [CommonModule, RouterModule, MatExpansionModule, MatProgressSpinnerModule, MatTooltipModule],
   templateUrl: './pruefi-overview.component.html',
   styleUrl: './pruefi-overview.component.scss',
 })
 export class PruefiOverviewComponent implements OnChanges {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly ahbService = inject(AhbService);
 
   @Input() formatVersionOld = '';
   @Input() formatVersionNew = '';
@@ -39,6 +42,7 @@ export class PruefiOverviewComponent implements OnChanges {
   isLoading = false;
   errorMessage: string | null = null;
   formatGroups: FormatGroup[] = [];
+  diffSummary = signal<AhbDiffSummary>({});
 
   constructor(private readonly prufidentifikatorenService: PrufidentifikatorenService) {}
 
@@ -56,6 +60,7 @@ export class PruefiOverviewComponent implements OnChanges {
   private loadComparison(): void {
     this.isLoading = true;
     this.errorMessage = null;
+    this.diffSummary.set({});
 
     forkJoin({
       oldPruefis: this.prufidentifikatorenService.getPruefis({
@@ -64,11 +69,16 @@ export class PruefiOverviewComponent implements OnChanges {
       newPruefis: this.prufidentifikatorenService.getPruefis({
         'format-version': this.formatVersionNew,
       }),
+      diffSummary: this.ahbService.getAhbDiffSummary({
+        'format-version-new': this.formatVersionNew,
+        'format-version-old': this.formatVersionOld,
+      }),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ oldPruefis, newPruefis }) => {
+        next: ({ oldPruefis, newPruefis, diffSummary }) => {
           this.processComparison(oldPruefis, newPruefis);
+          this.diffSummary.set(diffSummary);
           this.isLoading = false;
         },
         error: error => {
@@ -189,5 +199,11 @@ export class PruefiOverviewComponent implements OnChanges {
 
   hasChanges(group: FormatGroup): boolean {
     return group.addedCount > 0 || group.removedCount > 0;
+  }
+
+  hasNoLineChanges(pruefi: string): boolean {
+    const stats = this.diffSummary()[pruefi];
+    if (!stats) return false;
+    return stats.added === 0 && stats.deleted === 0 && stats.modified === 0;
   }
 }

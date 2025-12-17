@@ -134,6 +134,13 @@
                           title="Vergleich anzeigen">
                           Vergleichen
                         </a>
+                        @if (hasNoLineChanges(pruefi.pruefidentifikator)) {
+                          <span
+                            class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-gray-400 text-xs"
+                            matTooltip="Keine Unterschiede zwischen den Versionen">
+                            =
+                          </span>
+                        }
                       } @else {
                         <span class="text-gray-400">-</span>
                       }
