@@ -39,7 +39,8 @@
       "Bash(gh pr view:*)",
       "WebFetch(domain:github.com)",
       "Bash(gh auth login:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []
