@@ -24,13 +24,13 @@ export class ComparisonTableComponent {
   getRowClass(line: AhbDiffLine): string {
     switch (line.diff_status) {
       case 'added':
-        return 'bg-hf-positive text-hf-positive-dark font-bold';
+        return 'bg-hf-positive-light text-hf-positive-dark font-bold';
       case 'deleted':
-        return 'bg-hf-negative text-hf-negative-dark font-bold';
+        return 'bg-hf-negative-light text-hf-negative-dark font-bold';
       case 'modified':
-        return 'bg-hf-neutral text-hf-neutral-dark';
+        return 'bg-hf-neutral-light text-hf-neutral-dark';
       default:
-        return 'bg-white text-hf-table-text';
+        return 'bg-white text-hf-text-color';
     }
   }
 

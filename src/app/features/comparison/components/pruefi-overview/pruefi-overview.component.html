@@ -15,23 +15,23 @@
 
 <!-- Content -->
 @if (!isLoading && !errorMessage && formatGroups.length > 0) {
-  <div class="space-y-2">
+  <div>
     <mat-accordion multi>
       @for (group of formatGroups; track group.format) {
-        <mat-expansion-panel [expanded]="false">
+        <mat-expansion-panel [expanded]="false" class="mat-elevation-z0">
           <mat-expansion-panel-header>
             <mat-panel-title>
               <span class="font-semibold">{{ group.format }}</span>
               @if (hasChanges(group)) {
                 <span class="ml-2 text-sm">
                   @if (group.addedCount > 0) {
-                    <span class="text-green-600">+{{ group.addedCount }}</span>
+                    <span class="text-hf-positive">+{{ group.addedCount }}</span>
                   }
                   @if (group.addedCount > 0 && group.removedCount > 0) {
-                    <span class="text-gray-400">, </span>
+                    <span class="text-hf-text-color">, </span>
                   }
                   @if (group.removedCount > 0) {
-                    <span class="text-red-600">-{{ group.removedCount }}</span>
+                    <span class="text-hf-negative">-{{ group.removedCount }}</span>
                   }
                 </span>
               }
@@ -41,8 +41,8 @@
             </mat-panel-description>
           </mat-expansion-panel-header>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+          <div class="overflow-x-auto bg-hf-sub-header-background-color">
+            <table class="w-full text-sm bg-hf-sub-header-background-color">
               <caption class="sr-only">
                 Vergleich der Prüfidentifikatoren für
                 {{
@@ -58,7 +58,7 @@
                 }}
               </caption>
               <thead>
-                <tr class="border-b border-gray-300 bg-gray-50">
+                <tr class="border-b border-gray-300 bg-white">
                   <th class="px-3 py-2 text-left font-medium">Status</th>
                   <th class="px-3 py-2 text-left font-medium">Prüfidentifikator</th>
                   <th class="px-3 py-2 text-left font-medium">Name</th>
@@ -72,11 +72,15 @@
                   <tr class="border-b border-gray-200" [ngClass]="getRowClass(pruefi.status)">
                     <td class="px-3 py-2 text-center">
                       @if (pruefi.status === 'added') {
-                        <span class="text-green-600" title="Neu hinzugefügt">+ Neu</span>
+                        <span class="text-hf-positive-dark font-bold" title="Neu hinzugefügt"
+                          >+ Neu</span
+                        >
                       } @else if (pruefi.status === 'removed') {
-                        <span class="text-red-600" title="Entfernt">− Entfernt</span>
+                        <span class="text-hf-negative-dark font-bold" title="Entfernt"
+                          >− Entfernt</span
+                        >
                       } @else {
-                        <span class="text-gray-400" title="Unverändert">―</span>
+                        <span class="text-hf-text-color" title="Unverändert">―</span>
                       }
                     </td>
                     <td class="px-3 py-2 font-mono">{{ pruefi.pruefidentifikator }}</td>
@@ -87,7 +91,12 @@
                           [routerLink]="['/ahb', formatVersionOld, pruefi.pruefidentifikator]"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="text-hf-dunkel-rose hover:underline"
+                          class="hover:underline font-semibold"
+                          [ngClass]="
+                            pruefi.status === 'removed'
+                              ? 'text-hf-negative-dark'
+                              : 'text-hf-dunkel-rose'
+                          "
                           title="AHB in {{ formatVersionOld }} anzeigen">
                           Anzeigen
                         </a>
@@ -101,7 +110,12 @@
                           [routerLink]="['/ahb', formatVersionNew, pruefi.pruefidentifikator]"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="text-hf-dunkel-rose hover:underline"
+                          class="hover:underline font-semibold"
+                          [ngClass]="
+                            pruefi.status === 'added'
+                              ? 'text-hf-positive-dark'
+                              : 'text-hf-dunkel-rose'
+                          "
                           title="AHB in {{ formatVersionNew }} anzeigen">
                           Anzeigen
                         </a>
@@ -116,7 +130,7 @@
                           [queryParams]="{ 'fv-old': formatVersionOld, 'fv-new': formatVersionNew }"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="text-hf-dunkel-rose hover:underline font-medium"
+                          class="text-hf-dunkel-rose hover:underline font-semibold"
                           title="Vergleich anzeigen">
                           Vergleichen
                         </a>
@@ -139,7 +153,7 @@
 @if (
   !isLoading && !errorMessage && formatGroups.length === 0 && formatVersionOld && formatVersionNew
 ) {
-  <div class="text-center p-8 bg-white rounded-lg shadow-sm">
+  <div class="text-center p-8 bg-white rounded-lg">
     <p class="text-gray-500">Keine Prüfidentifikatoren gefunden.</p>
   </div>
 }

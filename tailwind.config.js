@@ -14,8 +14,7 @@ module.exports = {
         // the hf colors are defined in hochfrequenz.css
         // see: https://github.com/Hochfrequenz/companystylesheet/blob/933394932c5c97328a891c2bd3e72dbb6cecd357/css/hochfrequenz.css
         hf: {
-          // Table text
-          'table-text': '#40313E',
+          'text-color': '#40313E',
           // Greens
           'pastell-gruen': '#d5f4b9',
           'grell-gruen': '#8de040',
@@ -52,12 +51,16 @@ module.exports = {
           'grell-grau': '#c4cac1',
           'weiches-schwarz': '#25141d',
           // Semantic Colors
-          positive: '#b9cf85',
+          positive: '#679c1d',
+          'positive-light': '#b9cf85',
           'positive-dark': '#44541f',
           negative: '#ff7779',
+          'negative-light': '#ffaaac',
           'negative-dark': '#6d292b',
-          neutral: '#ffd495',
+          neutral: '#eeb663',
+          'neutral-light': '#ffd495',
           'neutral-dark': '#68491a',
+          'sub-header-background-color': '#faeeee',
         },
       },
       fontFamily: {

@@ -68,7 +68,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
       signal: this.showUnchanged,
       symbol: '=',
       title: 'Unveränderte Zeilen ein-/ausblenden',
-      colorClasses: 'bg-gray-200 text-gray-700 focus:ring-gray-400 hover:ring-gray-400',
+      colorClasses: 'bg-white text-hf-text-color focus:ring-gray-400 hover:ring-gray-400',
     },
     {
       key: 'added' as const,
@@ -76,7 +76,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
       symbol: '+',
       title: 'Hinzugefügte Zeilen ein-/ausblenden',
       colorClasses:
-        'bg-hf-positive text-hf-positive-dark focus:ring-hf-positive-dark hover:ring-hf-positive-dark',
+        'bg-hf-positive-light text-hf-positive-dark focus:ring-hf-positive-dark hover:ring-hf-positive-dark',
     },
     {
       key: 'deleted' as const,
@@ -84,7 +84,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
       symbol: '-',
       title: 'Gelöschte Zeilen ein-/ausblenden',
       colorClasses:
-        'bg-hf-negative text-hf-negative-dark focus:ring-hf-negative-dark hover:ring-hf-negative-dark',
+        'bg-hf-negative-light text-hf-negative-dark focus:ring-hf-negative-dark hover:ring-hf-negative-dark',
     },
     {
       key: 'modified' as const,
@@ -92,7 +92,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
       symbol: '~',
       title: 'Geänderte Zeilen ein-/ausblenden',
       colorClasses:
-        'bg-hf-neutral text-hf-neutral-dark focus:ring-hf-neutral-dark hover:ring-hf-neutral-dark',
+        'bg-hf-neutral-light text-hf-neutral-dark focus:ring-hf-neutral-dark hover:ring-hf-neutral-dark',
     },
   ];
 

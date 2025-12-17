@@ -276,12 +276,12 @@ describe('PruefiOverviewComponent', () => {
   });
 
   describe('getRowClass', () => {
-    it('should return bg-green-50 for added status', () => {
-      expect(component.getRowClass('added')).toBe('bg-green-50');
+    it('should return bg-hf-positive-light for added status', () => {
+      expect(component.getRowClass('added')).toBe('bg-hf-positive-light');
     });
 
-    it('should return bg-red-50 for removed status', () => {
-      expect(component.getRowClass('removed')).toBe('bg-red-50');
+    it('should return bg-hf-negative-light for removed status', () => {
+      expect(component.getRowClass('removed')).toBe('bg-hf-negative-light');
     });
 
     it('should return empty string for unchanged status', () => {

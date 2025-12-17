@@ -1,0 +1,96 @@
+// Stacked expansion panels with conditional rounded corners
+// Panels appear connected when collapsed, but separate visually when expanded
+
+$border-radius: 0.5rem;
+$background-color: #faeeee; // hf-sub-header-background-color
+$hover-color: #ebbec1; // hf-grell-rose
+
+.mat-expansion-panel {
+  // Reset all corners by default (connected/stacked look)
+  border-radius: 0 !important;
+  background-color: $background-color !important;
+
+  .mat-expansion-panel-header {
+    border-radius: 0 !important;
+    background-color: $background-color !important;
+
+    // Hover effect for collapsed panels
+    &:hover {
+      background-color: $hover-color !important;
+    }
+  }
+
+  .mat-expansion-panel-content {
+    border-radius: 0 !important;
+    background-color: $background-color !important;
+
+    .mat-expansion-panel-body {
+      background-color: $background-color !important;
+      padding: 0 !important;
+    }
+  }
+
+  // First panel: always has rounded top corners
+  &:first-child {
+    border-top-left-radius: $border-radius !important;
+    border-top-right-radius: $border-radius !important;
+
+    .mat-expansion-panel-header {
+      border-top-left-radius: $border-radius !important;
+      border-top-right-radius: $border-radius !important;
+    }
+  }
+
+  // Last panel: always has rounded bottom corners
+  &:last-child {
+    border-bottom-left-radius: $border-radius !important;
+    border-bottom-right-radius: $border-radius !important;
+
+    &:not(.mat-expanded) .mat-expansion-panel-header {
+      border-bottom-left-radius: $border-radius !important;
+      border-bottom-right-radius: $border-radius !important;
+    }
+
+    .mat-expansion-panel-content {
+      border-bottom-left-radius: $border-radius !important;
+      border-bottom-right-radius: $border-radius !important;
+    }
+  }
+
+  // Panel following an expanded panel: rounded top corners
+  .mat-expanded + & {
+    border-top-left-radius: $border-radius !important;
+    border-top-right-radius: $border-radius !important;
+
+    .mat-expansion-panel-header {
+      border-top-left-radius: $border-radius !important;
+      border-top-right-radius: $border-radius !important;
+    }
+  }
+
+  // Collapsed panel followed by expanded panel: rounded bottom corners
+  &:not(.mat-expanded):has(+ .mat-expanded) {
+    border-bottom-left-radius: $border-radius !important;
+    border-bottom-right-radius: $border-radius !important;
+
+    .mat-expansion-panel-header {
+      border-bottom-left-radius: $border-radius !important;
+      border-bottom-right-radius: $border-radius !important;
+    }
+  }
+
+  // Expanded panel: fully rounded (visually separated from other panels)
+  &.mat-expanded {
+    border-radius: $border-radius !important;
+
+    .mat-expansion-panel-header {
+      border-top-left-radius: $border-radius !important;
+      border-top-right-radius: $border-radius !important;
+    }
+
+    .mat-expansion-panel-content {
+      border-bottom-left-radius: $border-radius !important;
+      border-bottom-right-radius: $border-radius !important;
+    }
+  }
+}

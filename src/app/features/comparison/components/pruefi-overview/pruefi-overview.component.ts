@@ -28,6 +28,7 @@ interface FormatGroup {
   standalone: true,
   imports: [CommonModule, RouterModule, MatExpansionModule, MatProgressSpinnerModule],
   templateUrl: './pruefi-overview.component.html',
+  styleUrl: './pruefi-overview.component.scss',
 })
 export class PruefiOverviewComponent implements OnChanges {
   private readonly destroyRef = inject(DestroyRef);
@@ -178,9 +179,9 @@ export class PruefiOverviewComponent implements OnChanges {
   getRowClass(status: 'added' | 'removed' | 'unchanged'): string {
     switch (status) {
       case 'added':
-        return 'bg-green-50';
+        return 'bg-hf-positive-light';
       case 'removed':
-        return 'bg-red-50';
+        return 'bg-hf-negative-light';
       default:
         return '';
     }
