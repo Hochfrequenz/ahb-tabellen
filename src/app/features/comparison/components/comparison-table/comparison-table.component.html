@@ -1,20 +1,20 @@
 <div class="relative bg-hf-pastell-rose">
-  <table class="table-fixed w-full text-xs text-hf-text-color">
+  <table class="table-fixed w-full text-sm text-hf-text-color">
     <thead class="sticky top-11 z-10">
       <tr>
           <th
             [attr.colspan]="showConditionsColumn ? 7 : 6"
-            class="px-2 py-2 text-center text-sm uppercase bg-hf-grell-rose">
+            class="px-2 py-2 text-center text-base uppercase bg-hf-grell-rose">
             Alte Version ({{ formatVersionOld }})
           </th>
           <th class="w-4 bg-hf-pastell-rose"></th>
           <th
             [attr.colspan]="showConditionsColumn ? 7 : 6"
-            class="px-2 py-2 text-center text-sm uppercase bg-hf-grell-rose">
+            class="px-2 py-2 text-center text-base uppercase bg-hf-grell-rose">
             Neue Version ({{ formatVersionNew }})
           </th>
         </tr>
-        <tr class="text-xs">
+        <tr class="text-sm">
           <!-- Old version columns -->
           <th class="px-1 py-1.5 text-left bg-hf-sub-header-background-color" title="Segmentgruppe">Seg.grp</th>
           <th class="px-1 py-1.5 text-left bg-hf-sub-header-background-color" title="Segment">Segment</th>
