@@ -13,6 +13,7 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { Ahb } from '../models/ahb';
 import { AhbDiff } from '../models/ahb-diff';
+import { AhbDiffSummary } from '../models/ahb-diff-summary';
 import { getAhb$Csv } from '../fn/ahb/get-ahb-csv';
 import { GetAhb$Csv$Params } from '../fn/ahb/get-ahb-csv';
 import { getAhb$Json } from '../fn/ahb/get-ahb-json';
@@ -21,6 +22,8 @@ import { getAhb$VndOpenxmlformatsOfficedocumentSpreadsheetmlSheet } from '../fn/
 import { GetAhb$VndOpenxmlformatsOfficedocumentSpreadsheetmlSheet$Params } from '../fn/ahb/get-ahb-vnd-openxmlformats-officedocument-spreadsheetml-sheet';
 import { getAhbDiff } from '../fn/ahb/get-ahb-diff';
 import { GetAhbDiff$Params } from '../fn/ahb/get-ahb-diff';
+import { getAhbDiffSummary } from '../fn/ahb/get-ahb-diff-summary';
+import { GetAhbDiffSummary$Params } from '../fn/ahb/get-ahb-diff-summary';
 
 
 /**
@@ -122,6 +125,39 @@ export class AhbService extends BaseService {
   getAhb$Csv(params: GetAhb$Csv$Params, context?: HttpContext): Observable<Blob> {
     return this.getAhb$Csv$Response(params, context).pipe(
       map((r: StrictHttpResponse<Blob>): Blob => r.body)
+    );
+  }
+
+  /** Path part for operation `getAhbDiffSummary()` */
+  static readonly GetAhbDiffSummaryPath = '/api/ahb-diff-summary';
+
+  /**
+   * Get aggregated diff statistics for all Pruefidentifikators between two format versions.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getAhbDiffSummary()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAhbDiffSummary$Response(params: GetAhbDiffSummary$Params, context?: HttpContext): Observable<StrictHttpResponse<AhbDiffSummary>> {
+    return getAhbDiffSummary(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get aggregated diff statistics for all Pruefidentifikators between two format versions.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getAhbDiffSummary$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAhbDiffSummary(params: GetAhbDiffSummary$Params, context?: HttpContext): Observable<AhbDiffSummary> {
+    return this.getAhbDiffSummary$Response(params, context).pipe(
+      map((r: StrictHttpResponse<AhbDiffSummary>): AhbDiffSummary => r.body)
     );
   }
 

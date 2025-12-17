@@ -40,6 +40,14 @@ export interface AhbDiffResult {
   };
 }
 
+export interface AhbDiffStats {
+  added: number;
+  deleted: number;
+  modified: number;
+}
+
+export type AhbDiffSummary = Record<string, AhbDiffStats>;
+
 interface RawDiffRow {
   diff_status: string;
   changed_columns: string | null;
@@ -222,5 +230,43 @@ export default class AhbDiffRepository {
         description_old: descriptionOld ?? undefined,
       },
     };
+  }
+
+  public async getSummary(
+    formatVersionNew: string,
+    formatVersionOld: string
+  ): Promise<AhbDiffSummary> {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
+
+    const query = `
+      SELECT
+        COALESCE(new_pruefidentifikator, old_pruefidentifikator) as pruefi,
+        SUM(CASE WHEN diff_status = 'added' THEN 1 ELSE 0 END) as added,
+        SUM(CASE WHEN diff_status = 'deleted' THEN 1 ELSE 0 END) as deleted,
+        SUM(CASE WHEN diff_status = 'modified' THEN 1 ELSE 0 END) as modified
+      FROM v_ahb_diff
+      WHERE new_format_version = ? AND old_format_version = ?
+      GROUP BY COALESCE(new_pruefidentifikator, old_pruefidentifikator)
+    `;
+
+    const queryStart = performance.now();
+    const rows: { pruefi: string; added: number; deleted: number; modified: number }[] =
+      await AppDataSource.query(query, [formatVersionNew, formatVersionOld]);
+    const queryMs = performance.now() - queryStart;
+    console.log(
+      `[AhbDiff] Summary query: ${queryMs.toFixed(1)}ms, rows=${rows.length}, fvNew=${formatVersionNew}, fvOld=${formatVersionOld}`
+    );
+
+    const result: AhbDiffSummary = {};
+    for (const row of rows) {
+      result[row.pruefi] = {
+        added: row.added,
+        deleted: row.deleted,
+        modified: row.modified,
+      };
+    }
+    return result;
   }
 }

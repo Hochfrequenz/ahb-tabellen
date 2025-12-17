@@ -277,15 +277,36 @@ describe('PruefiOverviewComponent', () => {
 
   describe('getRowClass', () => {
     it('should return bg-hf-positive-light for added status', () => {
-      expect(component.getRowClass('added')).toBe('bg-hf-positive-light');
+      const pruefi = {
+        pruefidentifikator: '11001',
+        name: 'Test',
+        existsInOld: false,
+        existsInNew: true,
+        status: 'added' as const,
+      };
+      expect(component.getRowClass(pruefi)).toBe('bg-hf-positive-light');
     });
 
     it('should return bg-hf-negative-light for removed status', () => {
-      expect(component.getRowClass('removed')).toBe('bg-hf-negative-light');
+      const pruefi = {
+        pruefidentifikator: '11001',
+        name: 'Test',
+        existsInOld: true,
+        existsInNew: false,
+        status: 'removed' as const,
+      };
+      expect(component.getRowClass(pruefi)).toBe('bg-hf-negative-light');
     });
 
-    it('should return empty string for unchanged status', () => {
-      expect(component.getRowClass('unchanged')).toBe('');
+    it('should return empty string for unchanged status without line changes', () => {
+      const pruefi = {
+        pruefidentifikator: '11001',
+        name: 'Test',
+        existsInOld: true,
+        existsInNew: true,
+        status: 'unchanged' as const,
+      };
+      expect(component.getRowClass(pruefi)).toBe('');
     });
   });
 

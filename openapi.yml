@@ -155,6 +155,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DirectionValues'
+  /api/ahb-diff-summary:
+    get:
+      tags:
+        - ahb
+      summary: Get aggregated diff statistics for all Pruefidentifikators between two format versions
+      operationId: getAhbDiffSummary
+      parameters:
+        - name: format-version-new
+          in: query
+          description: The newer format version to compare
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+        - name: format-version-old
+          in: query
+          description: The older format version to compare
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AhbDiffSummary'
   /api/ahb-diff/{pruefi}:
     get:
       tags:
@@ -615,6 +641,31 @@ components:
         bedingung:
           type: string
           nullable: true
+    AhbDiffSummary:
+      type: object
+      description: Aggregated diff statistics per Pruefidentifikator
+      additionalProperties:
+        $ref: '#/components/schemas/AhbDiffStats'
+      example:
+        '11001': { added: 0, deleted: 0, modified: 0 }
+        '11002': { added: 5, deleted: 2, modified: 12 }
+    AhbDiffStats:
+      type: object
+      description: Count of changes by type for a single Pruefidentifikator
+      properties:
+        added:
+          type: integer
+          description: Number of lines added (exist only in new version)
+        deleted:
+          type: integer
+          description: Number of lines deleted (exist only in old version)
+        modified:
+          type: integer
+          description: Number of lines with content changes
+      required:
+        - added
+        - deleted
+        - modified
     Datenstand:
       type: object
       description: Latest publication date of the AHB data

@@ -27,7 +27,14 @@
       "Bash(npx tsc:*)",
       "Bash(npm install:*)",
       "WebFetch(domain:api.github.com)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git -C \"C:\\github\\ahbesser\" log --oneline -20)",
+      "Bash(git -C \"C:\\github\\ahbesser\" log --oneline feature/pruefi-overview-741 --not main)",
+      "Bash(git -C:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm view:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

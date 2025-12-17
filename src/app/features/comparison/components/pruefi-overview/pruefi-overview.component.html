@@ -69,18 +69,20 @@
               </thead>
               <tbody>
                 @for (pruefi of group.pruefis; track pruefi.pruefidentifikator) {
-                  <tr class="border-b border-gray-200" [ngClass]="getRowClass(pruefi.status)">
+                  <tr class="border-b border-gray-200" [ngClass]="getRowClass(pruefi)">
                     <td class="px-3 py-2 text-center">
                       @if (pruefi.status === 'added') {
                         <span class="text-hf-positive-dark font-bold" title="Neu hinzugefügt"
-                          >+ Neu</span
+                          >+</span
                         >
                       } @else if (pruefi.status === 'removed') {
-                        <span class="text-hf-negative-dark font-bold" title="Entfernt"
-                          >− Entfernt</span
-                        >
+                        <span class="text-hf-negative-dark font-bold" title="Entfernt">−</span>
+                      } @else if (hasLineChanges(pruefi.pruefidentifikator)) {
+                        <span class="text-hf-neutral-dark font-bold" title="Geändert">~</span>
+                      } @else if (hasNoLineChanges(pruefi.pruefidentifikator)) {
+                        <span class="text-gray-400" title="Identisch">=</span>
                       } @else {
-                        <span class="text-hf-text-color" title="Unverändert">―</span>
+                        <span class="text-hf-text-color" title="Wird geladen..."></span>
                       }
                     </td>
                     <td class="px-3 py-2 font-mono">{{ pruefi.pruefidentifikator }}</td>

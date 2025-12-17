@@ -1,11 +1,20 @@
-import { Component, DestroyRef, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  inject,
+  Input,
+  OnChanges,
+  signal,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { forkJoin } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { PrufidentifikatorenService } from '../../../../core/api';
+import { AhbService, PrufidentifikatorenService } from '../../../../core/api';
+import { AhbDiffSummary } from '../../../../core/api/models';
 import { getFormatFromPruefi, getAllFormats } from '../../../../shared/utils/pruefi-format.utils';
 
 interface PruefiComparison {
@@ -32,6 +41,7 @@ interface FormatGroup {
 })
 export class PruefiOverviewComponent implements OnChanges {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly ahbService = inject(AhbService);
 
   @Input() formatVersionOld = '';
   @Input() formatVersionNew = '';
@@ -39,6 +49,7 @@ export class PruefiOverviewComponent implements OnChanges {
   isLoading = false;
   errorMessage: string | null = null;
   formatGroups: FormatGroup[] = [];
+  diffSummary = signal<AhbDiffSummary>({});
 
   constructor(private readonly prufidentifikatorenService: PrufidentifikatorenService) {}
 
@@ -56,7 +67,9 @@ export class PruefiOverviewComponent implements OnChanges {
   private loadComparison(): void {
     this.isLoading = true;
     this.errorMessage = null;
+    this.diffSummary.set({});
 
+    // Load prüfi lists first (required for display)
     forkJoin({
       oldPruefis: this.prufidentifikatorenService.getPruefis({
         'format-version': this.formatVersionOld,
@@ -70,11 +83,29 @@ export class PruefiOverviewComponent implements OnChanges {
         next: ({ oldPruefis, newPruefis }) => {
           this.processComparison(oldPruefis, newPruefis);
           this.isLoading = false;
+
+          // Load diff summary lazily in the background (for "=" badges)
+          this.loadDiffSummary();
         },
         error: error => {
           const statusText = error?.status ? ` (Status: ${error.status})` : '';
           this.errorMessage = `Fehler beim Laden der Prüfidentifikatoren für ${this.formatVersionOld} und ${this.formatVersionNew}${statusText}. Bitte versuchen Sie es später erneut.`;
           this.isLoading = false;
+        },
+      });
+  }
+
+  private loadDiffSummary(): void {
+    this.ahbService
+      .getAhbDiffSummary({
+        'format-version-new': this.formatVersionNew,
+        'format-version-old': this.formatVersionOld,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: diffSummary => this.diffSummary.set(diffSummary),
+        error: () => {
+          // Silently fail - badges are optional enhancement
         },
       });
   }
@@ -176,18 +207,33 @@ export class PruefiOverviewComponent implements OnChanges {
     });
   }
 
-  getRowClass(status: 'added' | 'removed' | 'unchanged'): string {
-    switch (status) {
+  getRowClass(pruefi: PruefiComparison): string {
+    switch (pruefi.status) {
       case 'added':
         return 'bg-hf-positive-light';
       case 'removed':
         return 'bg-hf-negative-light';
-      default:
+      case 'unchanged':
+        if (this.hasLineChanges(pruefi.pruefidentifikator)) {
+          return 'bg-hf-neutral-light';
+        }
         return '';
     }
   }
 
   hasChanges(group: FormatGroup): boolean {
     return group.addedCount > 0 || group.removedCount > 0;
+  }
+
+  hasNoLineChanges(pruefi: string): boolean {
+    const stats = this.diffSummary()[pruefi];
+    if (!stats) return false;
+    return stats.added === 0 && stats.deleted === 0 && stats.modified === 0;
+  }
+
+  hasLineChanges(pruefi: string): boolean {
+    const stats = this.diffSummary()[pruefi];
+    if (!stats) return false;
+    return stats.added > 0 || stats.deleted > 0 || stats.modified > 0;
   }
 }
