@@ -55,13 +55,13 @@
 
       <app-search-table
         *ngIf="searchResults && !loading && !error"
-          [data]="searchResults.items || []"
-          [totalItems]="searchResults.total || 0"
-          [page]="searchResults.page || 1"
-          [pageSize]="searchResults.pageSize || 25"
-          (pageChange)="onPageChange($event)"
-          (pageSizeChange)="onPageSizeChange($event)"
-          (sortChange)="onSortChange($event)">
+        [data]="searchResults.items || []"
+        [totalItems]="searchResults.total || 0"
+        [page]="searchResults.page || 1"
+        [pageSize]="searchResults.pageSize || 25"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+        (sortChange)="onSortChange($event)">
       </app-search-table>
     </div>
 

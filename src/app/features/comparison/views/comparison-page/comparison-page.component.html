@@ -46,7 +46,8 @@
 
       <!-- Statistics / Filter Toggles (sticky directly below header) -->
       @if (stats(); as stats) {
-        <div class="sticky top-0 z-20 bg-hf-pastell-rose py-2 -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8 mb-2">
+        <div
+          class="sticky top-0 z-20 bg-hf-pastell-rose py-2 -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8 mb-2">
           <div class="flex flex-wrap items-center gap-2 text-sm">
             @for (toggle of filterToggles; track toggle.key) {
               <button
