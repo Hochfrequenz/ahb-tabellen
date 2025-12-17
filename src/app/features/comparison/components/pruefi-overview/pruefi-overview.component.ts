@@ -222,7 +222,13 @@ export class PruefiOverviewComponent implements OnChanges {
   }
 
   hasChanges(group: FormatGroup): boolean {
-    return group.addedCount > 0 || group.removedCount > 0;
+    return group.addedCount > 0 || group.removedCount > 0 || this.getChangedCount(group) > 0;
+  }
+
+  getChangedCount(group: FormatGroup): number {
+    return group.pruefis.filter(
+      p => p.status === 'unchanged' && this.hasLineChanges(p.pruefidentifikator)
+    ).length;
   }
 
   hasNoLineChanges(pruefi: string): boolean {

@@ -27,7 +27,13 @@
                   @if (group.addedCount > 0) {
                     <span class="text-hf-positive">+{{ group.addedCount }}</span>
                   }
-                  @if (group.addedCount > 0 && group.removedCount > 0) {
+                  @if (group.addedCount > 0 && getChangedCount(group) > 0) {
+                    <span class="text-hf-text-color">, </span>
+                  }
+                  @if (getChangedCount(group) > 0) {
+                    <span class="text-hf-neutral">~{{ getChangedCount(group) }}</span>
+                  }
+                  @if ((group.addedCount > 0 || getChangedCount(group) > 0) && group.removedCount > 0) {
                     <span class="text-hf-text-color">, </span>
                   }
                   @if (group.removedCount > 0) {
