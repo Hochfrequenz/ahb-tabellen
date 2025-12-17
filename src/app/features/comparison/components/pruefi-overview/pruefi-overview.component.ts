@@ -86,28 +86,31 @@ export class PruefiOverviewComponent implements OnChanges {
       signal: this.showIdentical,
       symbol: '=',
       title: 'Identische Prüfidentifikatoren anzeigen',
-      colorClasses: 'bg-gray-100 text-gray-600 border-gray-400',
+      colorClasses: 'bg-white text-hf-text-color focus:ring-gray-400 hover:ring-gray-400',
     },
     {
       key: 'added',
       signal: this.showAdded,
       symbol: '+',
       title: 'Neue Prüfidentifikatoren anzeigen',
-      colorClasses: 'bg-hf-positive-light text-hf-positive-dark border-hf-positive',
+      colorClasses:
+        'bg-hf-positive-light text-hf-positive-dark focus:ring-hf-positive-dark hover:ring-hf-positive-dark',
     },
     {
       key: 'removed',
       signal: this.showRemoved,
       symbol: '−',
       title: 'Entfernte Prüfidentifikatoren anzeigen',
-      colorClasses: 'bg-hf-negative-light text-hf-negative-dark border-hf-negative',
+      colorClasses:
+        'bg-hf-negative-light text-hf-negative-dark focus:ring-hf-negative-dark hover:ring-hf-negative-dark',
     },
     {
       key: 'changed',
       signal: this.showChanged,
       symbol: '~',
       title: 'Geänderte Prüfidentifikatoren anzeigen',
-      colorClasses: 'bg-hf-neutral-light text-hf-neutral-dark border-hf-neutral',
+      colorClasses:
+        'bg-hf-neutral-light text-hf-neutral-dark focus:ring-hf-neutral-dark hover:ring-hf-neutral-dark',
     },
   ];
 
