@@ -32,6 +32,9 @@ flowchart TD
 
 ### 📂 Project Structure
 
+This is an API first application.
+Whenever you want to change something in between frontend and backend, start by changing the [OpenAPI spec](openapi.yml) first and continue from there (`npm run ng-openapi-gen`).
+
 ```plaintext
 .
 ├── src/
