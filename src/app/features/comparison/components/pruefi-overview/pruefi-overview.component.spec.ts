@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { PruefiOverviewComponent } from './pruefi-overview.component';
+import { PruefiOverviewComponent, PruefiStatus } from './pruefi-overview.component';
 import { PrufidentifikatorenService } from '../../../../core/api';
 import { of, throwError } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -282,7 +282,7 @@ describe('PruefiOverviewComponent', () => {
         name: 'Test',
         existsInOld: false,
         existsInNew: true,
-        status: 'added' as const,
+        status: PruefiStatus.ADDED,
       };
       expect(component.getRowClass(pruefi)).toBe('bg-hf-positive-light');
     });
@@ -293,7 +293,7 @@ describe('PruefiOverviewComponent', () => {
         name: 'Test',
         existsInOld: true,
         existsInNew: false,
-        status: 'removed' as const,
+        status: PruefiStatus.REMOVED,
       };
       expect(component.getRowClass(pruefi)).toBe('bg-hf-negative-light');
     });
@@ -304,7 +304,7 @@ describe('PruefiOverviewComponent', () => {
         name: 'Test',
         existsInOld: true,
         existsInNew: true,
-        status: 'unchanged' as const,
+        status: PruefiStatus.UNCHANGED,
       };
       expect(component.getRowClass(pruefi)).toBe('');
     });

@@ -93,4 +93,9 @@ $hover-color: #ebbec1; // hf-grell-rose
       border-bottom-right-radius: $border-radius !important;
     }
   }
+
+  // Table row hover effect
+  tbody tr:hover {
+    background-color: $hover-color !important;
+  }
 }

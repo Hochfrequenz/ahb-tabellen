@@ -4,6 +4,12 @@
   cursor: pointer;
   user-select: none;
 
+  .feature-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .feature-text {
     color: var(--hf-text-color, #40313e);
     font-size: 1.25rem; // text-xl
@@ -13,18 +19,12 @@
 
   .dropdown-arrow {
     color: var(--hf-text-color, #40313e);
-    margin-left: 4px;
-    font-size: 0.75rem;
-    transition: all 0.2s ease;
-    opacity: 0;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
 
     &.open {
       transform: rotate(180deg);
     }
-  }
-
-  &:hover .dropdown-arrow {
-    opacity: 1;
   }
 
   .dropdown-menu {

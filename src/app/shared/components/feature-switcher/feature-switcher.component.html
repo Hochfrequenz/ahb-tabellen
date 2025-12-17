@@ -8,8 +8,25 @@
   [attr.aria-expanded]="isDropdownOpen"
   [attr.aria-haspopup]="true"
   aria-label="Feature switcher">
-  <span class="feature-text">{{ getCurrentFeatureLabel() }}</span>
-  <span class="dropdown-arrow" [class.open]="isDropdownOpen">▼</span>
+  <span class="feature-content">
+    <span class="feature-text">{{ getCurrentFeatureLabel() }}</span>
+    <svg
+      class="dropdown-arrow"
+      [class.open]="isDropdownOpen"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true">
+      <path
+        d="M7 10l5 5 5-5"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round" />
+    </svg>
+  </span>
 
   <div class="dropdown-menu" [class.open]="isDropdownOpen" role="menu">
     <div

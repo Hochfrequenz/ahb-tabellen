@@ -59,6 +59,7 @@ module.exports = {
           'negative-dark': '#6d292b',
           neutral: '#eeb663',
           'neutral-light': '#ffd495',
+          'neutral-semidark': '#e59e32',
           'neutral-dark': '#68491a',
           'sub-header-background-color': '#faeeee',
         },

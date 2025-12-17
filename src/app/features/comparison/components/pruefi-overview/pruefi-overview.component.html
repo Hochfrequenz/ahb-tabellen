@@ -27,7 +27,15 @@
                   @if (group.addedCount > 0) {
                     <span class="text-hf-positive">+{{ group.addedCount }}</span>
                   }
-                  @if (group.addedCount > 0 && group.removedCount > 0) {
+                  @if (group.addedCount > 0 && getChangedCount(group) > 0) {
+                    <span class="text-hf-text-color">, </span>
+                  }
+                  @if (getChangedCount(group) > 0) {
+                    <span class="text-hf-neutral-semidark">~{{ getChangedCount(group) }}</span>
+                  }
+                  @if (
+                    (group.addedCount > 0 || getChangedCount(group) > 0) && group.removedCount > 0
+                  ) {
                     <span class="text-hf-text-color">, </span>
                   }
                   @if (group.removedCount > 0) {
@@ -58,8 +66,8 @@
                 }}
               </caption>
               <thead>
-                <tr class="border-b border-gray-300 bg-white">
-                  <th class="px-3 py-2 text-left font-medium">Status</th>
+                <tr class="bg-white">
+                  <th class="px-3 py-2 text-center font-medium">Status</th>
                   <th class="px-3 py-2 text-left font-medium">Prüfidentifikator</th>
                   <th class="px-3 py-2 text-left font-medium">Name</th>
                   <th class="px-3 py-2 text-center font-medium">{{ formatVersionOld }}</th>
@@ -69,13 +77,13 @@
               </thead>
               <tbody>
                 @for (pruefi of group.pruefis; track pruefi.pruefidentifikator) {
-                  <tr class="border-b border-gray-200" [ngClass]="getRowClass(pruefi)">
+                  <tr class="border-b border-hf-pastell-rose" [ngClass]="getRowClass(pruefi)">
                     <td class="px-3 py-2 text-center">
-                      @if (pruefi.status === 'added') {
+                      @if (pruefi.status === PruefiStatus.ADDED) {
                         <span class="text-hf-positive-dark font-bold" title="Neu hinzugefügt"
                           >+</span
                         >
-                      } @else if (pruefi.status === 'removed') {
+                      } @else if (pruefi.status === PruefiStatus.REMOVED) {
                         <span class="text-hf-negative-dark font-bold" title="Entfernt">−</span>
                       } @else if (hasLineChanges(pruefi.pruefidentifikator)) {
                         <span class="text-hf-neutral-dark font-bold" title="Geändert">~</span>
@@ -94,11 +102,15 @@
                           target="_blank"
                           rel="noopener noreferrer"
                           class="hover:underline font-semibold"
-                          [ngClass]="
-                            pruefi.status === 'removed'
-                              ? 'text-hf-negative-dark'
-                              : 'text-hf-dunkel-rose'
-                          "
+                          [ngClass]="{
+                            'text-hf-negative-dark': pruefi.status === PruefiStatus.REMOVED,
+                            'text-hf-neutral-dark':
+                              pruefi.status !== PruefiStatus.REMOVED &&
+                              hasLineChanges(pruefi.pruefidentifikator),
+                            'text-hf-dunkel-rose':
+                              pruefi.status !== PruefiStatus.REMOVED &&
+                              !hasLineChanges(pruefi.pruefidentifikator),
+                          }"
                           title="AHB in {{ formatVersionOld }} anzeigen">
                           Anzeigen
                         </a>
@@ -113,11 +125,15 @@
                           target="_blank"
                           rel="noopener noreferrer"
                           class="hover:underline font-semibold"
-                          [ngClass]="
-                            pruefi.status === 'added'
-                              ? 'text-hf-positive-dark'
-                              : 'text-hf-dunkel-rose'
-                          "
+                          [ngClass]="{
+                            'text-hf-positive-dark': pruefi.status === PruefiStatus.ADDED,
+                            'text-hf-neutral-dark':
+                              pruefi.status !== PruefiStatus.ADDED &&
+                              hasLineChanges(pruefi.pruefidentifikator),
+                            'text-hf-dunkel-rose':
+                              pruefi.status !== PruefiStatus.ADDED &&
+                              !hasLineChanges(pruefi.pruefidentifikator),
+                          }"
                           title="AHB in {{ formatVersionNew }} anzeigen">
                           Anzeigen
                         </a>
@@ -132,7 +148,11 @@
                           [queryParams]="{ 'fv-old': formatVersionOld, 'fv-new': formatVersionNew }"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="text-hf-dunkel-rose hover:underline font-semibold"
+                          class="hover:underline font-semibold"
+                          [ngClass]="{
+                            'text-hf-neutral-dark': hasLineChanges(pruefi.pruefidentifikator),
+                            'text-hf-dunkel-rose': !hasLineChanges(pruefi.pruefidentifikator),
+                          }"
                           title="Vergleich anzeigen">
                           Vergleichen
                         </a>
