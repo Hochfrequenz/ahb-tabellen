@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { forkJoin } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AhbService, PrufidentifikatorenService } from '../../../../core/api';
@@ -28,7 +27,7 @@ interface FormatGroup {
 @Component({
   selector: 'app-pruefi-overview',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatExpansionModule, MatProgressSpinnerModule, MatTooltipModule],
+  imports: [CommonModule, RouterModule, MatExpansionModule, MatProgressSpinnerModule],
   templateUrl: './pruefi-overview.component.html',
   styleUrl: './pruefi-overview.component.scss',
 })
@@ -219,5 +218,11 @@ export class PruefiOverviewComponent implements OnChanges {
     const stats = this.diffSummary()[pruefi];
     if (!stats) return false;
     return stats.added === 0 && stats.deleted === 0 && stats.modified === 0;
+  }
+
+  hasLineChanges(pruefi: string): boolean {
+    const stats = this.diffSummary()[pruefi];
+    if (!stats) return false;
+    return stats.added > 0 || stats.deleted > 0 || stats.modified > 0;
   }
 }

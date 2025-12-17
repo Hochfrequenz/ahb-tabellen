@@ -73,14 +73,22 @@
                     <td class="px-3 py-2 text-center">
                       @if (pruefi.status === 'added') {
                         <span class="text-hf-positive-dark font-bold" title="Neu hinzugefügt"
-                          >+ Neu</span
+                          >+</span
                         >
                       } @else if (pruefi.status === 'removed') {
                         <span class="text-hf-negative-dark font-bold" title="Entfernt"
-                          >− Entfernt</span
+                          >−</span
+                        >
+                      } @else if (hasLineChanges(pruefi.pruefidentifikator)) {
+                        <span class="text-hf-neutral-dark font-bold" title="Geändert"
+                          >~</span
+                        >
+                      } @else if (hasNoLineChanges(pruefi.pruefidentifikator)) {
+                        <span class="text-gray-400" title="Identisch"
+                          >=</span
                         >
                       } @else {
-                        <span class="text-hf-text-color" title="Unverändert">―</span>
+                        <span class="text-gray-400" title="Wird geladen..."></span>
                       }
                     </td>
                     <td class="px-3 py-2 font-mono">{{ pruefi.pruefidentifikator }}</td>
@@ -134,19 +142,6 @@
                           title="Vergleich anzeigen">
                           Vergleichen
                         </a>
-                        @if (hasNoLineChanges(pruefi.pruefidentifikator)) {
-                          <span
-                            class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-gray-400 text-xs"
-                            matTooltip="Keine Unterschiede zwischen den Versionen">
-                            =
-                          </span>
-                        } @else {
-                          <span
-                            class="ml-1 inline-flex items-center justify-center w-5 h-5 invisible"
-                            aria-hidden="true">
-                            =
-                          </span>
-                        }
                       } @else {
                         <span class="text-gray-400">-</span>
                       }
