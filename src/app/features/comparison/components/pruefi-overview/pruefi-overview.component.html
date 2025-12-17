@@ -17,7 +17,7 @@
 @if (!isLoading && !errorMessage && formatGroups().length > 0) {
   <div>
     <!-- Filter Toggles (sticky below header) -->
-    <div class="sticky top-0 z-10 bg-hf-pastell-rose py-2 -mx-4 px-4 md:-mx-6 md:px-6 mb-2">
+    <div class="sticky top-0 z-10 bg-hf-pastell-rose py-2 mb-2">
       <div class="flex flex-wrap items-center gap-2 text-sm">
         @for (toggle of filterToggles; track toggle.key) {
           <button
