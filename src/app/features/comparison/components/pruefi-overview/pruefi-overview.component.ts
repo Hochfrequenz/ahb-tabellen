@@ -1,11 +1,13 @@
 import {
   Component,
+  computed,
   DestroyRef,
   inject,
   Input,
   OnChanges,
   signal,
   SimpleChanges,
+  WritableSignal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -40,6 +42,16 @@ interface FormatGroup {
   removedCount: number;
 }
 
+type FilterKey = 'added' | 'removed' | 'changed' | 'identical';
+
+interface FilterToggle {
+  key: FilterKey;
+  signal: WritableSignal<boolean>;
+  symbol: string;
+  title: string;
+  colorClasses: string;
+}
+
 @Component({
   selector: 'app-pruefi-overview',
   standalone: true,
@@ -61,6 +73,67 @@ export class PruefiOverviewComponent implements OnChanges {
   errorMessage: string | null = null;
   formatGroups: FormatGroup[] = [];
   diffSummary = signal<AhbDiffSummary>({});
+
+  // Filter visibility states
+  showAdded = signal(true);
+  showRemoved = signal(true);
+  showChanged = signal(true);
+  showIdentical = signal(true);
+
+  readonly filterToggles: FilterToggle[] = [
+    {
+      key: 'identical',
+      signal: this.showIdentical,
+      symbol: '=',
+      title: 'Identische Prüfidentifikatoren anzeigen',
+      colorClasses: 'bg-gray-100 text-gray-600 border-gray-400',
+    },
+    {
+      key: 'added',
+      signal: this.showAdded,
+      symbol: '+',
+      title: 'Neue Prüfidentifikatoren anzeigen',
+      colorClasses: 'bg-hf-positive-light text-hf-positive-dark border-hf-positive',
+    },
+    {
+      key: 'removed',
+      signal: this.showRemoved,
+      symbol: '−',
+      title: 'Entfernte Prüfidentifikatoren anzeigen',
+      colorClasses: 'bg-hf-negative-light text-hf-negative-dark border-hf-negative',
+    },
+    {
+      key: 'changed',
+      signal: this.showChanged,
+      symbol: '~',
+      title: 'Geänderte Prüfidentifikatoren anzeigen',
+      colorClasses: 'bg-hf-neutral-light text-hf-neutral-dark border-hf-neutral',
+    },
+  ];
+
+  // Computed stats for filter counts
+  readonly stats = computed(() => {
+    let added = 0;
+    let removed = 0;
+    let changed = 0;
+    let identical = 0;
+
+    for (const group of this.formatGroups) {
+      for (const pruefi of group.pruefis) {
+        if (pruefi.status === PruefiStatus.ADDED) {
+          added++;
+        } else if (pruefi.status === PruefiStatus.REMOVED) {
+          removed++;
+        } else if (this.hasLineChanges(pruefi.pruefidentifikator)) {
+          changed++;
+        } else if (this.hasNoLineChanges(pruefi.pruefidentifikator)) {
+          identical++;
+        }
+      }
+    }
+
+    return { added, removed, changed, identical };
+  });
 
   constructor(private readonly prufidentifikatorenService: PrufidentifikatorenService) {}
 
@@ -252,5 +325,39 @@ export class PruefiOverviewComponent implements OnChanges {
     const stats = this.diffSummary()[pruefi];
     if (!stats) return false;
     return stats.added > 0 || stats.deleted > 0 || stats.modified > 0;
+  }
+
+  toggleFilter(toggle: FilterToggle): void {
+    toggle.signal.update(v => !v);
+  }
+
+  getFilterCount(key: FilterKey): number {
+    return this.stats()[key];
+  }
+
+  isPruefiVisible(pruefi: PruefiComparison): boolean {
+    if (pruefi.status === PruefiStatus.ADDED) {
+      return this.showAdded();
+    }
+    if (pruefi.status === PruefiStatus.REMOVED) {
+      return this.showRemoved();
+    }
+    // For unchanged status, check if it has line changes
+    if (this.hasLineChanges(pruefi.pruefidentifikator)) {
+      return this.showChanged();
+    }
+    if (this.hasNoLineChanges(pruefi.pruefidentifikator)) {
+      return this.showIdentical();
+    }
+    // If diff summary not loaded yet, show by default
+    return true;
+  }
+
+  getFilteredPruefis(group: FormatGroup): PruefiComparison[] {
+    return group.pruefis.filter(pruefi => this.isPruefiVisible(pruefi));
+  }
+
+  getFilteredCount(group: FormatGroup): number {
+    return this.getFilteredPruefis(group).length;
   }
 }
