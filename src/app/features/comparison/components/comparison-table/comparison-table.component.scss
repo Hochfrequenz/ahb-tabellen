@@ -1,0 +1,8 @@
+/*
+ * Sticky header positioning for comparison table.
+ * The top offset must match the filter bar height defined in styles.scss.
+ * See --comparison-filter-height documentation for calculation details.
+ */
+.sticky-header {
+  top: var(--comparison-filter-height);
+}
