@@ -49,7 +49,7 @@ describe('PruefiOverviewComponent', () => {
     });
 
     it('should have empty formatGroups initially', () => {
-      expect(component.formatGroups).toEqual([]);
+      expect(component.formatGroups()).toEqual([]);
     });
 
     it('should not be loading initially', () => {
@@ -141,7 +141,7 @@ describe('PruefiOverviewComponent', () => {
       expect(component.errorMessage).toContain('Fehler beim Laden der Prüfidentifikatoren');
       expect(component.errorMessage).toContain('FV2410');
       expect(component.errorMessage).toContain('FV2504');
-      expect(component.formatGroups).toEqual([]);
+      expect(component.formatGroups()).toEqual([]);
     }));
   });
 
@@ -162,7 +162,7 @@ describe('PruefiOverviewComponent', () => {
       tick();
 
       // Should have UTILMD and MSCONS groups
-      const formatNames = component.formatGroups.map(g => g.format);
+      const formatNames = component.formatGroups().map(g => g.format);
       expect(formatNames).toContain('UTILMD');
       expect(formatNames).toContain('MSCONS');
     }));
@@ -173,7 +173,7 @@ describe('PruefiOverviewComponent', () => {
       fixture.detectChanges();
       tick();
 
-      const utilmdGroup = component.formatGroups.find(g => g.format === 'UTILMD');
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD');
       expect(utilmdGroup).toBeDefined();
 
       // 11003 is added (exists in new, not in old)
@@ -190,7 +190,7 @@ describe('PruefiOverviewComponent', () => {
       fixture.detectChanges();
       tick();
 
-      const utilmdGroup = component.formatGroups.find(g => g.format === 'UTILMD');
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD');
       expect(utilmdGroup).toBeDefined();
 
       // 11002 is removed (exists in old, not in new)
@@ -207,7 +207,7 @@ describe('PruefiOverviewComponent', () => {
       fixture.detectChanges();
       tick();
 
-      const utilmdGroup = component.formatGroups.find(g => g.format === 'UTILMD');
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD');
       expect(utilmdGroup).toBeDefined();
 
       // 11001 is unchanged (exists in both)
@@ -224,7 +224,7 @@ describe('PruefiOverviewComponent', () => {
       fixture.detectChanges();
       tick();
 
-      const utilmdGroup = component.formatGroups.find(g => g.format === 'UTILMD');
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD');
       expect(utilmdGroup).toBeDefined();
       expect(utilmdGroup!.addedCount).toBe(1); // 11003
       expect(utilmdGroup!.removedCount).toBe(1); // 11002
@@ -236,7 +236,7 @@ describe('PruefiOverviewComponent', () => {
       fixture.detectChanges();
       tick();
 
-      const utilmdGroup = component.formatGroups.find(g => g.format === 'UTILMD');
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD');
       const pruefi11001 = utilmdGroup!.pruefis.find(p => p.pruefidentifikator === '11001');
       expect(pruefi11001!.name).toBe('UTILMD Pruefi 1 Updated');
     }));
@@ -247,7 +247,7 @@ describe('PruefiOverviewComponent', () => {
       fixture.detectChanges();
       tick();
 
-      const utilmdGroup = component.formatGroups.find(g => g.format === 'UTILMD');
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD');
       const pruefis = utilmdGroup!.pruefis.map(p => p.pruefidentifikator);
       expect(pruefis).toEqual(['11001', '11002', '11003']);
     }));
@@ -269,7 +269,7 @@ describe('PruefiOverviewComponent', () => {
       tick();
 
       // Should only have 1 pruefi (11001), undefined should be filtered out
-      const utilmdGroup = component.formatGroups.find(g => g.format === 'UTILMD');
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD');
       expect(utilmdGroup!.pruefis.length).toBe(1);
       expect(utilmdGroup!.pruefis[0].pruefidentifikator).toBe('11001');
     }));
@@ -330,5 +330,201 @@ describe('PruefiOverviewComponent', () => {
       const group = { format: 'UTILMD', pruefis: [], addedCount: 0, removedCount: 0 };
       expect(component.hasChanges(group)).toBe(false);
     });
+  });
+
+  describe('toggleFilter', () => {
+    it('should toggle showAdded signal', () => {
+      expect(component.showAdded()).toBe(true);
+      component.toggleFilter(component.filterToggles.find(t => t.key === 'added')!);
+      expect(component.showAdded()).toBe(false);
+      component.toggleFilter(component.filterToggles.find(t => t.key === 'added')!);
+      expect(component.showAdded()).toBe(true);
+    });
+
+    it('should toggle showRemoved signal', () => {
+      expect(component.showRemoved()).toBe(true);
+      component.toggleFilter(component.filterToggles.find(t => t.key === 'removed')!);
+      expect(component.showRemoved()).toBe(false);
+    });
+
+    it('should toggle showChanged signal', () => {
+      expect(component.showChanged()).toBe(true);
+      component.toggleFilter(component.filterToggles.find(t => t.key === 'changed')!);
+      expect(component.showChanged()).toBe(false);
+    });
+
+    it('should toggle showIdentical signal', () => {
+      expect(component.showIdentical()).toBe(true);
+      component.toggleFilter(component.filterToggles.find(t => t.key === 'identical')!);
+      expect(component.showIdentical()).toBe(false);
+    });
+  });
+
+  describe('isPruefiVisible', () => {
+    it('should return showAdded value for ADDED status', () => {
+      const pruefi = {
+        pruefidentifikator: '11001',
+        name: 'Test',
+        existsInOld: false,
+        existsInNew: true,
+        status: PruefiStatus.ADDED,
+      };
+
+      expect(component.isPruefiVisible(pruefi)).toBe(true);
+      component.showAdded.set(false);
+      expect(component.isPruefiVisible(pruefi)).toBe(false);
+    });
+
+    it('should return showRemoved value for REMOVED status', () => {
+      const pruefi = {
+        pruefidentifikator: '11001',
+        name: 'Test',
+        existsInOld: true,
+        existsInNew: false,
+        status: PruefiStatus.REMOVED,
+      };
+
+      expect(component.isPruefiVisible(pruefi)).toBe(true);
+      component.showRemoved.set(false);
+      expect(component.isPruefiVisible(pruefi)).toBe(false);
+    });
+
+    it('should return true for UNCHANGED when diff summary not loaded', () => {
+      const pruefi = {
+        pruefidentifikator: '11001',
+        name: 'Test',
+        existsInOld: true,
+        existsInNew: true,
+        status: PruefiStatus.UNCHANGED,
+      };
+
+      // No diff summary loaded - should show by default
+      expect(component.isPruefiVisible(pruefi)).toBe(true);
+    });
+
+    it('should return showChanged value for UNCHANGED with line changes', () => {
+      const pruefi = {
+        pruefidentifikator: '11001',
+        name: 'Test',
+        existsInOld: true,
+        existsInNew: true,
+        status: PruefiStatus.UNCHANGED,
+      };
+
+      // Set diff summary with changes
+      component.diffSummary.set({ '11001': { added: 1, deleted: 0, modified: 0 } });
+
+      expect(component.isPruefiVisible(pruefi)).toBe(true);
+      component.showChanged.set(false);
+      expect(component.isPruefiVisible(pruefi)).toBe(false);
+    });
+
+    it('should return showIdentical value for UNCHANGED without line changes', () => {
+      const pruefi = {
+        pruefidentifikator: '11001',
+        name: 'Test',
+        existsInOld: true,
+        existsInNew: true,
+        status: PruefiStatus.UNCHANGED,
+      };
+
+      // Set diff summary without changes
+      component.diffSummary.set({ '11001': { added: 0, deleted: 0, modified: 0 } });
+
+      expect(component.isPruefiVisible(pruefi)).toBe(true);
+      component.showIdentical.set(false);
+      expect(component.isPruefiVisible(pruefi)).toBe(false);
+    });
+  });
+
+  describe('getFilteredPruefis', () => {
+    it('should return all pruefis when all filters are enabled', fakeAsync(() => {
+      mockPrufidentifikatorenService.getPruefis.mockImplementation(params => {
+        if (params['format-version'] === 'FV2410') {
+          return of(mockOldPruefis);
+        }
+        return of(mockNewPruefis);
+      });
+
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
+      fixture.detectChanges();
+      tick();
+
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD')!;
+      const filtered = component.getFilteredPruefis(utilmdGroup);
+
+      // All 3 pruefis should be visible (11001 unchanged, 11002 removed, 11003 added)
+      expect(filtered.length).toBe(3);
+    }));
+
+    it('should filter out added pruefis when showAdded is false', fakeAsync(() => {
+      mockPrufidentifikatorenService.getPruefis.mockImplementation(params => {
+        if (params['format-version'] === 'FV2410') {
+          return of(mockOldPruefis);
+        }
+        return of(mockNewPruefis);
+      });
+
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
+      fixture.detectChanges();
+      tick();
+
+      component.showAdded.set(false);
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD')!;
+      const filtered = component.getFilteredPruefis(utilmdGroup);
+
+      // 11003 (added) should be filtered out
+      expect(filtered.find(p => p.pruefidentifikator === '11003')).toBeUndefined();
+      expect(filtered.length).toBe(2);
+    }));
+
+    it('should filter out removed pruefis when showRemoved is false', fakeAsync(() => {
+      mockPrufidentifikatorenService.getPruefis.mockImplementation(params => {
+        if (params['format-version'] === 'FV2410') {
+          return of(mockOldPruefis);
+        }
+        return of(mockNewPruefis);
+      });
+
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
+      fixture.detectChanges();
+      tick();
+
+      component.showRemoved.set(false);
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD')!;
+      const filtered = component.getFilteredPruefis(utilmdGroup);
+
+      // 11002 (removed) should be filtered out
+      expect(filtered.find(p => p.pruefidentifikator === '11002')).toBeUndefined();
+      expect(filtered.length).toBe(2);
+    }));
+  });
+
+  describe('getFilteredCount', () => {
+    it('should return count of visible pruefis', fakeAsync(() => {
+      mockPrufidentifikatorenService.getPruefis.mockImplementation(params => {
+        if (params['format-version'] === 'FV2410') {
+          return of(mockOldPruefis);
+        }
+        return of(mockNewPruefis);
+      });
+
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
+      fixture.detectChanges();
+      tick();
+
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD')!;
+      expect(component.getFilteredCount(utilmdGroup)).toBe(3);
+
+      component.showAdded.set(false);
+      expect(component.getFilteredCount(utilmdGroup)).toBe(2);
+
+      component.showRemoved.set(false);
+      expect(component.getFilteredCount(utilmdGroup)).toBe(1);
+    }));
   });
 });

@@ -14,7 +14,7 @@
 }
 
 <!-- Content -->
-@if (!isLoading && !errorMessage && formatGroups.length > 0) {
+@if (!isLoading && !errorMessage && formatGroups().length > 0) {
   <div>
     <!-- Filter Toggles -->
     <div class="flex flex-wrap items-center gap-2 text-sm mb-4">
@@ -23,7 +23,7 @@
           type="button"
           (click)="toggleFilter(toggle)"
           [class.opacity-40]="!toggle.signal()"
-          class="px-3 py-1.5 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
+          class="px-3 py-1.5 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2 hover:ring-offset-1"
           [ngClass]="toggle.colorClasses"
           [attr.aria-pressed]="toggle.signal() ? 'true' : 'false'"
           [attr.aria-label]="toggle.title"
@@ -34,7 +34,7 @@
     </div>
 
     <mat-accordion multi>
-      @for (group of formatGroups; track group.format) {
+      @for (group of formatGroups(); track group.format) {
         <mat-expansion-panel [expanded]="false" class="mat-elevation-z0">
           <mat-expansion-panel-header>
             <mat-panel-title>
@@ -190,7 +190,7 @@
 
 <!-- Empty State -->
 @if (
-  !isLoading && !errorMessage && formatGroups.length === 0 && formatVersionOld && formatVersionNew
+  !isLoading && !errorMessage && formatGroups().length === 0 && formatVersionOld && formatVersionNew
 ) {
   <div class="text-center p-8 bg-white rounded-lg">
     <p class="text-gray-500">Keine Prüfidentifikatoren gefunden.</p>
