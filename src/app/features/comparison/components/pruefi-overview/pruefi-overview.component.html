@@ -64,7 +64,7 @@
                   <th class="px-3 py-2 text-left font-medium">Name</th>
                   <th class="px-3 py-2 text-center font-medium">{{ formatVersionOld }}</th>
                   <th class="px-3 py-2 text-center font-medium">{{ formatVersionNew }}</th>
-                  <th class="px-3 py-2 text-center font-medium">Vergleichen</th>
+                  <th class="px-3 py-2 text-left font-medium">Vergleichen</th>
                 </tr>
               </thead>
               <tbody>
@@ -123,7 +123,7 @@
                         <span class="text-gray-400">-</span>
                       }
                     </td>
-                    <td class="px-3 py-2 text-center">
+                    <td class="px-3 py-2 text-left">
                       @if (pruefi.existsInOld && pruefi.existsInNew) {
                         <a
                           [routerLink]="['/compare', pruefi.pruefidentifikator]"
