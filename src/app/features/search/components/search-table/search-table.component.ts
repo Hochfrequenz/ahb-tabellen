@@ -58,7 +58,11 @@ export class SearchTableComponent implements OnChanges {
   }
 
   onPageChange(event: PageEvent): void {
-    this.pageChange.emit(event);
+    if (event.pageSize !== this.pageSize) {
+      this.pageSizeChange.emit(event);
+    } else {
+      this.pageChange.emit(event);
+    }
   }
 
   onSortChange(event: Sort): void {
