@@ -125,6 +125,30 @@ describe('SearchTableComponent', () => {
     });
   });
 
+  describe('onPageChange', () => {
+    it('should emit pageChange when only page index changes', () => {
+      const pageChangeSpy = jest.spyOn(component.pageChange, 'emit');
+      const pageSizeChangeSpy = jest.spyOn(component.pageSizeChange, 'emit');
+
+      const event = { pageIndex: 2, pageSize: 25, length: 100 };
+      component.onPageChange(event);
+
+      expect(pageChangeSpy).toHaveBeenCalledWith(event);
+      expect(pageSizeChangeSpy).not.toHaveBeenCalled();
+    });
+
+    it('should emit pageSizeChange when pageSize changes', () => {
+      const pageChangeSpy = jest.spyOn(component.pageChange, 'emit');
+      const pageSizeChangeSpy = jest.spyOn(component.pageSizeChange, 'emit');
+
+      const event = { pageIndex: 0, pageSize: 50, length: 100 };
+      component.onPageChange(event);
+
+      expect(pageSizeChangeSpy).toHaveBeenCalledWith(event);
+      expect(pageChangeSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('onPruefidentifikatorClick', () => {
     let windowOpenSpy: jest.SpyInstance;
 
