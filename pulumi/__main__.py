@@ -114,3 +114,10 @@ web_app = azure_native.web.WebApp(
 
 # Export the endpoint of the web app
 pulumi.export("endpoint", web_app.default_host_name)
+
+# --- Auth0 Configuration ---
+# Manages database connection and Azure AD SSO connections.
+# See AUTH0_SETUP.md for prerequisites and how to add new customer AD tenants.
+from auth0_config import configure_auth0
+
+configure_auth0()
