@@ -193,9 +193,12 @@ export default class AHBRepository {
           );
         }
         if (value.contains !== undefined) {
-          queryBuilder.andWhere(`${unicodeLower('al.' + columnName)} LIKE :${paramBase}_contains ESCAPE '\\'`, {
-            [`${paramBase}_contains`]: convertToLikePattern(value.contains),
-          });
+          queryBuilder.andWhere(
+            `${unicodeLower('al.' + columnName)} LIKE :${paramBase}_contains ESCAPE '\\'`,
+            {
+              [`${paramBase}_contains`]: convertToLikePattern(value.contains),
+            }
+          );
         }
         if (value.startsWith !== undefined) {
           queryBuilder.andWhere(`${unicodeLower('al.' + columnName)} LIKE :${paramBase}_starts`, {
