@@ -73,6 +73,7 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
       [new Date('2025-06-05T22:00:00Z'), 'FV2410'],
       [new Date('2025-09-30T22:00:00Z'), 'FV2504'],
       [new Date('2026-03-31T22:00:00Z'), 'FV2510'],
+      [new Date('2026-09-30T22:00:00Z'), 'FV2604'],
     ];
 
     for (const [thresholdDate, version] of formatVersionThresholds) {
@@ -81,7 +82,7 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
       }
     }
 
-    return 'FV2510';
+    return 'FV2604';
   }
   writeValue(formatVersion: string): void {
     this.control.setValue(formatVersion);
@@ -116,6 +117,7 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
       FV2504: 'Juni 2025 (FV2504)',
       FV2510: 'Oktober 2025 (FV2510)',
       FV2604: 'April 2026 (FV2604)',
+      FV2610: 'Oktober 2026 (FV2610)',
     };
     return mapping[formatVersion] || formatVersion;
   }
