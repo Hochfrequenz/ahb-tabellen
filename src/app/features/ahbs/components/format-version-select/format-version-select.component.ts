@@ -74,6 +74,7 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
       [new Date('2025-09-30T22:00:00Z'), 'FV2504'],
       [new Date('2026-03-31T22:00:00Z'), 'FV2510'],
       [new Date('2026-09-30T22:00:00Z'), 'FV2604'],
+      [new Date('2027-03-31T22:00:00Z'), 'FV2610'],
     ];
 
     for (const [thresholdDate, version] of formatVersionThresholds) {
