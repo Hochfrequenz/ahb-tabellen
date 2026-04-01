@@ -105,6 +105,15 @@ export default class AHBRepository {
       return field;
     };
 
+    // SQLite's LOWER() only handles ASCII — LOWER('Ä') returns 'Ä', not 'ä'.
+    // We wrap with REPLACE to normalize German umlauts so that case-insensitive
+    // search works for both 'Änderung' and 'änderung'.
+    // The JS side uses .toLowerCase() which handles Unicode correctly, so both sides
+    // produce consistent lowercase output including umlauts.
+    // See: https://github.com/Hochfrequenz/ahb-tabellen/issues/790
+    const unicodeLower = (expr: string): string =>
+      `REPLACE(REPLACE(REPLACE(LOWER(${expr}), 'Ä', 'ä'), 'Ö', 'ö'), 'Ü', 'ü')`;
+
     // Helper function to convert user wildcard patterns to SQL LIKE patterns
     // - If user enters "*", replace with "%" for SQL wildcard
     // - If no "*" is present, wrap with "%" for implicit substring matching
@@ -184,17 +193,20 @@ export default class AHBRepository {
           );
         }
         if (value.contains !== undefined) {
-          queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_contains ESCAPE '\\'`, {
-            [`${paramBase}_contains`]: convertToLikePattern(value.contains),
-          });
+          queryBuilder.andWhere(
+            `${unicodeLower('al.' + columnName)} LIKE :${paramBase}_contains ESCAPE '\\'`,
+            {
+              [`${paramBase}_contains`]: convertToLikePattern(value.contains),
+            }
+          );
         }
         if (value.startsWith !== undefined) {
-          queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_starts`, {
+          queryBuilder.andWhere(`${unicodeLower('al.' + columnName)} LIKE :${paramBase}_starts`, {
             [`${paramBase}_starts`]: `${value.startsWith.toLowerCase()}%`,
           });
         }
         if (value.endsWith !== undefined) {
-          queryBuilder.andWhere(`LOWER(al.${columnName}) LIKE :${paramBase}_ends`, {
+          queryBuilder.andWhere(`${unicodeLower('al.' + columnName)} LIKE :${paramBase}_ends`, {
             [`${paramBase}_ends`]: `%${value.endsWith.toLowerCase()}`,
           });
         }
@@ -261,7 +273,7 @@ export default class AHBRepository {
         // Include ESCAPE clause for SQLite to recognize backslash as escape character
         const orConditions = qFields.map((field, idx) => {
           const columnName = validateField(field);
-          return `LOWER(al.${columnName}) LIKE :q${idx} ESCAPE '\\'`;
+          return `${unicodeLower('al.' + columnName)} LIKE :q${idx} ESCAPE '\\'`;
         });
 
         const params = Object.fromEntries(qFields.map((_, idx) => [`q${idx}`, likePattern]));
