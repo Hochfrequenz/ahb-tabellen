@@ -368,7 +368,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should use "44%" pattern (starts with 44)
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
         expect.objectContaining({ q0: '44%' })
       );
     });
@@ -384,7 +384,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should use "%foo" pattern (ends with foo)
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
         expect.objectContaining({ q0: '%foo' })
       );
     });
@@ -400,7 +400,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should use "Konfig%-ID" pattern
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
         expect.objectContaining({ q0: 'konfig%-id' })
       );
     });
@@ -416,7 +416,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should convert all * to %
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
         expect.objectContaining({ q0: '%foo%bar%' })
       );
     });
@@ -432,7 +432,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should use "%foo%" pattern (substring match - backward compatible)
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
         expect.objectContaining({ q0: '%foo%' })
       );
     });
@@ -448,7 +448,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should escape % as \% and convert * to %
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
         expect.objectContaining({ q0: '100\\%%' })
       );
     });
@@ -464,7 +464,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should escape _ as \_ (SQL single char wildcard) and convert * to %
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
         expect.objectContaining({ q0: 'foo\\_bar%' })
       );
     });
@@ -480,7 +480,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should lowercase the pattern
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
         expect.objectContaining({ q0: 'foo%bar' })
       );
     });
@@ -500,7 +500,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should use "44%" pattern (starts with 44)
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.pruefidentifikator) LIKE'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.pruefidentifikator)'),
         expect.objectContaining({ f_pruefidentifikator_contains: '44%' })
       );
     });
@@ -518,7 +518,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should use "%44%" pattern (substring match)
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.pruefidentifikator) LIKE'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.pruefidentifikator)'),
         expect.objectContaining({ f_pruefidentifikator_contains: '%44%' })
       );
     });
@@ -536,7 +536,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should escape % as \%, _ as \_, and convert * to %
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.line_name) LIKE'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.line_name)'),
         expect.objectContaining({ f_line_name_contains: '100\\%\\_test%' })
       );
     });
@@ -554,7 +554,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
 
       // Should use "konfig%-id" pattern
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('LOWER(al.line_name) LIKE'),
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.line_name)'),
         expect.objectContaining({ f_line_name_contains: 'konfig%-id' })
       );
     });
