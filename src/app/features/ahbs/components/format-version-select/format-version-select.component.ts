@@ -9,7 +9,11 @@ import {
 import { FormatVersionsService } from '../../../../core/api';
 import { Observable, map, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { getCurrentEdifactFormatVersion, getEdifactFormatVersionLabel, EdifactFormatVersion } from '@hochfrequenz/efoli';
+import {
+  getCurrentEdifactFormatVersion,
+  getEdifactFormatVersionLabel,
+  EdifactFormatVersion,
+} from '@hochfrequenz/efoli';
 
 @Component({
   selector: 'app-format-version-select',
