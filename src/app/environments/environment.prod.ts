@@ -10,4 +10,5 @@ export const environment: EnvironmentInterface = {
   auth0ClientId: 'VSkXGqlTD7Rf5Q4n9a0h00rInEyL2ZQj',
   baseUrl: 'https://ahb-tabellen.hochfrequenz.de',
   warmupUrl: 'https://ahbicht.azurewebsites.net/api/ResolveConditionText/FV2504/UTILMDS/333',
+  allowSearchIndexing: true,
 };

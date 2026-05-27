@@ -60,7 +60,7 @@ export class LandingPageComponent implements OnInit {
           'AHB-Tabellen ist ein intuitives Tool, das die Navigation in Anwendungshandbüchern vereinfacht, indem es die Daten pro Prüfidentifikator klar darstellt.',
       },
       { property: 'linkedin:image', content: `${baseUrl}/assets/logo.png` },
-      { name: 'robots', content: 'index, follow' },
+      { name: 'robots', content: environment.allowSearchIndexing ? 'index, follow' : 'noindex, nofollow' },
       { name: 'author', content: 'Hochfrequenz' },
     ]);
   }

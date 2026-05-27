@@ -8,4 +8,5 @@ export interface EnvironmentInterface {
   auth0ClientId: string;
   baseUrl: string;
   warmupUrl?: string;
+  allowSearchIndexing?: boolean;
 }
