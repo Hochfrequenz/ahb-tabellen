@@ -15,6 +15,7 @@ import { ComparisonTableComponent } from '../../components/comparison-table/comp
 import { ComparisonSearchFormHeaderComponent } from '../../components/comparison-search-form-header/comparison-search-form-header.component';
 import { AhbService, AhbDiff, AhbDiffLine, PrufidentifikatorenService } from '../../../../core/api';
 import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
+import { getCurrentEdifactFormatVersion } from '@hochfrequenz/efoli';
 
 export interface DiffStats {
   added: number;
@@ -189,9 +190,19 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
         const fvOld = queryParams['fv-old'];
         const fvNew = queryParams['fv-new'];
 
+        const resolvedFvOld =
+          fvOld?.toLowerCase() === 'current' ? getCurrentEdifactFormatVersion() : fvOld;
+        const resolvedFvNew =
+          fvNew?.toLowerCase() === 'current' ? getCurrentEdifactFormatVersion() : fvNew;
+
+        if (fvOld?.toLowerCase() === 'current' || fvNew?.toLowerCase() === 'current') {
+          this.navigateToComparison(pruefi, resolvedFvOld, resolvedFvNew, true);
+          return;
+        }
+
         if (pruefi) this.pruefi.set(pruefi);
-        if (fvOld) this.formatVersionOld.set(fvOld);
-        if (fvNew) this.formatVersionNew.set(fvNew);
+        if (resolvedFvOld) this.formatVersionOld.set(resolvedFvOld);
+        if (resolvedFvNew) this.formatVersionNew.set(resolvedFvNew);
 
         this.updateTitle();
 
@@ -257,13 +268,19 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     this.navigateToComparison(pruefi, this.formatVersionOld(), this.formatVersionNew());
   }
 
-  private navigateToComparison(pruefi: string, fvOld: string, fvNew: string): void {
+  private navigateToComparison(
+    pruefi: string,
+    fvOld: string,
+    fvNew: string,
+    replaceUrl = false
+  ): void {
     if (pruefi && fvOld && fvNew) {
       this.router.navigate(['/compare', pruefi], {
         queryParams: {
           'fv-old': fvOld,
           'fv-new': fvNew,
         },
+        replaceUrl,
       });
     }
   }
