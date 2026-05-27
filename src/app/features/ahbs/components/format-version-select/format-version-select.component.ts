@@ -87,10 +87,10 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
   }
 
   private getFormatVersionLabel(formatVersion: string): string {
-    try {
+    const knownVersions = Object.values(EdifactFormatVersion) as string[];
+    if (knownVersions.includes(formatVersion)) {
       return getEdifactFormatVersionLabel(formatVersion as EdifactFormatVersion);
-    } catch {
-      return formatVersion;
     }
+    return formatVersion;
   }
 }
