@@ -195,7 +195,11 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
         const resolvedFvNew =
           fvNew?.toLowerCase() === 'current' ? getCurrentEdifactFormatVersion() : fvNew;
 
-        if (fvOld?.toLowerCase() === 'current' || fvNew?.toLowerCase() === 'current') {
+        if (
+          (fvOld?.toLowerCase() === 'current' || fvNew?.toLowerCase() === 'current') &&
+          resolvedFvOld &&
+          resolvedFvNew
+        ) {
           this.navigateToComparison(pruefi, resolvedFvOld, resolvedFvNew, true);
           return;
         }
