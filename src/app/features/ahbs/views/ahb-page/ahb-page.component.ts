@@ -97,7 +97,10 @@ export class AhbPageComponent implements OnInit, OnDestroy {
 
       if (formatVersion && pruefi) {
         if (formatVersion.toLowerCase() === 'current') {
-          this.router.navigate(['/ahb', getCurrentEdifactFormatVersion(), pruefi], {
+          const resolvedVersion = getCurrentEdifactFormatVersion();
+          this.formatVersion.set(resolvedVersion);
+          this.pruefi.set(pruefi);
+          this.router.navigate(['/ahb', resolvedVersion, pruefi], {
             replaceUrl: true,
           });
           return;

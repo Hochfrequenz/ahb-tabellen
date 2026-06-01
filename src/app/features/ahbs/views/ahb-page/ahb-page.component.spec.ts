@@ -86,4 +86,55 @@ describe('AhbPageComponent', () => {
 
     expect(navigateSpy).toHaveBeenCalledWith(['/ahb', 'FV2410', '123']);
   });
+
+  it('should resolve "current" format version and preserve pruefi in URL', () => {
+    // Override the ActivatedRoute to simulate navigating with 'current'
+    MockBuilder(AhbPageComponent)
+      .keep(AhbTableComponent)
+      .provide({
+        provide: AhbTableComponent,
+        useValue: {
+          markIndex: signal(0),
+          markElements: computed(() => [] as HTMLElement[]),
+          nextResult: () => {},
+          previousResult: () => {},
+          resetMarkIndex: () => {},
+        },
+      })
+      .provide({
+        provide: AhbService,
+        useValue: mockAhbService,
+      })
+      .provide({
+        provide: ActivatedRoute,
+        useValue: {
+          queryParams: of({}),
+          params: of({ formatVersion: 'current', pruefi: '55001' }),
+        },
+      })
+      .provide({
+        provide: Router,
+        useValue: mockRouter,
+      })
+      .provide({
+        provide: HttpClient,
+        useValue: {
+          get: jest.fn(() => of('')),
+        },
+      })
+      .then(() => {
+        const fixture = MockRender(AhbPageComponent);
+        const component = fixture.point.componentInstance;
+
+        // Should have navigated with resolved format version AND pruefi
+        expect(mockRouter.navigate).toHaveBeenCalledWith(
+          ['/ahb', expect.stringMatching(/^FV\d{4}$/), '55001'],
+          { replaceUrl: true }
+        );
+
+        // Signals should be set so that race conditions with child components don't lose pruefi
+        expect(component.pruefi()).toBe('55001');
+        expect(component.formatVersion()).toMatch(/^FV\d{4}$/);
+      });
+  });
 });
