@@ -27,7 +27,7 @@ import { FallbackPageComponent } from '../../../../shared/components/fallback-pa
 import { DvgwFallbackPageComponent } from '../../../../shared/components/dvgw-fallback-page/dvgw-fallback-page.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { environment } from '../../../../environments/environment';
-import { getFormatOfPruefidentifikator } from '@hochfrequenz/efoli';
+import { getFormatOfPruefidentifikator, getCurrentEdifactFormatVersion } from '@hochfrequenz/efoli';
 
 @Component({
   selector: 'app-ahb-page',
@@ -96,6 +96,12 @@ export class AhbPageComponent implements OnInit, OnDestroy {
       const pruefi = params['pruefi'];
 
       if (formatVersion && pruefi) {
+        if (formatVersion.toLowerCase() === 'current') {
+          this.router.navigate(['/ahb', getCurrentEdifactFormatVersion(), pruefi], {
+            replaceUrl: true,
+          });
+          return;
+        }
         this.formatVersion.set(formatVersion);
         this.pruefi.set(pruefi);
         this.loadAhbData(formatVersion, pruefi);
