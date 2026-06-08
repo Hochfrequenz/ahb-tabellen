@@ -11,28 +11,32 @@ describe('LandingPageComponent', () => {
     expect(ngMocks.formatHtml(fixture)).toContain('Anwendungshandbücher für Menschen');
   });
 
-  it('should set robots meta tag to noindex, nofollow for non-prod environments', () => {
+  it('should set robots meta tag to noindex, nofollow when allowSearchIndexing is false', () => {
     const original = environment.allowSearchIndexing;
-    (environment as any).allowSearchIndexing = false;
+    environment.allowSearchIndexing = false;
     try {
       MockRender(LandingPageComponent);
       const meta = ngMocks.findInstance(Meta);
       expect(meta.addTags).toHaveBeenCalledWith(
-        expect.arrayContaining([expect.objectContaining({ name: 'robots', content: 'noindex, nofollow' })])
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'robots', content: 'noindex, nofollow' }),
+        ])
       );
     } finally {
       environment.allowSearchIndexing = original;
     }
   });
 
-  it('should set robots meta tag to index, follow for prod environments', () => {
+  it('should set robots meta tag to index, follow when allowSearchIndexing is true', () => {
     const original = environment.allowSearchIndexing;
     environment.allowSearchIndexing = true;
     try {
       MockRender(LandingPageComponent);
       const meta = ngMocks.findInstance(Meta);
       expect(meta.addTags).toHaveBeenCalledWith(
-        expect.arrayContaining([expect.objectContaining({ name: 'robots', content: 'index, follow' })])
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'robots', content: 'index, follow' }),
+        ])
       );
     } finally {
       environment.allowSearchIndexing = original;
