@@ -21,7 +21,7 @@ describe('LandingPageComponent', () => {
         expect.arrayContaining([expect.objectContaining({ name: 'robots', content: 'noindex, nofollow' })])
       );
     } finally {
-      (environment as any).allowSearchIndexing = original;
+      environment.allowSearchIndexing = original;
     }
   });
 
