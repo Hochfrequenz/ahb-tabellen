@@ -4,7 +4,16 @@ import { Meta } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
 
 describe('LandingPageComponent', () => {
-  beforeEach(() => MockBuilder(LandingPageComponent));
+  let mockMeta: { addTags: jest.Mock };
+
+  beforeEach(() => {
+    mockMeta = { addTags: jest.fn() };
+
+    return MockBuilder(LandingPageComponent).provide({
+      provide: Meta,
+      useValue: mockMeta,
+    });
+  });
 
   it('should render', () => {
     const fixture = MockRender(LandingPageComponent);
@@ -16,8 +25,7 @@ describe('LandingPageComponent', () => {
     environment.allowSearchIndexing = false;
     try {
       MockRender(LandingPageComponent);
-      const meta = ngMocks.findInstance(Meta);
-      expect(meta.addTags).toHaveBeenCalledWith(
+      expect(mockMeta.addTags).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({ name: 'robots', content: 'noindex, nofollow' }),
         ])
@@ -32,8 +40,7 @@ describe('LandingPageComponent', () => {
     environment.allowSearchIndexing = true;
     try {
       MockRender(LandingPageComponent);
-      const meta = ngMocks.findInstance(Meta);
-      expect(meta.addTags).toHaveBeenCalledWith(
+      expect(mockMeta.addTags).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({ name: 'robots', content: 'index, follow' }),
         ])
