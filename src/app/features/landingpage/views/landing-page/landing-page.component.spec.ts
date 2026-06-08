@@ -27,7 +27,7 @@ describe('LandingPageComponent', () => {
 
   it('should set robots meta tag to index, follow for prod environments', () => {
     const original = environment.allowSearchIndexing;
-    (environment as any).allowSearchIndexing = true;
+    environment.allowSearchIndexing = true;
     try {
       MockRender(LandingPageComponent);
       const meta = ngMocks.findInstance(Meta);
@@ -35,7 +35,7 @@ describe('LandingPageComponent', () => {
         expect.arrayContaining([expect.objectContaining({ name: 'robots', content: 'index, follow' })])
       );
     } finally {
-      (environment as any).allowSearchIndexing = original;
+      environment.allowSearchIndexing = original;
     }
   });
 });
