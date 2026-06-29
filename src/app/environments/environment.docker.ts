@@ -5,6 +5,9 @@ export const environment: EnvironmentInterface = {
   apiUrl: 'http://localhost:4000',
   bedingungsbaumBaseUrl: 'https://bedingungsbaum.stage.hochfrequenz.de',
   ebdBaseUrl: 'https://ebd.stage.hochfrequenz.de',
+  fristenkalenderBaseUrl: 'https://fristenkalender.stage.hochfrequenz.de',
   auth0Domain: 'auth.hochfrequenz.de',
   auth0ClientId: 'Hku0EniRjy4B2krnx1sCwTIOzAiVta1B',
+  baseUrl: 'http://localhost:4200',
+  allowSearchIndexing: false,
 };
