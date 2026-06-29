@@ -9,6 +9,11 @@ import {
 import { FormatVersionsService } from '../../../../core/api';
 import { Observable, map, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import {
+  getCurrentEdifactFormatVersion,
+  getEdifactFormatVersionLabel,
+  EdifactFormatVersion,
+} from '@hochfrequenz/efoli';
 
 @Component({
   selector: 'app-format-version-select',
@@ -38,12 +43,12 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
       map(versions =>
         versions.map(v => ({
           value: v,
-          label: this.getFormatVersionDate(v),
+          label: this.getFormatVersionLabel(v),
         }))
       ),
       tap(() => {
         if (!this.control.value) {
-          const defaultVersion = this.getDefaultFormatVersion();
+          const defaultVersion = getCurrentEdifactFormatVersion();
           this.control.setValue(defaultVersion);
           if (this.onChange) {
             this.onChange(defaultVersion);
@@ -61,30 +66,6 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
     });
   }
 
-  /**
-   * Returns the default format version based on a series of predefined datetime upper thresholds.
-   * Each threshold corresponds to a specific version of the Edifact format.
-   * The thresholds are defined in UTC and are based on the official BDEW schedule.
-   */
-  private getDefaultFormatVersion(): string {
-    const now = new Date();
-    const formatVersionThresholds: [Date, string][] = [
-      [new Date('2024-09-30T22:00:00Z'), 'FV2404'],
-      [new Date('2025-06-05T22:00:00Z'), 'FV2410'],
-      [new Date('2025-09-30T22:00:00Z'), 'FV2504'],
-      [new Date('2026-03-31T22:00:00Z'), 'FV2510'],
-      [new Date('2026-09-30T22:00:00Z'), 'FV2604'],
-      [new Date('2027-03-31T22:00:00Z'), 'FV2610'],
-    ];
-
-    for (const [thresholdDate, version] of formatVersionThresholds) {
-      if (now < thresholdDate) {
-        return version;
-      }
-    }
-
-    return 'FV2604';
-  }
   writeValue(formatVersion: string): void {
     this.control.setValue(formatVersion);
   }
@@ -105,21 +86,11 @@ export class FormatVersionSelectComponent implements ControlValueAccessor, OnIni
     }
   }
 
-  private getFormatVersionDate(formatVersion: string): string {
-    const mapping: { [key: string]: string } = {
-      FV2104: 'April 2021 (FV2104)',
-      FV2110: 'Oktober 2021 (FV2110)',
-      FV2204: 'April 2022 (FV2204)',
-      FV2210: 'Oktober 2022 (FV2210)',
-      FV2304: 'April 2023 (FV2304)',
-      FV2310: 'Oktober 2023 (FV2310)',
-      FV2404: 'April 2024 (FV2404)',
-      FV2410: 'Oktober 2024 (FV2410)',
-      FV2504: 'Juni 2025 (FV2504)',
-      FV2510: 'Oktober 2025 (FV2510)',
-      FV2604: 'April 2026 (FV2604)',
-      FV2610: 'Oktober 2026 (FV2610)',
-    };
-    return mapping[formatVersion] || formatVersion;
+  private getFormatVersionLabel(formatVersion: string): string {
+    const knownVersions = Object.values(EdifactFormatVersion) as string[];
+    if (knownVersions.includes(formatVersion)) {
+      return getEdifactFormatVersionLabel(formatVersion as EdifactFormatVersion);
+    }
+    return formatVersion;
   }
 }
