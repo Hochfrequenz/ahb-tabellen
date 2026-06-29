@@ -27,6 +27,7 @@ import { FallbackPageComponent } from '../../../../shared/components/fallback-pa
 import { DvgwFallbackPageComponent } from '../../../../shared/components/dvgw-fallback-page/dvgw-fallback-page.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { environment } from '../../../../environments/environment';
+import { getFormatOfPruefidentifikator, getCurrentEdifactFormatVersion } from '@hochfrequenz/efoli';
 
 @Component({
   selector: 'app-ahb-page',
@@ -95,6 +96,15 @@ export class AhbPageComponent implements OnInit, OnDestroy {
       const pruefi = params['pruefi'];
 
       if (formatVersion && pruefi) {
+        if (formatVersion.toLowerCase() === 'current') {
+          const resolvedVersion = getCurrentEdifactFormatVersion();
+          this.formatVersion.set(resolvedVersion);
+          this.pruefi.set(pruefi);
+          this.router.navigate(['/ahb', resolvedVersion, pruefi], {
+            replaceUrl: true,
+          });
+          return;
+        }
         this.formatVersion.set(formatVersion);
         this.pruefi.set(pruefi);
         this.loadAhbData(formatVersion, pruefi);
@@ -220,31 +230,14 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   }
 
   private getEdifactFormat(pruefi: string): string {
-    const mapping: { [key: string]: string } = {
-      '99': 'APERAK',
-      '29': 'COMDIS',
-      '21': 'IFTSTA',
-      '23': 'INSRPT',
-      '31': 'INVOIC',
-      '13': 'MSCONS',
-      '39': 'ORDCHG',
-      '17': 'ORDERS',
-      '19': 'ORDRSP',
-      '27': 'PRICAT',
-      '15': 'QUOTES',
-      '33': 'REMADV',
-      '35': 'REQOTE',
-      '37': 'PARTIN',
-      '11': 'UTILMD',
-      '25': 'UTILTS',
-      '91': 'CONTRL',
-      '92': 'APERAK',
-      '44': 'UTILMD Gas', // UTILMD for GAS since FV2310
-      '55': 'UTILMD Strom', // UTILMD for STROM since FV2310
-    };
-
-    const key = pruefi.substring(0, 2);
-    return mapping[key];
+    try {
+      const format = getFormatOfPruefidentifikator(pruefi);
+      if (format === 'UTILMDG') return 'UTILMD Gas';
+      if (format === 'UTILMDS') return 'UTILMD Strom';
+      return format;
+    } catch {
+      return '';
+    }
   }
 
   private triggerWarmupIfNeeded(): void {
