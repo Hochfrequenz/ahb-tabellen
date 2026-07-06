@@ -21,7 +21,8 @@
     "ng-openapi-gen": "ng-openapi-gen --input openapi.yml --output ./src/app/core/api --indexFile=true",
     "lint": "ng lint",
     "install-submodules": "git submodule update --init --recursive",
-    "test": "jest ."
+    "test": "jest .",
+    "verify:mcp": "node scripts/verify-mcp.mjs"
   },
   "watch": {
     "server:start": {
