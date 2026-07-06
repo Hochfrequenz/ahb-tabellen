@@ -10,7 +10,7 @@ export const MCP_SERVER_NAME = 'ahb-tabellen';
  */
 export function buildMcpServer(
   services: McpServices = createMcpServices(),
-  version = '1.0.0'
+  version = '0.0.0'
 ): McpServer {
   const server = new McpServer({ name: MCP_SERVER_NAME, version });
   registerAhbTools(server, services);

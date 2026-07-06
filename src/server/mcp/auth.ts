@@ -17,12 +17,25 @@ export interface McpAuthConfig {
   resource: string;
 }
 
-/** Read MCP auth config from the environment; `undefined` disables auth. */
+/**
+ * Read MCP auth config from the environment.
+ *
+ * - Both `MCP_AUTH0_ISSUER_BASE_URL` and `MCP_AUTH0_AUDIENCE` set → returns config.
+ * - Neither set → returns `undefined` (auth intentionally disabled, e.g. local dev).
+ * - Exactly one set → throws: a partial config almost certainly means a misconfigured
+ *   deployment, and silently exposing the endpoint unauthenticated would be worse.
+ */
 export function loadMcpAuthConfig(env: NodeJS.ProcessEnv = process.env): McpAuthConfig | undefined {
   const issuerBaseURL = env['MCP_AUTH0_ISSUER_BASE_URL'];
   const audience = env['MCP_AUTH0_AUDIENCE'];
-  if (!issuerBaseURL || !audience) {
+  if (!issuerBaseURL && !audience) {
     return undefined;
+  }
+  if (!issuerBaseURL || !audience) {
+    throw new Error(
+      'MCP auth is partially configured: set BOTH MCP_AUTH0_ISSUER_BASE_URL and ' +
+        'MCP_AUTH0_AUDIENCE (or neither, to run /mcp unauthenticated).'
+    );
   }
   return { issuerBaseURL, audience, resource: env['MCP_RESOURCE'] ?? audience };
 }

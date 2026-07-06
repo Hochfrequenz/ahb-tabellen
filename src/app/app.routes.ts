@@ -30,4 +30,9 @@ export const routes: Routes = [
     loadChildren: async () => (await import('./features/search/search.routes')).SEARCH_ROUTES,
     canActivate: [AuthGuard],
   },
+  {
+    path: 'mcp-integration',
+    loadComponent: async () =>
+      (await import('./features/mcp-info/mcp-info.component')).McpInfoComponent,
+  },
 ];

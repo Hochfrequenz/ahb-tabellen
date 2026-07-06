@@ -24,10 +24,15 @@ const config: McpAuthConfig = {
 
 describe('mcp/auth', () => {
   describe('loadMcpAuthConfig', () => {
-    it('returns undefined when required env vars are missing (auth disabled)', () => {
+    it('returns undefined when no auth env vars are set (auth intentionally disabled)', () => {
       expect(loadMcpAuthConfig({})).toBeUndefined();
-      expect(loadMcpAuthConfig({ MCP_AUTH0_ISSUER_BASE_URL: 'x' })).toBeUndefined();
-      expect(loadMcpAuthConfig({ MCP_AUTH0_AUDIENCE: 'x' })).toBeUndefined();
+    });
+
+    it('throws on partial configuration (exactly one var set) instead of failing open', () => {
+      expect(() => loadMcpAuthConfig({ MCP_AUTH0_ISSUER_BASE_URL: 'x' })).toThrow(
+        /partially configured/
+      );
+      expect(() => loadMcpAuthConfig({ MCP_AUTH0_AUDIENCE: 'x' })).toThrow(/partially configured/);
     });
 
     it('builds config and defaults resource to audience', () => {

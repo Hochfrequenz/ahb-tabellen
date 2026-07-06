@@ -31,6 +31,13 @@ export function mountMcp(app: Application, options: MountMcpOptions = {}): void 
     options.authConfig === null ? undefined : (options.authConfig ?? loadMcpAuthConfig());
   const version = options.version ?? process.env['VERSION'] ?? '0.0.0';
 
+  if (!authConfig) {
+    console.warn(
+      '[mcp] Auth is DISABLED — /mcp is publicly accessible. Set MCP_AUTH0_ISSUER_BASE_URL ' +
+        'and MCP_AUTH0_AUDIENCE to protect it with Auth0.'
+    );
+  }
+
   if (authConfig) {
     const metadata = protectedResourceMetadata(authConfig);
     const serveMetadata: RequestHandler = (_req, res) => {

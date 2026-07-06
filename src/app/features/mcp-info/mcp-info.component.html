@@ -1,0 +1,67 @@
+<div class="mx-auto max-w-3xl px-4 py-10 text-hf-dunkel-rose">
+  <h1 class="text-2xl font-bold mb-2">AHB-Tabellen in Ihrem KI-Assistenten nutzen</h1>
+  <p class="text-base leading-relaxed mb-6">
+    Die AHB-Tabellen stehen zusätzlich als <strong>MCP-Server</strong> (Model Context Protocol)
+    bereit. Damit können Sie die AHB-Daten direkt in Ihrem KI-Assistenten – zum Beispiel Claude,
+    GitHub Copilot oder opencode – abfragen, ohne diese Website zu öffnen.
+  </p>
+
+  <h2 class="text-lg font-semibold mb-2">Was Sie damit tun können</h2>
+  <ul class="list-disc list-inside space-y-1 mb-6">
+    <li>einzelne AHBs zu einer Prüfidentifikator abrufen</li>
+    <li>über alle AHB-Zeilen hinweg suchen und filtern</li>
+    <li>zwei Formatversionen miteinander vergleichen (Diff und Änderungsübersicht)</li>
+    <li>verfügbare Formatversionen, Formate und Prüfidentifikatoren auflisten</li>
+  </ul>
+  <p class="text-sm mb-6">
+    Der Server ist <strong>schreibgeschützt</strong> – er liest ausschließlich Daten und verändert
+    nichts.
+  </p>
+
+  <h2 class="text-lg font-semibold mb-2">Server-Adresse</h2>
+  <p class="text-base leading-relaxed mb-2">
+    Tragen Sie in Ihrem KI-Tool die folgende Adresse als Remote- bzw. HTTP-MCP-Server ein:
+  </p>
+  <div class="bg-gray-100 rounded px-4 py-3 font-mono text-sm break-all mb-2">{{ mcpUrl }}</div>
+  <p class="text-sm mb-6">
+    Beim ersten Verbinden öffnet sich gegebenenfalls ein Anmeldefenster – melden Sie sich dort mit
+    Ihrem gewohnten Hochfrequenz-Konto an (dasselbe Login wie für diese Website).
+  </p>
+
+  <h2 class="text-lg font-semibold mb-2">Einrichtung in Ihrem KI-Tool</h2>
+  <p class="text-base leading-relaxed mb-3">
+    Die genauen Schritte unterscheiden sich je nach Tool. Folgen Sie der offiziellen Anleitung Ihres
+    KI-Assistenten und tragen Sie dort die oben genannte Server-Adresse ein:
+  </p>
+  <ul class="list-disc list-inside space-y-2 mb-8">
+    <li>
+      <a
+        class="text-hf-dunkel-blau underline hover:no-underline"
+        target="_blank"
+        rel="noopener noreferrer"
+        href="https://modelcontextprotocol.io/docs/tutorials/use-remote-mcp-server"
+        >Claude (claude.ai &amp; Claude Desktop – „Custom Connectors")</a
+      >
+    </li>
+    <li>
+      <a
+        class="text-hf-dunkel-blau underline hover:no-underline"
+        target="_blank"
+        rel="noopener noreferrer"
+        href="https://code.visualstudio.com/docs/copilot/chat/mcp-servers"
+        >GitHub Copilot in VS Code</a
+      >
+    </li>
+    <li>
+      <a
+        class="text-hf-dunkel-blau underline hover:no-underline"
+        target="_blank"
+        rel="noopener noreferrer"
+        href="https://opencode.ai/docs/mcp-servers/"
+        >opencode</a
+      >
+    </li>
+  </ul>
+
+  <a routerLink="/" class="text-sm underline hover:no-underline">&larr; Zurück zur Startseite</a>
+</div>
