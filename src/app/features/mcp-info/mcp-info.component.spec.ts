@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { McpInfoComponent } from './mcp-info.component';
 
 describe('McpInfoComponent', () => {
@@ -9,7 +11,8 @@ describe('McpInfoComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [McpInfoComponent],
-      providers: [provideRouter([])],
+      // The embedded <app-footer> pulls in version/datenstand displays that inject HttpClient.
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(McpInfoComponent);

@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Title } from '@angular/platform-browser';
+import { FooterComponent } from '../../shared/components/footer/footer.component';
 
 /**
  * End-user facing German instructions for connecting the AHB-Tabellen MCP server to an
@@ -9,13 +11,31 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-mcp-info',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FooterComponent],
   templateUrl: './mcp-info.component.html',
 })
-export class McpInfoComponent {
+export class McpInfoComponent implements OnInit {
   /**
    * The MCP endpoint lives at `/mcp` on the same origin the app is served from, so this
    * is correct for whichever environment (stage/prod) the user is currently on.
    */
   readonly mcpUrl = `${window.location.origin}/mcp`;
+
+  copied = false;
+
+  constructor(private readonly title: Title) {}
+
+  ngOnInit(): void {
+    this.title.setTitle('AHB-Tabellen - MCP-Integration');
+  }
+
+  async copyUrl(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this.mcpUrl);
+      this.copied = true;
+      setTimeout(() => (this.copied = false), 2000);
+    } catch {
+      // Clipboard API unavailable (e.g. non-secure context) — silently ignore.
+    }
+  }
 }
