@@ -12,6 +12,62 @@ export enum FileType {
   XLSX = 'xlsx',
 }
 
+export type SearchFilterField =
+  | 'format_version'
+  | 'format'
+  | 'pruefidentifikator'
+  | 'description'
+  | 'segmentgroup_key'
+  | 'segment_code'
+  | 'data_element'
+  | 'qualifier'
+  | 'line_ahb_status'
+  | 'line_name'
+  | 'bedingung'
+  | 'sender'
+  | 'empfaenger';
+
+export interface SearchFilterCondition {
+  eq?: string;
+  neq?: string;
+  contains?: string;
+  startsWith?: string;
+  endsWith?: string;
+  in?: string[];
+  isNull?: boolean;
+  isNotNull?: boolean;
+}
+
+export interface SearchPayload {
+  page: number;
+  pageSize: number;
+  sort: { field: string; direction?: 'asc' | 'desc' }[];
+  q: string;
+  filters?: Partial<Record<SearchFilterField, SearchFilterCondition>>;
+}
+
+export interface SearchResultItem {
+  format_version: string;
+  format: string;
+  pruefidentifikator: string;
+  description?: string | null;
+  segmentgroup_key?: string | null;
+  segment_code?: string | null;
+  data_element?: string | null;
+  qualifier?: string | null;
+  line_ahb_status?: string | null;
+  line_name?: string | null;
+  bedingung?: string | null;
+  direction?: string | null;
+}
+
+export interface SearchResult {
+  items: SearchResultItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export default class AHBRepository {
   private xlsxGenerator: XlsxGeneratorService;
   private richtungRepository: RichtungRepository;
@@ -21,57 +77,7 @@ export default class AHBRepository {
     this.richtungRepository = new RichtungRepository();
   }
 
-  public async searchAhbLines(payload: {
-    page: number;
-    pageSize: number;
-    sort: { field: string; direction?: 'asc' | 'desc' }[];
-    q: string;
-    filters?: Partial<
-      Record<
-        | 'format_version'
-        | 'format'
-        | 'pruefidentifikator'
-        | 'description'
-        | 'segmentgroup_key'
-        | 'segment_code'
-        | 'data_element'
-        | 'qualifier'
-        | 'line_ahb_status'
-        | 'line_name'
-        | 'bedingung'
-        | 'sender'
-        | 'empfaenger',
-        {
-          eq?: string;
-          neq?: string;
-          contains?: string;
-          startsWith?: string;
-          endsWith?: string;
-          in?: string[];
-          isNull?: boolean;
-          isNotNull?: boolean;
-        }
-      >
-    >;
-  }): Promise<{
-    items: Array<{
-      format_version: string;
-      format: string;
-      pruefidentifikator: string;
-      description?: string | null;
-      segmentgroup_key?: string | null;
-      segment_code?: string | null;
-      data_element?: string | null;
-      qualifier?: string | null;
-      line_ahb_status?: string | null;
-      line_name?: string | null;
-      bedingung?: string | null;
-      direction?: string | null;
-    }>;
-    total: number;
-    page: number;
-    pageSize: number;
-  }> {
+  public async searchAhbLines(payload: SearchPayload): Promise<SearchResult> {
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
     }

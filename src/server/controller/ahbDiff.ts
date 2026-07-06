@@ -1,12 +1,11 @@
-import AhbDiffRepository, { AhbDiffSummary } from '../repository/ahbDiff';
 import { Request, Response, NextFunction } from 'express';
-import { ValidationError } from '../infrastructure/errors';
+import AhbDiffService from '../service/ahbDiff.service';
 
 export default class AhbDiffController {
-  private repository: AhbDiffRepository;
+  private service: AhbDiffService;
 
-  constructor(repository?: AhbDiffRepository) {
-    this.repository = repository ?? new AhbDiffRepository();
+  constructor(service?: AhbDiffService) {
+    this.service = service ?? new AhbDiffService();
   }
 
   public async get(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -15,25 +14,7 @@ export default class AhbDiffController {
       const formatVersionNew = req.query['format-version-new'] as string;
       const formatVersionOld = req.query['format-version-old'] as string;
 
-      if (!/^\d{5}$/.test(pruefi)) {
-        throw new ValidationError(
-          `Invalid Prüfidentifikator format: ${pruefi}. Expected 5 digits.`
-        );
-      }
-
-      if (!formatVersionNew || !/^FV\d{4}$/.test(formatVersionNew)) {
-        throw new ValidationError(
-          `Invalid format-version-new: ${formatVersionNew}. Expected pattern: FV followed by 4 digits.`
-        );
-      }
-
-      if (!formatVersionOld || !/^FV\d{4}$/.test(formatVersionOld)) {
-        throw new ValidationError(
-          `Invalid format-version-old: ${formatVersionOld}. Expected pattern: FV followed by 4 digits.`
-        );
-      }
-
-      const result = await this.repository.getDiff(pruefi, formatVersionNew, formatVersionOld);
+      const result = await this.service.getDiff(pruefi, formatVersionNew, formatVersionOld);
 
       res.status(200).setHeader('Content-Type', 'application/json').json(result);
     } catch (error) {
@@ -46,22 +27,7 @@ export default class AhbDiffController {
       const formatVersionNew = req.query['format-version-new'] as string;
       const formatVersionOld = req.query['format-version-old'] as string;
 
-      if (!formatVersionNew || !/^FV\d{4}$/.test(formatVersionNew)) {
-        throw new ValidationError(
-          `Invalid format-version-new: ${formatVersionNew}. Expected pattern: FV followed by 4 digits.`
-        );
-      }
-
-      if (!formatVersionOld || !/^FV\d{4}$/.test(formatVersionOld)) {
-        throw new ValidationError(
-          `Invalid format-version-old: ${formatVersionOld}. Expected pattern: FV followed by 4 digits.`
-        );
-      }
-
-      const result: AhbDiffSummary = await this.repository.getSummary(
-        formatVersionNew,
-        formatVersionOld
-      );
+      const result = await this.service.getSummary(formatVersionNew, formatVersionOld);
 
       res.status(200).setHeader('Content-Type', 'application/json').json(result);
     } catch (error) {

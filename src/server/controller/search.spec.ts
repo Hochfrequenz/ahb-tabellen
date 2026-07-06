@@ -1,47 +1,39 @@
 import { Request, Response, NextFunction } from 'express';
 import SearchController from './search';
-import AHBRepository from '../repository/ahb';
+import AhbService from '../service/ahb.service';
 
-// Mock the repository
-jest.mock('../repository/ahb');
-const MockedAHBRepository = AHBRepository as jest.MockedClass<typeof AHBRepository>;
+jest.mock('../service/ahb.service');
 
 describe('SearchController', () => {
   let searchController: SearchController;
-  let mockRepository: jest.Mocked<AHBRepository>;
+  let mockService: jest.Mocked<AhbService>;
   let mockReq: Partial<Request>;
   let mockRes: Partial<Response>;
   let mockNext: NextFunction;
   let mockJson: jest.Mock;
   let mockStatus: jest.Mock;
 
-  beforeEach(() => {
-    mockRepository = {
-      searchAhbLines: jest.fn(),
-    } as unknown as jest.Mocked<AHBRepository>;
+  const searchBody = {
+    page: 1,
+    pageSize: 25,
+    sort: [{ field: 'format_version', direction: 'asc' as const }],
+    q: '',
+    filters: {},
+  };
 
-    MockedAHBRepository.mockImplementation(() => mockRepository);
+  beforeEach(() => {
+    mockService = {
+      searchAhbLines: jest.fn(),
+    } as unknown as jest.Mocked<AhbService>;
 
     mockJson = jest.fn();
     mockStatus = jest.fn().mockReturnThis();
     mockNext = jest.fn();
 
-    mockReq = {
-      body: {
-        page: 1,
-        pageSize: 25,
-        sort: [{ field: 'format_version', direction: 'asc' }],
-        q: '',
-        filters: {},
-      },
-    };
+    mockReq = { body: { ...searchBody } };
+    mockRes = { status: mockStatus, json: mockJson };
 
-    mockRes = {
-      status: mockStatus,
-      json: mockJson,
-    };
-
-    searchController = new SearchController(mockRepository);
+    searchController = new SearchController(mockService);
   });
 
   afterEach(() => {
@@ -49,7 +41,7 @@ describe('SearchController', () => {
   });
 
   describe('query', () => {
-    it('should return search results successfully', async () => {
+    it('delegates the request body to the service and serializes the result', async () => {
       const mockSearchResults = {
         items: [
           {
@@ -57,13 +49,6 @@ describe('SearchController', () => {
             format: 'UTILMD',
             pruefidentifikator: '25007',
             description: 'Test description',
-            segmentgroup_key: 'SG6',
-            segment_code: 'NAD',
-            data_element: 'D_3035',
-            qualifier: 'test',
-            line_ahb_status: 'Muss',
-            line_name: 'Test line',
-            bedingung: 'Test condition',
             direction: 'inbound',
           },
         ],
@@ -72,59 +57,28 @@ describe('SearchController', () => {
         pageSize: 25,
       };
 
-      mockRepository.searchAhbLines.mockResolvedValue(mockSearchResults);
+      mockService.searchAhbLines.mockResolvedValue(mockSearchResults);
 
       await searchController.query(mockReq as Request, mockRes as Response, mockNext);
 
-      expect(mockRepository.searchAhbLines).toHaveBeenCalledWith({
-        page: 1,
-        pageSize: 25,
-        sort: [{ field: 'format_version', direction: 'asc' }],
-        q: '',
-        filters: {},
-      });
+      expect(mockService.searchAhbLines).toHaveBeenCalledWith(searchBody);
       expect(mockStatus).toHaveBeenCalledWith(200);
       expect(mockJson).toHaveBeenCalledWith(mockSearchResults);
       expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it('should handle empty request body', async () => {
-      mockReq.body = {};
+    it('passes an empty object to the service when the body is missing', async () => {
+      mockReq.body = undefined;
+      mockService.searchAhbLines.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 });
 
       await searchController.query(mockReq as Request, mockRes as Response, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: expect.stringContaining('page must be a positive integer'),
-        })
-      );
+      expect(mockService.searchAhbLines).toHaveBeenCalledWith({});
     });
 
-    it('should validate required fields', async () => {
-      const testCases = [
-        { page: 'invalid', pageSize: 25, sort: [], q: '' },
-        { page: 1, pageSize: 'invalid', sort: [], q: '' },
-        { page: 1, pageSize: 25, sort: 'invalid', q: '' },
-        { page: 1, pageSize: 25, sort: [], q: 123 },
-        { page: 0, pageSize: 25, sort: [], q: '' },
-        { page: 1, pageSize: 0, sort: [], q: '' },
-      ];
-
-      for (const testCase of testCases) {
-        mockReq.body = testCase;
-        await searchController.query(mockReq as Request, mockRes as Response, mockNext);
-        expect(mockNext).toHaveBeenCalledWith(
-          expect.objectContaining({
-            message: expect.any(String),
-          })
-        );
-        (mockNext as jest.Mock).mockClear();
-      }
-    });
-
-    it('should handle repository errors', async () => {
+    it('forwards service errors to next()', async () => {
       const error = new Error('Database error');
-      mockRepository.searchAhbLines.mockRejectedValue(error);
+      mockService.searchAhbLines.mockRejectedValue(error);
 
       await searchController.query(mockReq as Request, mockRes as Response, mockNext);
 
@@ -133,184 +87,8 @@ describe('SearchController', () => {
       expect(mockJson).not.toHaveBeenCalled();
     });
 
-    it('should handle complex search parameters', async () => {
-      const complexRequest = {
-        page: 2,
-        pageSize: 50,
-        sort: [
-          { field: 'format_version', direction: 'asc' },
-          { field: 'pruefidentifikator', direction: 'desc' },
-        ],
-        q: 'test search',
-        filters: {
-          format_version: { eq: 'FV2410' },
-          format: { contains: 'UTIL' },
-          segment_code: { in: ['NAD', 'DTM'] },
-          line_ahb_status: { contains: 'Muss' },
-        },
-      };
-
-      mockReq.body = complexRequest;
-      mockRepository.searchAhbLines.mockResolvedValue({
-        items: [],
-        total: 0,
-        page: 2,
-        pageSize: 50,
-      });
-
-      await searchController.query(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRepository.searchAhbLines).toHaveBeenCalledWith({
-        page: 2,
-        pageSize: 50,
-        sort: [
-          { field: 'format_version', direction: 'asc' },
-          { field: 'pruefidentifikator', direction: 'desc' },
-        ],
-        q: 'test search',
-        filters: {
-          format_version: { eq: 'FV2410' },
-          format: { contains: 'UTIL' },
-          segment_code: { in: ['NAD', 'DTM'] },
-          line_ahb_status: { contains: 'Muss' },
-        },
-      });
-    });
-
-    it('should handle sender filter', async () => {
-      mockReq.body = {
-        page: 1,
-        pageSize: 25,
-        sort: [{ field: 'format_version', direction: 'asc' }],
-        q: '',
-        filters: {
-          sender: { in: ['LF', 'MSB'] },
-        },
-      };
-
-      mockRepository.searchAhbLines.mockResolvedValue({
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 25,
-      });
-
-      await searchController.query(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRepository.searchAhbLines).toHaveBeenCalledWith({
-        page: 1,
-        pageSize: 25,
-        sort: [{ field: 'format_version', direction: 'asc' }],
-        q: '',
-        filters: {
-          sender: { in: ['LF', 'MSB'] },
-        },
-      });
-      expect(mockStatus).toHaveBeenCalledWith(200);
-    });
-
-    it('should handle empfaenger filter', async () => {
-      mockReq.body = {
-        page: 1,
-        pageSize: 25,
-        sort: [{ field: 'format_version', direction: 'asc' }],
-        q: '',
-        filters: {
-          empfaenger: { in: ['NB', 'ESA'] },
-        },
-      };
-
-      mockRepository.searchAhbLines.mockResolvedValue({
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 25,
-      });
-
-      await searchController.query(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRepository.searchAhbLines).toHaveBeenCalledWith({
-        page: 1,
-        pageSize: 25,
-        sort: [{ field: 'format_version', direction: 'asc' }],
-        q: '',
-        filters: {
-          empfaenger: { in: ['NB', 'ESA'] },
-        },
-      });
-      expect(mockStatus).toHaveBeenCalledWith(200);
-    });
-
-    it('should handle both sender and empfaenger filters', async () => {
-      mockReq.body = {
-        page: 1,
-        pageSize: 25,
-        sort: [{ field: 'format_version', direction: 'asc' }],
-        q: '',
-        filters: {
-          sender: { in: ['LF'] },
-          empfaenger: { in: ['MSB', 'NB'] },
-        },
-      };
-
-      mockRepository.searchAhbLines.mockResolvedValue({
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 25,
-      });
-
-      await searchController.query(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRepository.searchAhbLines).toHaveBeenCalledWith({
-        page: 1,
-        pageSize: 25,
-        sort: [{ field: 'format_version', direction: 'asc' }],
-        q: '',
-        filters: {
-          sender: { in: ['LF'] },
-          empfaenger: { in: ['MSB', 'NB'] },
-        },
-      });
-      expect(mockStatus).toHaveBeenCalledWith(200);
-    });
-
-    it('should handle sender and empfaenger with other filters', async () => {
-      mockReq.body = {
-        page: 1,
-        pageSize: 25,
-        sort: [{ field: 'format_version', direction: 'asc' }],
-        q: 'test',
-        filters: {
-          format_version: { in: ['FV2510'] },
-          sender: { in: ['LF'] },
-          empfaenger: { in: ['MSB'] },
-          segment_code: { contains: 'NAD' },
-        },
-      };
-
-      mockRepository.searchAhbLines.mockResolvedValue({
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 25,
-      });
-
-      await searchController.query(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRepository.searchAhbLines).toHaveBeenCalledWith({
-        page: 1,
-        pageSize: 25,
-        sort: [{ field: 'format_version', direction: 'asc' }],
-        q: 'test',
-        filters: {
-          format_version: { in: ['FV2510'] },
-          sender: { in: ['LF'] },
-          empfaenger: { in: ['MSB'] },
-          segment_code: { contains: 'NAD' },
-        },
-      });
-      expect(mockStatus).toHaveBeenCalledWith(200);
+    it('creates its own service instance when none is provided', () => {
+      expect(new SearchController()).toBeInstanceOf(SearchController);
     });
   });
 });
