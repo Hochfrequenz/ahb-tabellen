@@ -9,7 +9,9 @@ export class AppError extends Error {
   ) {
     super(message);
     this.name = this.constructor.name;
-    Object.setPrototypeOf(this, AppError.prototype);
+    // Restore the prototype chain to the actual subclass (not hardcoded AppError),
+    // so `instanceof ValidationError` etc. work. `instanceof AppError` still holds.
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 
