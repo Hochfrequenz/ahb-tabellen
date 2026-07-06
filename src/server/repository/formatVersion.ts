@@ -6,7 +6,7 @@ interface FormatVersionsWithPruefis {
   [formatVersion: string]: Set<string>;
 }
 
-interface PruefiWithName {
+export interface PruefiWithName {
   pruefidentifikator: string;
   name: string;
 }

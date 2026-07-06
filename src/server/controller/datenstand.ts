@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
-import DatenstandRepository from '../repository/datenstand';
+import MetadataService from '../service/metadata.service';
 
 export default class DatenstandController {
-  private repository: DatenstandRepository;
+  private service: MetadataService;
 
-  constructor(repository?: DatenstandRepository) {
-    this.repository = repository ?? new DatenstandRepository();
+  constructor(service?: MetadataService) {
+    this.service = service ?? new MetadataService();
   }
 
   public async get(_req: Request, res: Response): Promise<void> {
-    const result = await this.repository.getLatestVeroeffentlichungsdatum();
+    const result = await this.service.getDatenstand();
     res.status(200).setHeader('Content-Type', 'application/json').json(result);
   }
 }
