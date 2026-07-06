@@ -55,6 +55,9 @@ export default class AhbService {
       throw new ValidationError('q must be a string');
     }
 
-    return this.repository.searchAhbLines(payload);
+    // Whitelist the known fields (as the controller did before) so stray body
+    // keys never reach the repository.
+    const { page, pageSize, sort, q, filters } = payload;
+    return this.repository.searchAhbLines({ page, pageSize, sort, q, filters });
   }
 }

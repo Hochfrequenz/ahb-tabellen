@@ -27,7 +27,7 @@ export default class AHBController {
         .setHeader('Content-Type', CONTENT_TYPE[fileType])
         .setHeader(
           'Content-Disposition',
-          `attachment; filename=AHB_${formatVersion}_${pruefi}.${fileType}`
+          `attachment; filename=AHB_${formatVersion}_${pruefi}.${format}`
         );
 
       if (fileType === FileType.JSON) {
