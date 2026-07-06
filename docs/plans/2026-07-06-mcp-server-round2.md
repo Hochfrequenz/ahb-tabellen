@@ -246,8 +246,31 @@ support before adding this.
    rejects wrong-audience tokens. Resolve the RFC 8707/audience wrinkle here.
 6. **Docs + deploy config** (CORS, env, Pulumi).
 
+## Verification evidence (stage, v1.9.0-rc02)
+
+The unauthenticated transport + all 9 tools were verified live on stage via two
+independent paths (evidence recorded in the issues):
+
+- **Raw HTTP / JSON-RPC** — [#837](https://github.com/Hochfrequenz/ahb-tabellen/issues/837):
+  `initialize`, `tools/list` (exactly 9 tools, all `readOnlyHint`), every tool, and the
+  validation error path (`isError`, no 500) all pass. `search_ahb_lines` reports 287,865
+  lines total; `get_datenstand` → 29.06.2026.
+- **Native MCP client path** ([StreamableHTTPClientTransport] via Claude Code) —
+  [#838](https://github.com/Hochfrequenz/ahb-tabellen/issues/838): all 9 tools work
+  natively, including a real chained diff analysis (Prüfi 55001, FV2604→FV2610). Confirms
+  Streamable HTTP survives the Azure App Service proxy — the main deployment risk.
+
+This closes the "verify transport on stage" item. Still pending (Phase B): the Auth0
+`resource`→`audience` flow, which needs an authenticated client run (see risk #1).
+
+**Follow-up surfaced during #838:** `get_ahb` (~55 KB) and `get_ahb_diff` (~119 KB)
+exceed a single tool-response token budget, so clients offload the payload to a file.
+Functionally correct, but a future improvement could offer a paginated/summarized mode
+for these two tools; for broad questions `search_ahb_lines` is already the efficient path.
+
 ## Out of scope (later)
 
 - Protecting the REST API with Auth0 + reconfiguring the Angular client to send tokens.
 - Fixing CSV export.
 - Per-tool scope-based authorization (start with "authenticated = allowed").
+- Paginated/summarized output mode for `get_ahb` / `get_ahb_diff` (see follow-up above).
