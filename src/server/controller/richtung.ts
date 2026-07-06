@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
-import RichtungRepository from '../repository/richtung';
+import MetadataService from '../service/metadata.service';
 
 export default class RichtungController {
-  private repository: RichtungRepository;
+  private service: MetadataService;
 
-  constructor(repository?: RichtungRepository) {
-    this.repository = repository ?? new RichtungRepository();
+  constructor(service?: MetadataService) {
+    this.service = service ?? new MetadataService();
   }
 
   public async list(_req: Request, res: Response): Promise<void> {
-    const richtungValues = await this.repository.getDistinctValues();
+    const richtungValues = await this.service.listDirections();
     res.status(200).setHeader('Content-Type', 'application/json').send(richtungValues);
   }
 }
