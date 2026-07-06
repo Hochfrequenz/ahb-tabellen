@@ -12,6 +12,8 @@ config:
     secure: AAABABkZ6JHu21N1Q6+hgJVXWzz7KkywfdZ84phM1XkWy6aTrm5zvSibf6PIxCcUJsJgeqDU3aexWUGI7ZH3nFOEIGtpoyKa
   ahb-tabellen:imageName: ghcr.io/hochfrequenz/ahb-tabellen
   ahb-tabellen:imageTag: v1.4.0-rc02
+  ahb-tabellen:mcpAuth0Audience: https://ahb-tabellen.stage.hochfrequenz.de/mcp
+  ahb-tabellen:mcpAuth0IssuerBaseUrl: https://auth.hochfrequenz.de/
   ahb-tabellen:ohDearHealthCheckSecret:
     secure: AAABAFE/v/fLv99CnNg0sBE42GYr5nMYhNJoa1prN9EgomNzl9D0B3vgse7uW3w6
   ahb-tabellen:websitesContainerStartTimeLimit: "300"
