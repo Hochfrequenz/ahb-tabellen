@@ -18,8 +18,8 @@
         Was du damit tun kannst
       </h3>
       <p class="text-sm md:text-base leading-relaxed mb-2">
-        Kurz gesagt: <strong>alles, was auf dieser Website geht, geht auch per MCP</strong>, nur eben
-        direkt in deinem KI-Assistenten. Zum Beispiel:
+        Kurz gesagt: <strong>alles, was auf dieser Website geht, geht auch per MCP</strong>, nur
+        eben direkt in deinem KI-Assistenten. Zum Beispiel:
       </p>
       <ul
         class="list-disc list-outside pl-5 space-y-1 text-sm md:text-base marker:text-hf-dunkel-rose">
@@ -50,7 +50,8 @@
       </div>
       <p class="text-xs md:text-sm mt-2 opacity-70">
         Beim ersten Verbinden öffnet sich gegebenenfalls ein Anmeldefenster. Melde dich dort mit
-        deinem gewohnten Hochfrequenz-Konto an (dasselbe Login wie für diese Website, ggf. lässt du dir erneut einen 6stelligen Code per Email zuschicken).
+        deinem gewohnten Hochfrequenz-Konto an (dasselbe Login wie für diese Website, ggf. lässt du
+        dir erneut einen 6stelligen Code per Email zuschicken).
       </p>
 
       <h3 class="text-sm md:text-base font-semibold uppercase tracking-wide mt-6 mb-2">
@@ -60,7 +61,7 @@
         Die genauen Schritte unterscheiden sich je nach Tool. Folge der offiziellen Anleitung deines
         KI-Assistenten und trage dort die oben genannte Server-Adresse ein:
       </p>
-      <ul class="space-y-2">
+      <ul class="space-y-4">
         <li>
           <a
             class="inline-flex items-center gap-1 font-medium text-hf-dunkel-blau hover:underline"
@@ -71,6 +72,22 @@
             <span class="opacity-60">(claude.ai &amp; Claude Desktop - „Custom Connectors")</span>
             <span class="mdi mdi-open-in-new text-base"></span>
           </a>
+        </li>
+        <li>
+          <a
+            class="inline-flex items-center gap-1 font-medium text-hf-dunkel-blau hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://code.claude.com/docs/en/mcp">
+            Claude Code (Terminal)
+            <span class="mdi mdi-open-in-new text-base"></span>
+          </a>
+          <pre
+            class="mt-1 rounded-lg bg-hf-weiss-rose border border-hf-grell-rose px-3 py-2 font-mono text-xs overflow-x-auto"><code>claude mcp add --transport http ahb-tabellen {{ mcpUrl }}</code></pre>
+          <p class="text-xs md:text-sm mt-1 opacity-70">
+            Danach im Claude-Prompt <code class="font-mono">/mcp</code> öffnen und „Authenticate"
+            wählen (öffnet das Login-Fenster).
+          </p>
         </li>
         <li>
           <a
@@ -91,6 +108,11 @@
             opencode
             <span class="mdi mdi-open-in-new text-base"></span>
           </a>
+          <pre
+            class="mt-1 rounded-lg bg-hf-weiss-rose border border-hf-grell-rose px-3 py-2 font-mono text-xs overflow-x-auto"><code>{{ opencodeConfig }}</code></pre>
+          <p class="text-xs md:text-sm mt-1 opacity-70">Danach einmalig anmelden:</p>
+          <pre
+            class="mt-1 rounded-lg bg-hf-weiss-rose border border-hf-grell-rose px-3 py-2 font-mono text-xs overflow-x-auto"><code>opencode mcp auth ahb-tabellen</code></pre>
         </li>
       </ul>
 

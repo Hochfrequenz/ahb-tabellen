@@ -21,6 +21,21 @@ export class McpInfoComponent implements OnInit {
    */
   readonly mcpUrl = `${window.location.origin}/mcp`;
 
+  /**
+   * Ready-to-paste opencode MCP config (see opencode.json). Held as a bound string so the
+   * JSON's literal braces don't collide with Angular's `{{ }}` / ICU template syntax.
+   */
+  readonly opencodeConfig = `{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "ahb-tabellen": {
+      "type": "remote",
+      "url": "${window.location.origin}/mcp",
+      "enabled": true
+    }
+  }
+}`;
+
   copied = false;
 
   constructor(private readonly title: Title) {}
