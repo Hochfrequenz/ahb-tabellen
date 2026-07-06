@@ -46,9 +46,11 @@ Whenever you want to change something in between frontend and backend, start by 
         └── shared/               # global components (header, footer, logo, etc.)
     ├── assets/                   # logo, favicon, etc.
     ├── server/
-        ├── controller/           # contains code to handle incoming http requests concerning AHB and FormatVersionen
-        ├── infrastructure/       # contains code to manage routing of API endpoints and interact with azure blob storage
-        └── repository/           # contains CRUD operations to register AHB/FormatVersionen related routers
+        ├── controller/           # thin HTTP adapters: parse request → call service → serialize response
+        ├── service/              # transport-agnostic business logic (shared by the REST API and the MCP server)
+        ├── mcp/                  # Model Context Protocol server (Streamable HTTP) exposing the services as tools
+        ├── infrastructure/       # API routing, database access, error handling
+        └── repository/           # CRUD / query operations against the SQLite database
     ├── index.html                # entry point for the angular web application
     ├── main.ts                   # bootstraps the angular web application
     ├── server.ts                 # sets up backend server
@@ -143,6 +145,100 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 
 Run `npm run ng-openapi-gen` to generate the OpenAPI specification and related TypeScript interfaces.
 This command will update the API client code based on the OpenAPI specification.
+
+## 🤖 MCP Server
+
+The backend also exposes the same AHB features as a [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server, so AI assistants can query the data as tools. It runs over **Streamable HTTP** on the same Express server, mounted at **`/mcp`**, and delegates to the same `src/server/service/` layer as the REST API.
+
+### Available tools
+
+All tools are read-only:
+
+| Tool                             | Description                                                          |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `get_ahb`                        | Retrieve a single AHB (JSON) by format version + Prüfidentifikator   |
+| `search_ahb_lines`               | Full-text / filtered, paginated search across AHB lines              |
+| `get_ahb_diff`                   | Line-level diff of one Prüfidentifikator between two format versions |
+| `get_ahb_diff_summary`           | Per-Prüfidentifikator change counts between two format versions      |
+| `list_format_versions`           | List all EDIFACT format versions (e.g. `FV2410`)                     |
+| `list_formate`                   | List all EDIFACT formats (e.g. `UTILMD`, `MSCONS`)                   |
+| `list_directions`                | List distinct sender / empfaenger direction values                   |
+| `get_datenstand`                 | Latest publication date (Veröffentlichungsdatum) of the data set     |
+| `list_pruefis_by_format_version` | List all Prüfidentifikatoren in a format version                     |
+
+### Endpoints
+
+- `POST /mcp` — MCP Streamable HTTP endpoint (stateless; use `POST`)
+- `GET /.well-known/oauth-protected-resource/mcp` — OAuth Protected Resource Metadata ([RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728)), only when auth is enabled
+
+### Authentication
+
+The MCP endpoint is protected with **Auth0** (OAuth 2.1) when configured, while the REST API stays open. The server acts as an OAuth **resource server**: MCP clients discover the Auth0 authorization server via the metadata endpoint, run the standard OAuth flow (PKCE, dynamic client registration), and send a `Bearer` access token whose audience is the MCP server.
+
+Configure via environment variables (see `.example.env`):
+
+```bash
+MCP_AUTH0_ISSUER_BASE_URL=https://auth.hochfrequenz.de/
+MCP_AUTH0_AUDIENCE=https://ahb-tabellen.hochfrequenz.de/mcp   # the Auth0 API identifier / canonical MCP URL
+# MCP_RESOURCE=...                                            # optional; defaults to MCP_AUTH0_AUDIENCE
+```
+
+If these are not set, the MCP endpoint runs **unauthenticated** (useful for local development).
+
+### Connecting a client
+
+The endpoint URL is `https://ahb-tabellen.hochfrequenz.de/mcp` (production) or `https://ahb-tabellen.stage.hochfrequenz.de/mcp` (stage). When auth is enabled the client will open a browser for the Auth0 login on first connect.
+
+**Claude (Claude Code / Claude Desktop)** — add a remote MCP server:
+
+```bash
+claude mcp add --transport http ahb-tabellen https://ahb-tabellen.hochfrequenz.de/mcp
+```
+
+Or in the Claude Desktop / `claude.ai` connectors UI, add a custom connector with the same URL. (Equivalent `claude_desktop_config.json` / `.mcp.json` entry:)
+
+```jsonc
+{
+  "mcpServers": {
+    "ahb-tabellen": {
+      "type": "http",
+      "url": "https://ahb-tabellen.hochfrequenz.de/mcp",
+    },
+  },
+}
+```
+
+**GitHub Copilot (VS Code)** — add to `.vscode/mcp.json` (or the user `mcp.json`):
+
+```jsonc
+{
+  "servers": {
+    "ahb-tabellen": {
+      "type": "http",
+      "url": "https://ahb-tabellen.hochfrequenz.de/mcp",
+    },
+  },
+}
+```
+
+Then enable the server in the Copilot Chat **Agent mode** tool picker.
+
+**opencode** — add to `opencode.json`:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "ahb-tabellen": {
+      "type": "remote",
+      "url": "https://ahb-tabellen.hochfrequenz.de/mcp",
+      "enabled": true,
+    },
+  },
+}
+```
+
+For local development against a server started with `npm run server:start`, use `http://localhost:3000/mcp`.
 
 ## 🚀 Deployment
 
