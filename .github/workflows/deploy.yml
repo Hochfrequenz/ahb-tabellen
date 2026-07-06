@@ -103,7 +103,7 @@ jobs:
 
       - name: Build and push Docker image for Stage
         id: push
-        uses: docker/build-push-action@v7.2.0
+        uses: docker/build-push-action@v7.3.0
         with:
           context: .
           push: true
@@ -191,7 +191,7 @@ jobs:
 
       - name: Build and push Docker image for Production
         id: push
-        uses: docker/build-push-action@v7.2.0
+        uses: docker/build-push-action@v7.3.0
         with:
           context: .
           push: true
