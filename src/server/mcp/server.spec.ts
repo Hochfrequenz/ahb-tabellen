@@ -62,12 +62,16 @@ describe('MCP server (in-memory integration)', () => {
       }
     });
 
-    it('advertises the EBD jump-off in the get_ahb and get_ahb_diff descriptions', async () => {
+    it('advertises the EBD and Bedingung jump-offs in the get_ahb and get_ahb_diff descriptions', async () => {
       const { tools } = await client.listTools();
       const byName = Object.fromEntries(tools.map(t => [t.name, t]));
       for (const name of ['get_ahb', 'get_ahb_diff']) {
+        // EBD jump-off
         expect(byName[name].description).toContain('ebd_key');
         expect(byName[name].description).toContain('machine-readable_entscheidungsbaumdiagramme');
+        // Bedingung / AHBicht jump-off
+        expect(byName[name].description).toContain('ahb_expression');
+        expect(byName[name].description).toContain('ahbicht-functions');
       }
     });
   });

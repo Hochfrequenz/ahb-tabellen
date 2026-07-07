@@ -3,6 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpServices } from './services';
 import { toToolResult } from './result';
 import { EBD_JUMP_HINT } from './ebd-hint';
+import { BEDINGUNG_JUMP_HINT } from './bedingung-hint';
 import { SearchPayload } from '../repository/ahb';
 
 /**
@@ -69,7 +70,9 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
       description:
         'Retrieve a single Anwendungshandbuch (AHB) as JSON for a Prüfidentifikator in a ' +
         'given format version. ' +
-        EBD_JUMP_HINT,
+        EBD_JUMP_HINT +
+        ' ' +
+        BEDINGUNG_JUMP_HINT,
       inputSchema: {
         formatVersion: z.string().describe(FORMAT_VERSION_DESC),
         pruefi: z.string().describe(PRUEFI_DESC),
@@ -113,7 +116,9 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
       description:
         'Line-level diff of one Prüfidentifikator between two format versions (added / ' +
         'deleted / modified / unchanged lines with old and new values). ' +
-        EBD_JUMP_HINT,
+        EBD_JUMP_HINT +
+        ' ' +
+        BEDINGUNG_JUMP_HINT,
       inputSchema: {
         pruefi: z.string().describe(PRUEFI_DESC),
         formatVersionNew: z.string().describe('Newer ' + FORMAT_VERSION_DESC),
