@@ -1,2 +1,6 @@
 CHANGELOG.md linguist-generated=true
 src/app/core/api/**/* linguist-generated=true
+
+# Shell scripts must keep LF endings so they run on containers even when checked
+# out on Windows (fixes "set: line 4: illegal option" from CRLF). See #563.
+*.sh text eol=lf
