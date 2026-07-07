@@ -1,3 +1,4 @@
+import { getCurrentEdifactFormatVersion } from '@hochfrequenz/efoli';
 import { assertPruefi, resolveFormatVersion, parseFileType } from './validation';
 import { ValidationError } from '../infrastructure/errors';
 import { FileType } from '../repository/ahb';
@@ -25,6 +26,13 @@ describe('validation', () => {
     ])('resolves the ISO date %p to %p', (date, expected) => {
       expect(resolveFormatVersion(date)).toBe(expected);
     });
+
+    it.each(['current', 'CURRENT', 'Current'])(
+      'resolves the keyword %p to the currently valid format version',
+      keyword => {
+        expect(resolveFormatVersion(keyword)).toBe(getCurrentEdifactFormatVersion());
+      }
+    );
 
     it.each(['FV231', 'FV23100', '2310', 'fv2310', 'FVabcd', ''])(
       'rejects the malformed value %p',

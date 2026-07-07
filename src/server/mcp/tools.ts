@@ -13,8 +13,9 @@ import { SearchPayload } from '../repository/ahb';
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
 
 const FORMAT_VERSION_DESC =
-  'EDIFACT format version FVYYYY (e.g. "FV2410"), or an ISO date (YYYY-MM-DD) which is ' +
-  'resolved server-side to the format version valid on that day.';
+  'EDIFACT format version FVYYYY (e.g. "FV2410"), the keyword "current" (the version valid ' +
+  'right now), or an ISO date (YYYY-MM-DD); "current" and dates are resolved server-side to the ' +
+  'format version valid on that day.';
 const PRUEFI_DESC = 'Prüfidentifikator: exactly 5 digits (e.g. "11001").';
 
 /** Names of all registered MCP tools, in registration order (used by tests). */

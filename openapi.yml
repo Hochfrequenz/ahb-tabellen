@@ -42,7 +42,7 @@ paths:
       parameters:
         - name: format-version
           in: path
-          description: Formatversion of the AHB to return (FVxxxx code or an ISO date YYYY-MM-DD)
+          description: Formatversion of the AHB to return (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
           required: true
           schema:
             $ref: '#/components/schemas/FormatVersion'
@@ -164,13 +164,13 @@ paths:
       parameters:
         - name: format-version-new
           in: query
-          description: The newer format version to compare (FVxxxx code or an ISO date YYYY-MM-DD)
+          description: The newer format version to compare (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
           required: true
           schema:
             $ref: '#/components/schemas/FormatVersion'
         - name: format-version-old
           in: query
-          description: The older format version to compare (FVxxxx code or an ISO date YYYY-MM-DD)
+          description: The older format version to compare (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
           required: true
           schema:
             $ref: '#/components/schemas/FormatVersion'
@@ -198,13 +198,13 @@ paths:
             example: '55014'
         - name: format-version-new
           in: query
-          description: The newer format version to compare (FVxxxx code or an ISO date YYYY-MM-DD)
+          description: The newer format version to compare (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
           required: true
           schema:
             $ref: '#/components/schemas/FormatVersion'
         - name: format-version-old
           in: query
-          description: The older format version to compare (FVxxxx code or an ISO date YYYY-MM-DD)
+          description: The older format version to compare (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
           required: true
           schema:
             $ref: '#/components/schemas/FormatVersion'
@@ -226,7 +226,7 @@ paths:
       parameters:
         - name: format-version
           in: path
-          description: Formatversion of the AHB to return (FVxxxx code or an ISO date YYYY-MM-DD)
+          description: Formatversion of the AHB to return (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
           required: true
           schema:
             $ref: '#/components/schemas/FormatVersion'
@@ -523,8 +523,9 @@ components:
     FormatVersion:
       type: string
       description: >
-        An EDIFACT format version code (`FVYYYY`, e.g. `FV2510`), or an ISO date
-        (`YYYY-MM-DD`) which is resolved server-side to the format version valid on that day.
+        An EDIFACT format version code (`FVYYYY`, e.g. `FV2510`), the keyword `current` (the
+        version valid right now), or an ISO date (`YYYY-MM-DD`). `current` and dates are resolved
+        server-side to the format version valid on that day.
       example: 'FV2510'
     Format:
       type: string

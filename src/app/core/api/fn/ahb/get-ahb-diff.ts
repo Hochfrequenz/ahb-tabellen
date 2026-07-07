@@ -19,12 +19,12 @@ export interface GetAhbDiff$Params {
   pruefi: string;
 
 /**
- * The newer format version to compare (FVxxxx code or an ISO date YYYY-MM-DD)
+ * The newer format version to compare (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
  */
   'format-version-new': FormatVersion;
 
 /**
- * The older format version to compare (FVxxxx code or an ISO date YYYY-MM-DD)
+ * The older format version to compare (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
  */
   'format-version-old': FormatVersion;
 }

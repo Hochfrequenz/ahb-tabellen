@@ -4,6 +4,6 @@
 
 
 /**
- * An EDIFACT format version code (`FVYYYY`, e.g. `FV2510`), or an ISO date (`YYYY-MM-DD`) which is resolved server-side to the format version valid on that day.
+ * An EDIFACT format version code (`FVYYYY`, e.g. `FV2510`), the keyword `current` (the version valid right now), or an ISO date (`YYYY-MM-DD`). `current` and dates are resolved server-side to the format version valid on that day.
  */
 export type FormatVersion = string;

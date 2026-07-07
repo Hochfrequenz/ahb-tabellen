@@ -1,6 +1,7 @@
 import {
   EdifactFormatVersion,
   getEdifactFormatVersion,
+  getCurrentEdifactFormatVersion,
   type CalendarDate,
 } from '@hochfrequenz/efoli';
 import { ValidationError } from '../infrastructure/errors';
@@ -61,10 +62,11 @@ function toCalendarDate(match: RegExpExecArray, value: string, fieldName: string
 /**
  * Resolve a caller-supplied format version to a canonical {@link EdifactFormatVersion}.
  *
- * Accepts either a known `FVxxxx` code or an ISO date (`YYYY-MM-DD`); a date is resolved via
- * efoli to the format version valid on that day (treated as midnight Europe/Berlin). This is the
- * single choke point shared by every transport (HTTP, MCP), so overloading the string here
- * lets a date be used anywhere a format version is accepted without touching each surface.
+ * Accepts a known `FVxxxx` code, the keyword `current` (case-insensitive → the format version
+ * valid right now), or an ISO date (`YYYY-MM-DD`); a date is resolved via efoli to the format
+ * version valid on that day (treated as midnight Europe/Berlin). This is the single choke point
+ * shared by every transport (HTTP, MCP), so overloading the string here lets a date or `current`
+ * be used anywhere a format version is accepted without touching each surface.
  *
  * @param fieldName label used in the error message so callers with multiple format versions
  *   (e.g. diff endpoints) can identify which one was invalid.
@@ -74,6 +76,9 @@ export function resolveFormatVersion(
   value: string,
   fieldName = 'format version'
 ): EdifactFormatVersion {
+  if (value.toLowerCase() === 'current') {
+    return getCurrentEdifactFormatVersion();
+  }
   const isoMatch = ISO_DATE_PATTERN.exec(value);
   if (isoMatch) {
     return getEdifactFormatVersion(toCalendarDate(isoMatch, value, fieldName));
