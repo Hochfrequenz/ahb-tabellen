@@ -38,6 +38,13 @@ assert oh_dear_health_check_secret, "ohDearHealthCheckSecret must be set"
 db_7z_archive_password = config.require_secret("db_7z_archive_password")
 assert db_7z_archive_password, "db_7z_archive_password must be set"
 
+# MCP server Auth0 configuration (optional). Set BOTH to protect the /mcp endpoint with
+# Auth0; leave BOTH unset to run /mcp unauthenticated (the server logs a warning). The
+# issuer is the shared tenant; the audience is the per-environment canonical /mcp URL
+# (the Auth0 API identifier). Setting only one is a misconfiguration the server rejects.
+mcp_auth0_issuer_base_url = config.get("mcpAuth0IssuerBaseUrl")
+mcp_auth0_audience = config.get("mcpAuth0Audience")
+
 # App Service Plan SKU configuration (see https://azure.microsoft.com/pricing/details/app-service/)
 # Common SKUs: B1/B2/B3 (Basic), S1/S2/S3 (Standard), P1v2/P2v2/P3v2 (PremiumV2)
 app_service_plan_sku_name = config.get("appServicePlanSkuName") or "B1"
@@ -79,6 +86,39 @@ app_service_plan = azure_native.web.AppServicePlan(
     ),
 )
 
+# Base application settings for the container.
+app_settings = [
+    azure_native.web.NameValuePairArgs(
+        name="DOCKER_REGISTRY_SERVER_URL", value="https://ghcr.io"
+    ),
+    azure_native.web.NameValuePairArgs(
+        name="DOCKER_REGISTRY_SERVER_USERNAME", value="hf-krechan"
+    ),  # Provide GitHub username
+    azure_native.web.NameValuePairArgs(
+        name="DOCKER_REGISTRY_SERVER_PASSWORD", value=ghcr_token
+    ),  # Provide GitHub token or PAT
+    azure_native.web.NameValuePairArgs(name="PORT", value=str(container_port)),
+    azure_native.web.NameValuePairArgs(
+        name="BEDINGUNGSBAUM_BASE_URL", value=bedingungsbaum_base_url
+    ),
+    azure_native.web.NameValuePairArgs(name="EBD_BASE_URL", value=ebd_base_url),
+    azure_native.web.NameValuePairArgs(name="ENVIRONMENT", value=environment),
+    azure_native.web.NameValuePairArgs(name="WEBSITES_CONTAINER_START_TIME_LIMIT", value=websites_container_start_time_limit),
+    azure_native.web.NameValuePairArgs(name="OH_DEAR_HEALTH_CHECK_SECRET", value=oh_dear_health_check_secret),
+    azure_native.web.NameValuePairArgs(name="DB_7Z_ARCHIVE_PASSWORD", value=db_7z_archive_password),
+]
+
+# Enable MCP authentication only when both values are configured for this stack.
+if mcp_auth0_issuer_base_url and mcp_auth0_audience:
+    app_settings.extend([
+        azure_native.web.NameValuePairArgs(
+            name="MCP_AUTH0_ISSUER_BASE_URL", value=mcp_auth0_issuer_base_url
+        ),
+        azure_native.web.NameValuePairArgs(
+            name="MCP_AUTH0_AUDIENCE", value=mcp_auth0_audience
+        ),
+    ])
+
 # Create a Web App
 web_app = azure_native.web.WebApp(
     "ahb-tabellen",
@@ -86,28 +126,7 @@ web_app = azure_native.web.WebApp(
     location=resource_group.location,
     server_farm_id=app_service_plan.id,
     site_config=azure_native.web.SiteConfigArgs(
-        app_settings=[
-            azure_native.web.NameValuePairArgs(
-                name="DOCKER_REGISTRY_SERVER_URL", value="https://ghcr.io"
-            ),
-            azure_native.web.NameValuePairArgs(
-                name="DOCKER_REGISTRY_SERVER_USERNAME", value="hf-krechan"
-            ),  # Provide GitHub username
-            azure_native.web.NameValuePairArgs(
-                name="DOCKER_REGISTRY_SERVER_PASSWORD", value=ghcr_token
-            ),  # Provide GitHub token or PAT
-            azure_native.web.NameValuePairArgs(name="PORT", value=str(container_port)),
-            azure_native.web.NameValuePairArgs(
-                name="BEDINGUNGSBAUM_BASE_URL", value=bedingungsbaum_base_url
-            ),
-            azure_native.web.NameValuePairArgs(
-                name="EBD_BASE_URL", value=ebd_base_url
-            ),
-            azure_native.web.NameValuePairArgs(name="ENVIRONMENT", value=environment),
-            azure_native.web.NameValuePairArgs(name="WEBSITES_CONTAINER_START_TIME_LIMIT", value=websites_container_start_time_limit),
-            azure_native.web.NameValuePairArgs(name="OH_DEAR_HEALTH_CHECK_SECRET", value=oh_dear_health_check_secret),
-            azure_native.web.NameValuePairArgs(name="DB_7Z_ARCHIVE_PASSWORD", value=db_7z_archive_password),
-        ],
+        app_settings=app_settings,
         linux_fx_version=f"DOCKER|{image_name_with_tag}",
     ),
 )

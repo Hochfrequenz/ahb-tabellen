@@ -1,0 +1,127 @@
+<div class="min-h-screen flex flex-col">
+  <section class="bg-hf-grell-rose flex-grow flex justify-center px-4 py-8 md:py-12">
+    <div
+      class="rounded-3xl w-full max-w-2xl bg-hf-pastell-rose p-6 md:p-10 text-hf-weiches-schwarz">
+      <h1 class="text-2xl md:text-3xl pb-3 md:pb-4">MCP-Integration</h1>
+      <h2
+        class="text-base md:text-lg border-b-2 border-hf-grell-rose pb-2 md:pb-3 mb-4 md:mb-6 uppercase">
+        AHB-Tabellen in deinem KI-Assistenten
+      </h2>
+
+      <p class="text-sm md:text-base leading-relaxed mb-4">
+        Die AHB-Tabellen stehen zusätzlich als <strong>MCP-Server</strong> (Model Context Protocol)
+        bereit. Damit kannst du die AHB-Daten direkt in deinem KI-Assistenten – etwa Claude, GitHub
+        Copilot oder opencode – abfragen, ohne diese Website zu öffnen.
+      </p>
+
+      <h3 class="text-sm md:text-base font-semibold uppercase tracking-wide mt-6 mb-2">
+        Was du damit tun kannst
+      </h3>
+      <p class="text-sm md:text-base leading-relaxed mb-2">
+        Kurz gesagt: <strong>alles, was auf dieser Website geht, geht auch per MCP</strong>, nur
+        eben direkt in deinem KI-Assistenten. Zum Beispiel:
+      </p>
+      <ul
+        class="list-disc list-outside pl-5 space-y-1 text-sm md:text-base marker:text-hf-dunkel-rose">
+        <li>einzelne AHBs mittels Prüfidentifikator abrufen,</li>
+        <li>über alle AHBs hinweg suchen und filtern,</li>
+        <li>zwei Formatversionen eines AHBs vergleichen.</li>
+      </ul>
+      <p class="text-xs md:text-sm mt-2 opacity-70">
+        Der MCP-Server ist wie diese Website kostenfrei nutzbar. Du musst dich lediglich anmelden.
+      </p>
+
+      <h3 class="text-sm md:text-base font-semibold uppercase tracking-wide mt-6 mb-2">
+        Server-Adresse
+      </h3>
+      <p class="text-sm md:text-base leading-relaxed mb-2">
+        Trage in deinem KI-Tool die folgende Adresse als Remote- bzw. HTTP-MCP-Server ein:
+      </p>
+      <div
+        class="flex items-center gap-2 rounded-xl bg-hf-weiss-rose border border-hf-grell-rose px-3 py-2 md:px-4 md:py-3">
+        <code class="flex-1 font-mono text-xs md:text-sm break-all">{{ mcpUrl }}</code>
+        <button
+          type="button"
+          (click)="copyUrl()"
+          [attr.aria-label]="copied ? 'Kopiert' : 'Adresse kopieren'"
+          class="flex-none rounded-lg bg-hf-grell-rose hover:bg-hf-dunkel-rose transition-colors px-3 py-1.5 text-xs md:text-sm">
+          {{ copied ? 'Kopiert ✓' : 'Kopieren' }}
+        </button>
+      </div>
+      <p class="text-xs md:text-sm mt-2 opacity-70">
+        Beim ersten Verbinden öffnet sich gegebenenfalls ein Anmeldefenster. Melde dich dort mit
+        deinem gewohnten Hochfrequenz-Konto an (dasselbe Login wie für diese Website, ggf. lässt du
+        dir erneut einen 6stelligen Code per Email zuschicken).
+      </p>
+
+      <h3 class="text-sm md:text-base font-semibold uppercase tracking-wide mt-6 mb-2">
+        Einrichtung in deinem KI-Tool
+      </h3>
+      <p class="text-sm md:text-base leading-relaxed mb-3">
+        Die genauen Schritte unterscheiden sich je nach Tool. Folge der offiziellen Anleitung deines
+        KI-Assistenten und trage dort die oben genannte Server-Adresse ein:
+      </p>
+      <ul class="space-y-4">
+        <li>
+          <a
+            class="inline-flex items-center gap-1 font-medium text-hf-dunkel-blau hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://modelcontextprotocol.io/docs/tutorials/use-remote-mcp-server">
+            Claude
+            <span class="opacity-60">(claude.ai &amp; Claude Desktop - „Custom Connectors")</span>
+            <span class="mdi mdi-open-in-new text-base"></span>
+          </a>
+        </li>
+        <li>
+          <a
+            class="inline-flex items-center gap-1 font-medium text-hf-dunkel-blau hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://code.claude.com/docs/en/mcp">
+            Claude Code (Terminal)
+            <span class="mdi mdi-open-in-new text-base"></span>
+          </a>
+          <pre
+            class="mt-1 rounded-lg bg-hf-weiss-rose border border-hf-grell-rose px-3 py-2 font-mono text-xs overflow-x-auto"><code>claude mcp add --transport http ahb-tabellen {{ mcpUrl }}</code></pre>
+          <p class="text-xs md:text-sm mt-1 opacity-70">
+            Danach im Claude-Prompt <code class="font-mono">/mcp</code> öffnen und „Authenticate"
+            wählen (öffnet das Login-Fenster).
+          </p>
+        </li>
+        <li>
+          <a
+            class="inline-flex items-center gap-1 font-medium text-hf-dunkel-blau hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://code.visualstudio.com/docs/copilot/chat/mcp-servers">
+            GitHub Copilot in VS Code
+            <span class="mdi mdi-open-in-new text-base"></span>
+          </a>
+        </li>
+        <li>
+          <a
+            class="inline-flex items-center gap-1 font-medium text-hf-dunkel-blau hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://opencode.ai/docs/mcp-servers/">
+            opencode
+            <span class="mdi mdi-open-in-new text-base"></span>
+          </a>
+          <pre
+            class="mt-1 rounded-lg bg-hf-weiss-rose border border-hf-grell-rose px-3 py-2 font-mono text-xs overflow-x-auto"><code>{{ opencodeConfig }}</code></pre>
+          <p class="text-xs md:text-sm mt-1 opacity-70">Danach einmalig anmelden:</p>
+          <pre
+            class="mt-1 rounded-lg bg-hf-weiss-rose border border-hf-grell-rose px-3 py-2 font-mono text-xs overflow-x-auto"><code>opencode mcp auth ahb-tabellen</code></pre>
+        </li>
+      </ul>
+
+      <div class="mt-8 pt-4 border-t-2 border-dashed border-hf-grell-rose">
+        <a routerLink="/" class="inline-flex items-center gap-1 text-sm hover:underline">
+          <span class="mdi mdi-arrow-left text-base"></span> Zurück zur Startseite
+        </a>
+      </div>
+    </div>
+  </section>
+  <app-footer />
+</div>

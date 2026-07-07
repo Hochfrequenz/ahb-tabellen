@@ -21,7 +21,8 @@
     "ng-openapi-gen": "ng-openapi-gen --input openapi.yml --output ./src/app/core/api --indexFile=true",
     "lint": "ng lint",
     "install-submodules": "git submodule update --init --recursive",
-    "test": "jest ."
+    "test": "jest .",
+    "verify:mcp": "node scripts/verify-mcp.mjs"
   },
   "watch": {
     "server:start": {
@@ -48,10 +49,12 @@
     "@auth0/auth0-angular": "^2.2.3",
     "@hochfrequenz/efoli": "^0.0.8",
     "@mdi/font": "^7.4.47",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "cors": "^2.8.5",
     "diff": "^8.0.2",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
+    "express-oauth2-jwt-bearer": "^1.9.1",
     "prettier": "^3.5.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "~7.8.2",
@@ -59,6 +62,7 @@
     "tslib": "^2.8.1",
     "typeorm": "^0.3.24",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "zod": "^4.4.3",
     "zone.js": "~0.15.1"
   },
   "devDependencies": {

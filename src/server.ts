@@ -7,6 +7,7 @@ import cors from 'cors';
 import router from './server/infrastructure/api.routes';
 import { httpErrorHandler } from './server/infrastructure/errors';
 import { AppDataSource } from './server/infrastructure/database';
+import { mountMcp } from './server/mcp/http';
 import 'reflect-metadata';
 
 const server = express();
@@ -51,6 +52,10 @@ server.get('/health', (_, res) => res.send());
 server.get('/readiness', (_, res) => res.send());
 
 server.use('/api', router);
+
+// Mount the MCP server (Streamable HTTP) + its OAuth metadata. MUST be registered before
+// the static/catch-all routes below so /mcp and /.well-known are not shadowed by the SPA.
+mountMcp(server);
 
 // Apply error handler middleware
 server.use(httpErrorHandler);
