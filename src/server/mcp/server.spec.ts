@@ -66,12 +66,14 @@ describe('MCP server (in-memory integration)', () => {
       const { tools } = await client.listTools();
       const byName = Object.fromEntries(tools.map(t => [t.name, t]));
       for (const name of ['get_ahb', 'get_ahb_diff']) {
+        const tool = byName[name];
+        expect(tool).toBeDefined();
         // EBD jump-off
-        expect(byName[name].description).toContain('ebd_key');
-        expect(byName[name].description).toContain('machine-readable_entscheidungsbaumdiagramme');
+        expect(tool.description).toContain('ebd_key');
+        expect(tool.description).toContain('machine-readable_entscheidungsbaumdiagramme');
         // Bedingung / AHBicht jump-off
-        expect(byName[name].description).toContain('ahb_expression');
-        expect(byName[name].description).toContain('ahbicht-functions');
+        expect(tool.description).toContain('ahb_expression');
+        expect(tool.description).toContain('ahbicht-functions');
       }
     });
   });

@@ -1,7 +1,7 @@
 /**
  * Bedingung (condition-expression) jump-off hint for MCP tools.
  *
- * AHB lines carry an `ahb_expression` (and diff sides a `line_ahb_status`) that may contain
+ * AHB lines carry an `ahb_expression` (and diff sides carry a `line_ahb_status`) that may contain
  * a condition expression with bracketed conditions, e.g. `Muss [2] ∧ [3]`. Unlike the EBD
  * case there is no key to extract — the expression itself is already in the data — so this is
  * purely an affordance telling the LLM how to resolve/evaluate those conditions with AHBicht.
