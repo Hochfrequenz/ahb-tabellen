@@ -9,8 +9,8 @@ describe('extractEbdKey', () => {
     expect(extractEbdKey('Prüfschritt E_0004 gemäß EBD')).toBe('E_0004');
   });
 
-  it('returns the first key when several are present', () => {
-    expect(extractEbdKey('E_0401 / E_0500')).toBe('E_0401');
+  it('returns the last key when several are present (parity with the old frontend regex)', () => {
+    expect(extractEbdKey('E_0401 / E_0500')).toBe('E_0500');
   });
 
   it.each([null, undefined, '', '   '])('returns null for %p', value => {
