@@ -1,5 +1,6 @@
 import AhbDiffRepository, { AhbDiffResult, AhbDiffSummary } from '../repository/ahbDiff';
 import { assertPruefi, assertFormatVersion } from './validation';
+import { extractEbdKey } from './ebd';
 
 /**
  * Transport-agnostic application logic for AHB version diffs.
@@ -21,7 +22,19 @@ export default class AhbDiffService {
     assertFormatVersion(formatVersionNew, 'format-version-new');
     assertFormatVersion(formatVersionOld, 'format-version-old');
 
-    return this.repository.getDiff(pruefi, formatVersionNew, formatVersionOld);
+    const result = await this.repository.getDiff(pruefi, formatVersionNew, formatVersionOld);
+
+    // Detect the EBD key per side (single source of truth; consumers build their links).
+    for (const line of result.lines) {
+      if (line.old) {
+        line.old.ebd_key = extractEbdKey(line.old.qualifier);
+      }
+      if (line.new) {
+        line.new.ebd_key = extractEbdKey(line.new.qualifier);
+      }
+    }
+
+    return result;
   }
 
   public async getSummary(

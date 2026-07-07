@@ -4,12 +4,16 @@
 
 
 /**
- * One operator should be provided per field
+ * One operator should be provided per field. An empty filter object `{}` applies no constraint on that field.
  */
 export interface FilterValue {
   contains?: string;
   endsWith?: string;
   eq?: string;
+
+  /**
+   * Match any of the listed values (SQL `IN`). An **empty array is ignored** — it applies no constraint on this field and therefore matches all rows, rather than matching none. Omit the `in` operator (or the whole filter) when there is nothing to filter by.
+   */
   in?: Array<string>;
   isNotNull?: boolean;
   isNull?: boolean;

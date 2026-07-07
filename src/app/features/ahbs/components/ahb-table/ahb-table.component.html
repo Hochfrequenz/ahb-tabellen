@@ -61,9 +61,9 @@
             [innerHTML]="line.segment_code | highlight: highlight()"></td>
           <td class="px-6 py-4" [innerHTML]="line.data_element | highlight: highlight()"></td>
           <td class="px-6 py-4">
-            @if (generateEbdDeepLink(line.value_pool_entry) !== null) {
+            @if (generateEbdDeepLink(line.ebd_key) !== null) {
               <a
-                [href]="generateEbdDeepLink(line.value_pool_entry)"
+                [href]="generateEbdDeepLink(line.ebd_key)"
                 target="_blank"
                 class="hover:underline font-bold text-hf-dunkel-blau flex flex-row gap-1 items-center">
                 <span [innerHTML]="line.value_pool_entry | highlight: highlight()"></span>

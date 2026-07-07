@@ -196,16 +196,11 @@ export class ComparisonTableComponent {
     return `${environment.bedingungsbaumBaseUrl}/tree/?format=${getFormatFromPruefi(this.pruefi)}&format_version=${formatVersion}&expression=${encodedExpression}`;
   }
 
-  generateEbdDeepLink(qualifier: string | null | undefined, formatVersion: string): string | null {
-    if (!qualifier || qualifier.trim().length === 0) {
+  generateEbdDeepLink(ebdKey: string | null | undefined, formatVersion: string): string | null {
+    if (!ebdKey) {
       return null;
     }
-    const regex = /^.*\b(?<ebd_key>E_\d+)\b.*$/;
-    const match = qualifier.match(regex);
-    if (!match?.groups) {
-      return null;
-    }
-    const ebdKey = match.groups['ebd_key']!;
+    // EBD detection now happens in the backend (side.ebd_key); we only build the link.
     return `${environment.ebdBaseUrl}/ebd/?formatversion=${formatVersion}&ebd=${ebdKey}`;
   }
 }

@@ -18,6 +18,7 @@ export interface AhbDiffSide {
   line_name?: string | null;
   line_type?: string | null;
   bedingung?: string | null;
+  ebd_key?: string | null;
 }
 
 export interface AhbDiffLineJoined {

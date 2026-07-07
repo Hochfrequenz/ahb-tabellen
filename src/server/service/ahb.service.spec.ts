@@ -30,6 +30,22 @@ describe('AhbService', () => {
       expect(result).toEqual({ fileType: FileType.JSON, content: ahb });
     });
 
+    it('enriches JSON lines with the detected EBD key', async () => {
+      const ahb = {
+        meta: {},
+        lines: [
+          { value_pool_entry: 'E_0004' },
+          { value_pool_entry: 'Prüfschritt E_0500 gemäß EBD' },
+          { value_pool_entry: 'no key here' },
+        ],
+      } as never;
+      mockRepository.get.mockResolvedValue(ahb);
+
+      const { content } = await service.getAhb('11001', 'FV2410', 'json');
+      const lines = (content as { lines: { ebd_key: string | null }[] }).lines;
+      expect(lines.map(l => l.ebd_key)).toEqual(['E_0004', 'E_0500', null]);
+    });
+
     it('maps xlsx to the XLSX file type', async () => {
       const buffer = Buffer.from('xlsx');
       mockRepository.get.mockResolvedValue(buffer);

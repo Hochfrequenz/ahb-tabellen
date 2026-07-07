@@ -474,6 +474,11 @@ components:
               value_pool_entry:
                 type: string
                 example: 'Entry1'
+              ebd_key:
+                type: string
+                nullable: true
+                description: EBD decision-tree key (e.g. E_0401) detected in value_pool_entry, if any
+                example: 'E_0401'
               line_type:
                 type: string
                 example: 'segment'
@@ -648,6 +653,10 @@ components:
         bedingung:
           type: string
           nullable: true
+        ebd_key:
+          type: string
+          nullable: true
+          description: EBD decision-tree key (e.g. E_0401) detected in qualifier, if any
     AhbDiffSummary:
       type: object
       description: Aggregated diff statistics per Pruefidentifikator
