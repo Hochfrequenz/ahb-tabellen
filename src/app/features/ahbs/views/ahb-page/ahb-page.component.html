@@ -41,7 +41,7 @@
   </app-header>
 
   <!-- Scrollable Content -->
-  <div #scroll class="flex-1 overflow-auto relative bg-hf-pastell-rot" *ngIf="!errorOccurred">
+  <div #scroll class="flex-1 overflow-auto relative bg-hf-pastell-rot pb-10" *ngIf="!errorOccurred">
     <!-- Metadata Section -->
     @if (ahb$ | async; as ahb) {
       <div class="flex flex-col md:flex-row mb-10">
