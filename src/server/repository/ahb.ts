@@ -216,6 +216,10 @@ export default class AHBRepository {
             [`${paramBase}_ends`]: `%${value.endsWith.toLowerCase()}`,
           });
         }
+        // An empty `in` array applies no constraint (the field is left unfiltered), rather than
+        // matching zero rows. This is intentional and matches the frontend, which omits the `in`
+        // filter entirely when no values are selected. It also avoids an invalid `IN ()` SQL clause.
+        // Documented in openapi.yml (FilterValue.in).
         if (value.in && value.in.length > 0) {
           queryBuilder.andWhere(`al.${columnName} IN (:...${paramBase}_in)`, {
             [`${paramBase}_in`]: value.in,
