@@ -76,7 +76,7 @@ export function resolveFormatVersion(
   value: string,
   fieldName = 'format version'
 ): EdifactFormatVersion {
-  if (value.toLowerCase() === 'current') {
+  if (typeof value === 'string' && value.toLowerCase() === 'current') {
     return getCurrentEdifactFormatVersion();
   }
   const isoMatch = ISO_DATE_PATTERN.exec(value);
