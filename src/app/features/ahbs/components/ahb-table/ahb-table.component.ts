@@ -240,16 +240,11 @@ export class AhbTableComponent {
     return `${environment.bedingungsbaumBaseUrl}/tree/?format=${getFormatFromPruefi(this.pruefi())}&format_version=${this.formatVersion()}&expression=${encodedExpression}`;
   }
 
-  generateEbdDeepLink(value_pool_entry: string | null): string | null {
-    if (!value_pool_entry || value_pool_entry.trim().length === 0) {
+  generateEbdDeepLink(ebdKey: string | null | undefined): string | null {
+    if (!ebdKey) {
       return null;
     }
-    const regex = /^.*\b(?<ebd_key>E_\d+)\b.*$/;
-    const match = value_pool_entry.match(regex);
-    if (!match?.groups) {
-      return null;
-    }
-    const ebdKey = match.groups['ebd_key']!;
+    // EBD detection now happens in the backend (line.ebd_key); we only build the link.
     // e.g. https://ebd.stage.hochfrequenz.de/ebd/?formatversion=FV2504&ebd=E_0004
     return `${environment.ebdBaseUrl}/ebd/?formatversion=${this.formatVersion()}&ebd=${ebdKey}`;
   }

@@ -9,6 +9,11 @@
 export interface AhbDiffSide {
   bedingung?: string | null;
   data_element?: string | null;
+
+  /**
+   * EBD decision-tree key (e.g. E_0401) detected in qualifier, if any
+   */
+  ebd_key?: string | null;
   line_ahb_status?: string | null;
   line_name?: string | null;
   line_type?: string | null;

@@ -35,6 +35,27 @@ describe('AhbDiffService', () => {
       expect(mockRepository.getDiff).toHaveBeenCalledWith('11042', 'FV2504', 'FV2410');
     });
 
+    it('detects the EBD key per side from the qualifier', async () => {
+      const result = {
+        lines: [
+          { old: { qualifier: 'E_0401' }, new: { qualifier: 'foo' } },
+          { old: null, new: { qualifier: 'siehe E_0500' } },
+        ],
+        meta: {
+          pruefidentifikator: '11042',
+          format_version_new: 'FV2504',
+          format_version_old: 'FV2410',
+        },
+      } as never;
+      mockRepository.getDiff.mockResolvedValue(result);
+
+      const diff = await service.getDiff('11042', 'FV2504', 'FV2410');
+      expect(diff.lines[0].old?.ebd_key).toBe('E_0401');
+      expect(diff.lines[0].new?.ebd_key).toBeNull();
+      expect(diff.lines[1].old).toBeNull();
+      expect(diff.lines[1].new?.ebd_key).toBe('E_0500');
+    });
+
     it.each(['1234', 'abcde'])('rejects invalid pruefi %p', async invalid => {
       await expect(service.getDiff(invalid, 'FV2504', 'FV2410')).rejects.toThrow(
         'Invalid Prüfidentifikator format'

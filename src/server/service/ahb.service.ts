@@ -2,6 +2,7 @@ import { Ahb } from '../../app/core/api/models';
 import AHBRepository, { FileType, SearchPayload, SearchResult } from '../repository/ahb';
 import { ValidationError } from '../infrastructure/errors';
 import { assertPruefi, assertFormatVersion, parseFileType } from './validation';
+import { extractEbdKey } from './ebd';
 
 /**
  * Transport-agnostic application logic for AHB retrieval and search.
@@ -33,6 +34,15 @@ export default class AhbService {
 
     const fileType = parseFileType(format);
     const content = await this.repository.get(pruefi, formatVersion, fileType);
+
+    // Enrich JSON lines with the detected EBD key (single source of truth for EBD
+    // detection; the frontend/MCP build their own links from it). xlsx/csv are binary.
+    if (fileType === FileType.JSON) {
+      const ahb = content as Ahb;
+      for (const line of ahb.lines) {
+        line.ebd_key = extractEbdKey(line.value_pool_entry);
+      }
+    }
 
     return { fileType, content };
   }

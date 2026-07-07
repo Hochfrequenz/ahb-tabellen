@@ -14,6 +14,11 @@ export interface Ahb {
 'segment_code': string;
 'segment_group_key': string;
 'value_pool_entry': string;
+
+/**
+ * EBD decision-tree key (e.g. E_0401) detected in value_pool_entry, if any
+ */
+'ebd_key'?: string | null;
 'line_type': string;
 }>;
   meta: {

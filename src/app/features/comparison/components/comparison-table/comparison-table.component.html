@@ -78,7 +78,7 @@
           <td
             class="px-2 py-1.5 border-b border-hf-grell-rose break-words"
             [class]="getChangedColumnClass(line, 'qualifier')">
-            @if (generateEbdDeepLink(getQualifier(line, 'old'), formatVersionOld); as ebdLink) {
+            @if (generateEbdDeepLink(line.old?.ebd_key, formatVersionOld); as ebdLink) {
               <a
                 [href]="ebdLink"
                 target="_blank"
@@ -145,7 +145,7 @@
           <td
             class="px-2 py-1.5 border-b border-hf-grell-rose break-words"
             [class]="getChangedColumnClass(line, 'qualifier')">
-            @if (generateEbdDeepLink(getQualifier(line, 'new'), formatVersionNew); as ebdLink) {
+            @if (generateEbdDeepLink(line.new?.ebd_key, formatVersionNew); as ebdLink) {
               <a
                 [href]="ebdLink"
                 target="_blank"
