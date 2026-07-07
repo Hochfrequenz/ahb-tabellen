@@ -13,7 +13,7 @@ import { FormatVersion } from '../../models/format-version';
 export interface GetAhb$Csv$Params {
 
 /**
- * Formatversion of the AHB to return
+ * Formatversion of the AHB to return (FVxxxx code or an ISO date YYYY-MM-DD)
  */
   'format-version': FormatVersion;
 

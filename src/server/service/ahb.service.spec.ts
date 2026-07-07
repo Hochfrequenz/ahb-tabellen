@@ -46,6 +46,15 @@ describe('AhbService', () => {
       expect(lines.map(l => l.ebd_key)).toEqual(['E_0004', 'E_0500', null]);
     });
 
+    it('resolves an ISO date to the applicable format version before hitting the repository', async () => {
+      const ahb = { meta: {}, lines: [] } as never;
+      mockRepository.get.mockResolvedValue(ahb);
+
+      await service.getAhb('11001', '2024-06-01', 'json');
+
+      expect(mockRepository.get).toHaveBeenCalledWith('11001', 'FV2404', FileType.JSON);
+    });
+
     it('maps xlsx to the XLSX file type', async () => {
       const buffer = Buffer.from('xlsx');
       mockRepository.get.mockResolvedValue(buffer);

@@ -1,7 +1,7 @@
 import { Ahb } from '../../app/core/api/models';
 import AHBRepository, { FileType, SearchPayload, SearchResult } from '../repository/ahb';
 import { ValidationError } from '../infrastructure/errors';
-import { assertPruefi, assertFormatVersion, parseFileType } from './validation';
+import { assertPruefi, resolveFormatVersion, parseFileType } from './validation';
 import { extractEbdKey } from './ebd';
 
 /**
@@ -30,10 +30,10 @@ export default class AhbService {
     format: string
   ): Promise<{ fileType: FileType; content: Ahb | Buffer }> {
     assertPruefi(pruefi);
-    assertFormatVersion(formatVersion);
+    const resolvedFormatVersion = resolveFormatVersion(formatVersion);
 
     const fileType = parseFileType(format);
-    const content = await this.repository.get(pruefi, formatVersion, fileType);
+    const content = await this.repository.get(pruefi, resolvedFormatVersion, fileType);
 
     // Enrich JSON lines with the detected EBD key (single source of truth for EBD
     // detection; the frontend/MCP build their own links from it). xlsx/csv are binary.
