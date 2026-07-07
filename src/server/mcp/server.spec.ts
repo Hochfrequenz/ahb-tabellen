@@ -61,6 +61,15 @@ describe('MCP server (in-memory integration)', () => {
         expect(tool.description).toBeTruthy();
       }
     });
+
+    it('advertises the EBD jump-off in the get_ahb and get_ahb_diff descriptions', async () => {
+      const { tools } = await client.listTools();
+      const byName = Object.fromEntries(tools.map(t => [t.name, t]));
+      for (const name of ['get_ahb', 'get_ahb_diff']) {
+        expect(byName[name].description).toContain('ebd_key');
+        expect(byName[name].description).toContain('machine-readable_entscheidungsbaumdiagramme');
+      }
+    });
   });
 
   describe('tool calls delegate to the services', () => {
