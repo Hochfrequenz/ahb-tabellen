@@ -15,6 +15,7 @@ export type { AhbDiffStats } from './models/ahb-diff-stats';
 export type { AhbDiffSummary } from './models/ahb-diff-summary';
 export type { Datenstand } from './models/datenstand';
 export type { DirectionValues } from './models/direction-values';
+export type { ErrorResponse } from './models/error-response';
 export type { FilterValue } from './models/filter-value';
 export type { Format } from './models/format';
 export type { FormatVersion } from './models/format-version';

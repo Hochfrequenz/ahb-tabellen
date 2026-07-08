@@ -279,12 +279,17 @@ paths:
         - maintenance
       summary: Health check of the application and its SQLite database
       description: >
-        Health check endpoint consumed by [Oh Dear](https://ohdear.app/). Requires the
-        `oh-dear-health-check-secret` request header to match the server's configured secret.
+        Health check endpoint consumed by [Oh Dear](https://ohdear.app/). The
+        `oh-dear-health-check-secret` request header must match the server's configured secret.
         Returns HTTP 200 when all checks pass and HTTP 500 when at least one check failed or crashed.
       operationId: getHealth
-      security:
-        - ohDearHealthCheckSecret: []
+      parameters:
+        - name: oh-dear-health-check-secret
+          in: header
+          description: Shared secret that must match the server's configured Oh Dear health check secret.
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: All health checks passed
@@ -304,6 +309,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthCheckResponse'
+        '503':
+          description: >
+            Health check misconfiguration — the `OH_DEAR_HEALTH_CHECK_SECRET` environment
+            variable is not set on the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
@@ -782,9 +795,18 @@ components:
           example: 'Invalid health check secret'
       required:
         - error
-  securitySchemes:
-    ohDearHealthCheckSecret:
-      type: apiKey
-      in: header
-      name: oh-dear-health-check-secret
-      description: Shared secret required by the Oh Dear health check endpoint
+    ErrorResponse:
+      type: object
+      description: Standard error body produced by the global error handler
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code
+          example: 'EXTERNAL_SERVICE_ERROR'
+        message:
+          type: string
+          description: Human-readable error message
+          example: 'OH_DEAR_HEALTH_CHECK_SECRET environment variable is not set'
+      required:
+        - error
+        - message

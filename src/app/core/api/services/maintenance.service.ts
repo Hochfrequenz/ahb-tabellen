@@ -103,28 +103,28 @@ export class MaintenanceService extends BaseService {
   /**
    * Health check of the application and its SQLite database.
    *
-   * Health check endpoint consumed by [Oh Dear](https://ohdear.app/). Requires the `oh-dear-health-check-secret` request header to match the server's configured secret. Returns HTTP 200 when all checks pass and HTTP 500 when at least one check failed or crashed.
+   * Health check endpoint consumed by [Oh Dear](https://ohdear.app/). The `oh-dear-health-check-secret` request header must match the server's configured secret. Returns HTTP 200 when all checks pass and HTTP 500 when at least one check failed or crashed.
    *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getHealth()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getHealth$Response(params?: GetHealth$Params, context?: HttpContext): Observable<StrictHttpResponse<HealthCheckResponse>> {
+  getHealth$Response(params: GetHealth$Params, context?: HttpContext): Observable<StrictHttpResponse<HealthCheckResponse>> {
     return getHealth(this.http, this.rootUrl, params, context);
   }
 
   /**
    * Health check of the application and its SQLite database.
    *
-   * Health check endpoint consumed by [Oh Dear](https://ohdear.app/). Requires the `oh-dear-health-check-secret` request header to match the server's configured secret. Returns HTTP 200 when all checks pass and HTTP 500 when at least one check failed or crashed.
+   * Health check endpoint consumed by [Oh Dear](https://ohdear.app/). The `oh-dear-health-check-secret` request header must match the server's configured secret. Returns HTTP 200 when all checks pass and HTTP 500 when at least one check failed or crashed.
    *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getHealth$Response()` instead.
    *
    * This method doesn't expect any request body.
    */
-  getHealth(params?: GetHealth$Params, context?: HttpContext): Observable<HealthCheckResponse> {
+  getHealth(params: GetHealth$Params, context?: HttpContext): Observable<HealthCheckResponse> {
     return this.getHealth$Response(params, context).pipe(
       map((r: StrictHttpResponse<HealthCheckResponse>): HealthCheckResponse => r.body)
     );

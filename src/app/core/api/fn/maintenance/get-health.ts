@@ -11,11 +11,17 @@ import { RequestBuilder } from '../../request-builder';
 import { HealthCheckResponse } from '../../models/health-check-response';
 
 export interface GetHealth$Params {
+
+/**
+ * Shared secret that must match the server's configured Oh Dear health check secret.
+ */
+  'oh-dear-health-check-secret': string;
 }
 
-export function getHealth(http: HttpClient, rootUrl: string, params?: GetHealth$Params, context?: HttpContext): Observable<StrictHttpResponse<HealthCheckResponse>> {
+export function getHealth(http: HttpClient, rootUrl: string, params: GetHealth$Params, context?: HttpContext): Observable<StrictHttpResponse<HealthCheckResponse>> {
   const rb = new RequestBuilder(rootUrl, getHealth.PATH, 'get');
   if (params) {
+    rb.header('oh-dear-health-check-secret', params['oh-dear-health-check-secret'], {});
   }
 
   return http.request(
