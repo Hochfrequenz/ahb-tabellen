@@ -14,12 +14,12 @@ import { FormatVersion } from '../../models/format-version';
 export interface GetAhbDiffSummary$Params {
 
 /**
- * The newer format version to compare
+ * The newer format version to compare (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
  */
   'format-version-new': FormatVersion;
 
 /**
- * The older format version to compare
+ * The older format version to compare (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
  */
   'format-version-old': FormatVersion;
 }

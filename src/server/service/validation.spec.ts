@@ -1,4 +1,5 @@
-import { assertPruefi, assertFormatVersion, parseFileType } from './validation';
+import { getCurrentEdifactFormatVersion } from '@hochfrequenz/efoli';
+import { assertPruefi, resolveFormatVersion, parseFileType } from './validation';
 import { ValidationError } from '../infrastructure/errors';
 import { FileType } from '../repository/ahb';
 
@@ -13,13 +14,48 @@ describe('validation', () => {
     });
   });
 
-  describe('assertFormatVersion', () => {
-    it('accepts FV followed by 4 digits', () => {
-      expect(() => assertFormatVersion('FV2310')).not.toThrow();
+  describe('resolveFormatVersion', () => {
+    it.each(['FV2310', 'FV2410', 'FV2504'])('passes through the known FV code %p', fv => {
+      expect(resolveFormatVersion(fv)).toBe(fv);
     });
 
-    it.each(['FV231', 'FV23100', '2310', 'fv2310', 'FVabcd', ''])('rejects %p', invalid => {
-      expect(() => assertFormatVersion(invalid)).toThrow(ValidationError);
+    it.each([
+      ['2024-06-01', 'FV2404'],
+      ['2024-11-01', 'FV2410'],
+      ['2025-06-01', 'FV2410'],
+    ])('resolves the ISO date %p to %p', (date, expected) => {
+      expect(resolveFormatVersion(date)).toBe(expected);
+    });
+
+    it.each(['current', 'CURRENT', 'Current'])(
+      'resolves the keyword %p to the currently valid format version',
+      keyword => {
+        expect(resolveFormatVersion(keyword)).toBe(getCurrentEdifactFormatVersion());
+      }
+    );
+
+    it.each(['FV231', 'FV23100', '2310', 'fv2310', 'FVabcd', ''])(
+      'rejects the malformed value %p',
+      invalid => {
+        expect(() => resolveFormatVersion(invalid)).toThrow(ValidationError);
+      }
+    );
+
+    it('rejects a syntactically valid but unknown FV code', () => {
+      expect(() => resolveFormatVersion('FV9999')).toThrow(ValidationError);
+    });
+
+    it.each(['2025-13-40', '2025-02-30', '2025-00-10', '2025-01-32'])(
+      'rejects the impossible date %p',
+      invalid => {
+        expect(() => resolveFormatVersion(invalid)).toThrow(ValidationError);
+      }
+    );
+
+    it('includes the field name in the error message', () => {
+      expect(() => resolveFormatVersion('nonsense', 'format-version-new')).toThrow(
+        /format-version-new/
+      );
     });
   });
 
