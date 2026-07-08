@@ -2,7 +2,7 @@ import DatenstandRepository, { DatenstandResult } from '../repository/datenstand
 import FormatVersionRepository, { PruefiWithName } from '../repository/formatVersion';
 import FormateRepository from '../repository/formate';
 import RichtungRepository, { DirectionValues } from '../repository/richtung';
-import { assertFormatVersion } from './validation';
+import { resolveFormatVersion } from './validation';
 
 /**
  * Transport-agnostic application logic for reference/metadata lookups
@@ -44,7 +44,7 @@ export default class MetadataService {
   }
 
   public async listPruefisByFormatVersion(formatVersion: string): Promise<PruefiWithName[]> {
-    assertFormatVersion(formatVersion);
-    return this.formatVersionRepository.listPruefisByFormatVersion(formatVersion);
+    const resolvedFormatVersion = resolveFormatVersion(formatVersion);
+    return this.formatVersionRepository.listPruefisByFormatVersion(resolvedFormatVersion);
   }
 }

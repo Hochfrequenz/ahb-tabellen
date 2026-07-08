@@ -27,7 +27,7 @@ describe('AhbService', () => {
       const result = await service.getAhb('11001', 'FV2410', 'json');
 
       expect(mockRepository.get).toHaveBeenCalledWith('11001', 'FV2410', FileType.JSON);
-      expect(result).toEqual({ fileType: FileType.JSON, content: ahb });
+      expect(result).toEqual({ fileType: FileType.JSON, formatVersion: 'FV2410', content: ahb });
     });
 
     it('enriches JSON lines with the detected EBD key', async () => {
@@ -46,6 +46,17 @@ describe('AhbService', () => {
       expect(lines.map(l => l.ebd_key)).toEqual(['E_0004', 'E_0500', null]);
     });
 
+    it('resolves an ISO date to the applicable format version before hitting the repository', async () => {
+      const ahb = { meta: {}, lines: [] } as never;
+      mockRepository.get.mockResolvedValue(ahb);
+
+      const result = await service.getAhb('11001', '2024-06-01', 'json');
+
+      expect(mockRepository.get).toHaveBeenCalledWith('11001', 'FV2404', FileType.JSON);
+      // the resolved FV is surfaced so callers (e.g. the download filename) don't echo the raw date
+      expect(result.formatVersion).toBe('FV2404');
+    });
+
     it('maps xlsx to the XLSX file type', async () => {
       const buffer = Buffer.from('xlsx');
       mockRepository.get.mockResolvedValue(buffer);
@@ -53,7 +64,7 @@ describe('AhbService', () => {
       const result = await service.getAhb('11001', 'FV2410', 'xlsx');
 
       expect(mockRepository.get).toHaveBeenCalledWith('11001', 'FV2410', FileType.XLSX);
-      expect(result).toEqual({ fileType: FileType.XLSX, content: buffer });
+      expect(result).toEqual({ fileType: FileType.XLSX, formatVersion: 'FV2410', content: buffer });
     });
 
     it.each(['1234', 'abcde', ''])('rejects invalid pruefi %p', async invalid => {

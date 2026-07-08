@@ -14,7 +14,7 @@ import { FormatVersion } from '../../models/format-version';
 export interface GetAhb$Json$Params {
 
 /**
- * Formatversion of the AHB to return
+ * Formatversion of the AHB to return (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
  */
   'format-version': FormatVersion;
 

@@ -1,5 +1,5 @@
 import AhbDiffRepository, { AhbDiffResult, AhbDiffSummary } from '../repository/ahbDiff';
-import { assertPruefi, assertFormatVersion } from './validation';
+import { assertPruefi, resolveFormatVersion } from './validation';
 import { extractEbdKey } from './ebd';
 
 /**
@@ -19,10 +19,10 @@ export default class AhbDiffService {
     formatVersionOld: string
   ): Promise<AhbDiffResult> {
     assertPruefi(pruefi);
-    assertFormatVersion(formatVersionNew, 'format-version-new');
-    assertFormatVersion(formatVersionOld, 'format-version-old');
+    const resolvedNew = resolveFormatVersion(formatVersionNew, 'format-version-new');
+    const resolvedOld = resolveFormatVersion(formatVersionOld, 'format-version-old');
 
-    const result = await this.repository.getDiff(pruefi, formatVersionNew, formatVersionOld);
+    const result = await this.repository.getDiff(pruefi, resolvedNew, resolvedOld);
 
     // Detect the EBD key per side (single source of truth; consumers build their links).
     for (const line of result.lines) {
@@ -41,9 +41,9 @@ export default class AhbDiffService {
     formatVersionNew: string,
     formatVersionOld: string
   ): Promise<AhbDiffSummary> {
-    assertFormatVersion(formatVersionNew, 'format-version-new');
-    assertFormatVersion(formatVersionOld, 'format-version-old');
+    const resolvedNew = resolveFormatVersion(formatVersionNew, 'format-version-new');
+    const resolvedOld = resolveFormatVersion(formatVersionOld, 'format-version-old');
 
-    return this.repository.getSummary(formatVersionNew, formatVersionOld);
+    return this.repository.getSummary(resolvedNew, resolvedOld);
   }
 }
