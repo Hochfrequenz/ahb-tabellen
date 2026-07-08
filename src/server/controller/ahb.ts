@@ -20,14 +20,18 @@ export default class AHBController {
       const formatVersion = req.params['formatVersion'];
       const format = (req.query['format'] as string) || 'json';
 
-      const { fileType, content } = await this.service.getAhb(pruefi, formatVersion, format);
+      const {
+        fileType,
+        formatVersion: resolvedFormatVersion,
+        content,
+      } = await this.service.getAhb(pruefi, formatVersion, format);
 
       res
         .status(200)
         .setHeader('Content-Type', CONTENT_TYPE[fileType])
         .setHeader(
           'Content-Disposition',
-          `attachment; filename=AHB_${formatVersion}_${pruefi}.${format}`
+          `attachment; filename=AHB_${resolvedFormatVersion}_${pruefi}.${format}`
         );
 
       if (fileType === FileType.JSON) {

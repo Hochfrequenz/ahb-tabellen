@@ -1,3 +1,4 @@
+import { EdifactFormatVersion } from '@hochfrequenz/efoli';
 import { Request, Response, NextFunction } from 'express';
 import AHBController from './ahb';
 import AhbService from '../service/ahb.service';
@@ -37,7 +38,11 @@ describe('AHBController', () => {
 
   it('defaults to json and serializes via res.json with the JSON content type', async () => {
     const ahb = { meta: {}, lines: [] } as never;
-    mockService.getAhb.mockResolvedValue({ fileType: FileType.JSON, content: ahb });
+    mockService.getAhb.mockResolvedValue({
+      fileType: FileType.JSON,
+      formatVersion: EdifactFormatVersion.FV2410,
+      content: ahb,
+    });
     mockReq.params = { pruefi: '11001', formatVersion: 'FV2410' };
 
     await controller.get(mockReq as Request, mockRes as Response, mockNext);
@@ -55,7 +60,11 @@ describe('AHBController', () => {
 
   it('serializes binary formats via res.send with the matching content type and filename', async () => {
     const buffer = Buffer.from('xlsx');
-    mockService.getAhb.mockResolvedValue({ fileType: FileType.XLSX, content: buffer });
+    mockService.getAhb.mockResolvedValue({
+      fileType: FileType.XLSX,
+      formatVersion: EdifactFormatVersion.FV2410,
+      content: buffer,
+    });
     mockReq.params = { pruefi: '11001', formatVersion: 'FV2410' };
     mockReq.query = { format: 'xlsx' };
 
@@ -72,6 +81,24 @@ describe('AHBController', () => {
     );
     expect(mockSend).toHaveBeenCalledWith(buffer);
     expect(mockJson).not.toHaveBeenCalled();
+  });
+
+  it('uses the resolved format version (not the raw date/keyword) in the download filename', async () => {
+    const ahb = { meta: {}, lines: [] } as never;
+    mockService.getAhb.mockResolvedValue({
+      fileType: FileType.JSON,
+      formatVersion: EdifactFormatVersion.FV2404,
+      content: ahb,
+    });
+    mockReq.params = { pruefi: '11001', formatVersion: '2024-06-01' };
+
+    await controller.get(mockReq as Request, mockRes as Response, mockNext);
+
+    expect(mockService.getAhb).toHaveBeenCalledWith('11001', '2024-06-01', 'json');
+    expect(mockSetHeader).toHaveBeenCalledWith(
+      'Content-Disposition',
+      'attachment; filename=AHB_FV2404_11001.json'
+    );
   });
 
   it('forwards service errors to next()', async () => {

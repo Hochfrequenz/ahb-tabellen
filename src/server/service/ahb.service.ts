@@ -1,3 +1,4 @@
+import { EdifactFormatVersion } from '@hochfrequenz/efoli';
 import { Ahb } from '../../app/core/api/models';
 import AHBRepository, { FileType, SearchPayload, SearchResult } from '../repository/ahb';
 import { ValidationError } from '../infrastructure/errors';
@@ -21,14 +22,16 @@ export default class AhbService {
 
   /**
    * Retrieve an AHB for a given Prüfidentifikator and format version.
-   * Returns the resolved {@link FileType} alongside the content so the caller can
-   * choose how to serialize it (JSON body vs. binary download).
+   * Returns the resolved {@link FileType} and the canonical (resolved) format version
+   * alongside the content, so the caller can choose how to serialize it (JSON body vs.
+   * binary download) and label a download with the resolved FV rather than the raw input
+   * (which may have been a date or `current`).
    */
   public async getAhb(
     pruefi: string,
     formatVersion: string,
     format: string
-  ): Promise<{ fileType: FileType; content: Ahb | Buffer }> {
+  ): Promise<{ fileType: FileType; formatVersion: EdifactFormatVersion; content: Ahb | Buffer }> {
     assertPruefi(pruefi);
     const resolvedFormatVersion = resolveFormatVersion(formatVersion);
 
@@ -44,7 +47,7 @@ export default class AhbService {
       }
     }
 
-    return { fileType, content };
+    return { fileType, formatVersion: resolvedFormatVersion, content };
   }
 
   /**
