@@ -22,4 +22,8 @@ export class FeatureSelectionPageComponent {
   onComparisonClick() {
     this.router.navigate(['/compare']);
   }
+
+  onMcpClick() {
+    this.router.navigate(['/mcp-integration']);
+  }
 }
