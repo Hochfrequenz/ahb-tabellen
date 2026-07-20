@@ -92,6 +92,28 @@
           </div>
         </div>
       </div>
+
+      <!-- MCP / KI-Anbindung wide tile -->
+      <div class="mt-6 md:mt-8 flex justify-center">
+        <div
+          (click)="onMcpClick()"
+          (keydown.enter)="onMcpClick()"
+          (keydown.space)="onMcpClick()"
+          tabindex="0"
+          role="button"
+          class="w-full md:w-2/3 bg-hf-dunkel-rose rounded-3xl p-6 md:p-8 cursor-pointer transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-black/10 focus:outline-none">
+          <div class="flex items-center justify-center gap-4">
+            <img
+              src="assets/companystylesheet/icons/ai.svg"
+              alt="KI-Anbindung Icon"
+              class="w-10 h-10 md:w-12 md:h-12 flex-none" />
+            <p class="text-hf-weiches-schwarz text-sm md:text-base leading-relaxed">
+              <span class="font-bold">KI-Anbindung</span>
+              Verbinde unsere AHB-Tabellen mit deinem KI-Agenten (MCP)
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
   <app-footer />
