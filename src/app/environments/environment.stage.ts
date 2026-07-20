@@ -11,4 +11,5 @@ export const environment: EnvironmentInterface = {
   baseUrl: 'https://ahb-tabellen.stage.hochfrequenz.de',
   warmupUrl: 'https://ahbicht-stage.azurewebsites.net/api/ResolveConditionText/FV2504/UTILMDS/333',
   allowSearchIndexing: false,
+  umamiWebsiteId: '9e0ba0a6-ad4f-457d-9a23-4afaa23c7500',
 };
