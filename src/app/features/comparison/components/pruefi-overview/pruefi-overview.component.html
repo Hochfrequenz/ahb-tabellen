@@ -32,6 +32,21 @@
             {{ toggle.symbol }}{{ getFilterCount(toggle.key) }}
           </button>
         }
+        @if (roleToggles.length > 0) {
+          <span class="w-px self-stretch bg-hf-dunkel-rose opacity-30 mx-1"></span>
+        }
+        @for (roleToggle of roleToggles; track roleToggle.key) {
+          <button
+            type="button"
+            (click)="toggleRoleFilter(roleToggle)"
+            [class.opacity-40]="!roleToggle.signal()"
+            class="px-3 py-1.5 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2 bg-white text-hf-text-color focus:ring-gray-400 hover:ring-gray-400"
+            [attr.aria-pressed]="roleToggle.signal() ? 'true' : 'false'"
+            [attr.aria-label]="'Rolle ' + roleToggle.label + ' ein-/ausblenden'"
+            [title]="'Rolle ' + roleToggle.label + ' ein-/ausblenden'">
+            {{ roleToggle.label }}
+          </button>
+        }
       </div>
     </div>
 

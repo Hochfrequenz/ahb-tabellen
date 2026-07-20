@@ -18,6 +18,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AhbService, PrufidentifikatorenService } from '../../../../core/api';
 import { AhbDiffSummary } from '../../../../core/api/models';
 import { getFormatFromPruefi, getAllFormats } from '../../../../shared/utils/pruefi-format.utils';
+import {
+  getAllRoleKeys,
+  getRoleLabel,
+  getRolesForPruefi,
+} from '../../../../shared/utils/role-mapping.utils';
 
 export const PruefiStatus = {
   ADDED: 'added',
@@ -33,6 +38,7 @@ interface PruefiComparison {
   existsInOld: boolean;
   existsInNew: boolean;
   status: PruefiStatusType;
+  roles: string[];
 }
 
 interface FormatGroup {
@@ -50,6 +56,12 @@ interface FilterToggle {
   symbol: string;
   title: string;
   colorClasses: string;
+}
+
+interface RoleToggle {
+  key: string;
+  signal: WritableSignal<boolean>;
+  label: string;
 }
 
 @Component({
@@ -79,6 +91,12 @@ export class PruefiOverviewComponent implements OnChanges {
   showRemoved = signal(true);
   showChanged = signal(true);
   showIdentical = signal(true);
+
+  readonly roleToggles: RoleToggle[] = getAllRoleKeys().map(key => ({
+    key,
+    signal: signal(true),
+    label: getRoleLabel(key),
+  }));
 
   readonly filterToggles: FilterToggle[] = [
     {
@@ -154,27 +172,34 @@ export class PruefiOverviewComponent implements OnChanges {
     const showRemoved = this.showRemoved();
     const showChanged = this.showChanged();
     const showIdentical = this.showIdentical();
+    const enabledRoleKeys = new Set(
+      this.roleToggles.filter(toggle => toggle.signal()).map(toggle => toggle.key)
+    );
 
     const cache = new Map<string, PruefiComparison[]>();
 
     for (const group of groups) {
       const filtered = group.pruefis.filter(pruefi => {
-        if (pruefi.status === PruefiStatus.ADDED) {
-          return showAdded;
-        }
-        if (pruefi.status === PruefiStatus.REMOVED) {
-          return showRemoved;
-        }
-        // For unchanged status, check line changes
-        const stats = diffSummary[pruefi.pruefidentifikator];
-        if (stats) {
-          if (stats.added > 0 || stats.deleted > 0 || stats.modified > 0) {
-            return showChanged;
+        const statusVisible = (() => {
+          if (pruefi.status === PruefiStatus.ADDED) {
+            return showAdded;
           }
-          return showIdentical;
-        }
-        // If diff summary not loaded yet, show by default
-        return true;
+          if (pruefi.status === PruefiStatus.REMOVED) {
+            return showRemoved;
+          }
+          // For unchanged status, check line changes
+          const stats = diffSummary[pruefi.pruefidentifikator];
+          if (stats) {
+            if (stats.added > 0 || stats.deleted > 0 || stats.modified > 0) {
+              return showChanged;
+            }
+            return showIdentical;
+          }
+          // If diff summary not loaded yet, show by default
+          return true;
+        })();
+
+        return statusVisible && this.isRoleVisible(pruefi, enabledRoleKeys);
       });
       cache.set(group.format, filtered);
     }
@@ -242,8 +267,8 @@ export class PruefiOverviewComponent implements OnChanges {
   }
 
   private processComparison(
-    oldPruefis: Array<{ pruefidentifikator?: string; name?: string }>,
-    newPruefis: Array<{ pruefidentifikator?: string; name?: string }>
+    oldPruefis: Array<{ pruefidentifikator?: string; name?: string; roles?: string[] }>,
+    newPruefis: Array<{ pruefidentifikator?: string; name?: string; roles?: string[] }>
   ): void {
     // Filter out undefined values to ensure type safety in Set operations
     const oldSet = new Set(
@@ -264,6 +289,18 @@ export class PruefiOverviewComponent implements OnChanges {
       if (p.pruefidentifikator) {
         nameMap.set(p.pruefidentifikator, p.name || '');
       }
+    });
+
+    // Union roles from both format versions (a Pruefi may involve different roles
+    // across versions; any involvement in either version should be filterable)
+    const rolesMap = new Map<string, Set<string>>();
+    [...oldPruefis, ...newPruefis].forEach(p => {
+      if (!p.pruefidentifikator) {
+        return;
+      }
+      const roles = rolesMap.get(p.pruefidentifikator) ?? new Set<string>();
+      (p.roles ?? []).forEach(role => roles.add(role));
+      rolesMap.set(p.pruefidentifikator, roles);
     });
 
     // Get all unique pruefis
@@ -290,6 +327,7 @@ export class PruefiOverviewComponent implements OnChanges {
         existsInOld,
         existsInNew,
         status,
+        roles: Array.from(rolesMap.get(pruefi) ?? []),
       });
     });
 
@@ -380,26 +418,21 @@ export class PruefiOverviewComponent implements OnChanges {
     toggle.signal.update(v => !v);
   }
 
-  getFilterCount(key: FilterKey): number {
-    return this.stats()[key];
+  toggleRoleFilter(toggle: RoleToggle): void {
+    toggle.signal.update(v => !v);
   }
 
-  isPruefiVisible(pruefi: PruefiComparison): boolean {
-    if (pruefi.status === PruefiStatus.ADDED) {
-      return this.showAdded();
+  private isRoleVisible(pruefi: PruefiComparison, enabledRoleKeys: Set<string>): boolean {
+    const pruefiRoles = getRolesForPruefi(pruefi.roles);
+    // Pruefis with no mappable role data are always shown - we can't classify them
+    if (pruefiRoles.length === 0) {
+      return true;
     }
-    if (pruefi.status === PruefiStatus.REMOVED) {
-      return this.showRemoved();
-    }
-    // For unchanged status, check if it has line changes
-    if (this.hasLineChanges(pruefi.pruefidentifikator)) {
-      return this.showChanged();
-    }
-    if (this.hasNoLineChanges(pruefi.pruefidentifikator)) {
-      return this.showIdentical();
-    }
-    // If diff summary not loaded yet, show by default
-    return true;
+    return pruefiRoles.some(role => enabledRoleKeys.has(role));
+  }
+
+  getFilterCount(key: FilterKey): number {
+    return this.stats()[key];
   }
 
   getFilteredPruefis(group: FormatGroup): PruefiComparison[] {

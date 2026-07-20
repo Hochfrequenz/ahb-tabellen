@@ -247,6 +247,14 @@ paths:
                     name:
                       type: string
                       example: 'Pruefidentifikator Name'
+                    roles:
+                      type: array
+                      description: >-
+                        Distinct sender/empfaenger role codes that appear anywhere in
+                        this Pruefidentifikator's AHB lines
+                      items:
+                        type: string
+                      example: ['LF', 'NB']
   /version:
     get:
       tags:

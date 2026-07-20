@@ -57,7 +57,7 @@ describe('MetadataService', () => {
   describe('listPruefisByFormatVersion', () => {
     it('validates the format version before delegating', async () => {
       formatVersion.listPruefisByFormatVersion.mockResolvedValue([
-        { pruefidentifikator: '11001', name: 'x' },
+        { pruefidentifikator: '11001', name: 'x', roles: [] },
       ]);
 
       await service.listPruefisByFormatVersion('FV2410');

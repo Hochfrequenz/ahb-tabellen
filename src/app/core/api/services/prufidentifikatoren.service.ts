@@ -40,6 +40,11 @@ export class PrufidentifikatorenService extends BaseService {
   getPruefis$Response(params: GetPruefis$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<{
 'pruefidentifikator'?: string;
 'name'?: string;
+
+/**
+ * Distinct sender/empfaenger role codes that appear anywhere in this Pruefidentifikator's AHB lines
+ */
+'roles'?: Array<string>;
 }>>> {
     return getPruefis(this.http, this.rootUrl, params, context);
   }
@@ -57,14 +62,29 @@ export class PrufidentifikatorenService extends BaseService {
   getPruefis(params: GetPruefis$Params, context?: HttpContext): Observable<Array<{
 'pruefidentifikator'?: string;
 'name'?: string;
+
+/**
+ * Distinct sender/empfaenger role codes that appear anywhere in this Pruefidentifikator's AHB lines
+ */
+'roles'?: Array<string>;
 }>> {
     return this.getPruefis$Response(params, context).pipe(
       map((r: StrictHttpResponse<Array<{
 'pruefidentifikator'?: string;
 'name'?: string;
+
+/**
+ * Distinct sender/empfaenger role codes that appear anywhere in this Pruefidentifikator's AHB lines
+ */
+'roles'?: Array<string>;
 }>>): Array<{
 'pruefidentifikator'?: string;
 'name'?: string;
+
+/**
+ * Distinct sender/empfaenger role codes that appear anywhere in this Pruefidentifikator's AHB lines
+ */
+'roles'?: Array<string>;
 }> => r.body)
     );
   }

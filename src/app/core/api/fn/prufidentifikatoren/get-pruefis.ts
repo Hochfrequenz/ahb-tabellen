@@ -21,6 +21,11 @@ export interface GetPruefis$Params {
 export function getPruefis(http: HttpClient, rootUrl: string, params: GetPruefis$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<{
 'pruefidentifikator'?: string;
 'name'?: string;
+
+/**
+ * Distinct sender/empfaenger role codes that appear anywhere in this Pruefidentifikator's AHB lines
+ */
+'roles'?: Array<string>;
 }>>> {
   const rb = new RequestBuilder(rootUrl, getPruefis.PATH, 'get');
   if (params) {
@@ -35,6 +40,11 @@ export function getPruefis(http: HttpClient, rootUrl: string, params: GetPruefis
       return r as StrictHttpResponse<Array<{
       'pruefidentifikator'?: string;
       'name'?: string;
+      
+      /**
+       * Distinct sender/empfaenger role codes that appear anywhere in this Pruefidentifikator's AHB lines
+       */
+      'roles'?: Array<string>;
       }>>;
     })
   );
