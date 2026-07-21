@@ -83,9 +83,9 @@ describe('FormatVersionRepository', () => {
     it('should throw NotFoundError when no pruefis exist for the format version', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([]);
 
-      await expect(
-        formatVersionRepository.listPruefisByFormatVersion('FV9999')
-      ).rejects.toThrow(NotFoundError);
+      await expect(formatVersionRepository.listPruefisByFormatVersion('FV9999')).rejects.toThrow(
+        NotFoundError
+      );
     });
 
     it('should initialize database if not already initialized', async () => {

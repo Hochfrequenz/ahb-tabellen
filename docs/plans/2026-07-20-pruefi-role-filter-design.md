@@ -58,9 +58,9 @@ Analog zu `pruefi-format.utils.ts`:
 
 ```ts
 export const ROLE_GROUPS: Record<string, { label: string; codes: string[] }> = {
-  LF:  { label: 'Lieferant',              codes: ['LF', 'LFA', 'LFN'] },
-  NB:  { label: 'Netzbetreiber',          codes: ['NB'] },
-  MSB: { label: 'Messstellenbetreiber',   codes: ['MSB', 'MSBA', 'MSBN'] },
+  LF: { label: 'Lieferant', codes: ['LF', 'LFA', 'LFN'] },
+  NB: { label: 'Netzbetreiber', codes: ['NB'] },
+  MSB: { label: 'Messstellenbetreiber', codes: ['MSB', 'MSBA', 'MSBN'] },
   ESA: { label: 'Energieserviceanbieter', codes: ['ESA'] },
 };
 
@@ -87,7 +87,7 @@ Codes, die keiner Gruppe zugeordnet werden können, liefern `null` bei
   Rolle enthält (ODER-Verknüpfung über ausgewählte Rollen).
 - Prüfis mit `roles: []` (keine Richtungsdaten) werden unabhängig vom Rollenfilter
   immer angezeigt — gleiche "permissive default"-Philosophie wie bei fehlenden
-  Diff-Summary-Daten in `isPruefiVisible()`.
+  Diff-Summary-Daten in `filteredPruefisCache`.
 
 ### Template
 
