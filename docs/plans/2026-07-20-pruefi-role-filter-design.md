@@ -6,15 +6,15 @@ In der AHB-Vergleich-Landingpage (`comparison-landing-page`) werden Prüfidentif
 in der `pruefi-overview`-Komponente nach Format gruppiert (COMDIS, MSCONS, UTILMD, ...)
 und lassen sich bereits nach Status filtern (neu / entfernt / geändert / unverändert).
 Nutzer möchten die Liste zusätzlich nach Marktrolle filtern können (Lieferant,
-Netzbetreiber, Messstellenbetreiber (MSB), ...), um z. B. nur die für ihre eigene Rolle
-relevanten Prüfis zu sehen.
+Netzbetreiber, Messstellenbetreiber (MSB), Übertragungsnetzbetreiber (ÜNB), ...), um
+z. B. nur die für ihre eigene Rolle relevanten Prüfis zu sehen.
 
 Es gibt noch kein "Marktrolle"-Feld auf Prüfi-Ebene. Es existiert aber bereits das
 Konzept der Kommunikationsrichtung (`Kommunikationsrichtung = { sender, empfaenger }`)
 auf AHB-Zeilen-Ebene (`AhbLine.direction`), das in der Search-Feature bereits als
 Sender-/Empfänger-Filter verwendet wird (`RichtungCacheService`,
 `GET /api/direction-values`). Die Rollen-Werte darin sind Rohcodes wie `LF`, `LFA`,
-`LFN`, `NB`, `MSB`, `MSBA`, `MSBN`, `ESA`.
+`LFN`, `NB`, `MSB`, `MSBA`, `MSBN`, `ESA`, `ÜNB`.
 
 ## Entscheidung
 
@@ -62,6 +62,7 @@ export const ROLE_GROUPS: Record<string, { label: string; codes: string[] }> = {
   NB: { label: 'Netzbetreiber', codes: ['NB'] },
   MSB: { label: 'Messstellenbetreiber', codes: ['MSB', 'MSBA', 'MSBN'] },
   ESA: { label: 'Energieserviceanbieter', codes: ['ESA'] },
+  ÜNB: { label: 'Übertragungsnetzbetreiber', codes: ['ÜNB', 'ÜNB (Strom)'] },
 };
 
 export function getBaseRoleKey(code: string): string | null;

@@ -12,6 +12,7 @@ describe('role-mapping.utils', () => {
       expect(getBaseRoleKey('NB')).toBe('NB');
       expect(getBaseRoleKey('MSB')).toBe('MSB');
       expect(getBaseRoleKey('ESA')).toBe('ESA');
+      expect(getBaseRoleKey('ÜNB')).toBe('ÜNB');
     });
 
     it('should map variant codes to their base role', () => {
@@ -19,6 +20,7 @@ describe('role-mapping.utils', () => {
       expect(getBaseRoleKey('LFN')).toBe('LF');
       expect(getBaseRoleKey('MSBA')).toBe('MSB');
       expect(getBaseRoleKey('MSBN')).toBe('MSB');
+      expect(getBaseRoleKey('ÜNB (Strom)')).toBe('ÜNB');
     });
 
     it('should return null for unknown codes', () => {
@@ -49,7 +51,7 @@ describe('role-mapping.utils', () => {
 
   describe('getAllRoleKeys', () => {
     it('should return all known base role keys', () => {
-      expect(getAllRoleKeys()).toEqual(['LF', 'NB', 'MSB', 'ESA']);
+      expect(getAllRoleKeys()).toEqual(['LF', 'NB', 'MSB', 'ESA', 'ÜNB']);
     });
   });
 

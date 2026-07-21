@@ -13,6 +13,7 @@ export const ROLE_GROUPS: Record<string, RoleGroup> = {
   NB: { label: 'Netzbetreiber', codes: ['NB'] },
   MSB: { label: 'Messstellenbetreiber', codes: ['MSB', 'MSBA', 'MSBN'] },
   ESA: { label: 'Energieserviceanbieter', codes: ['ESA'] },
+  ÜNB: { label: 'Übertragungsnetzbetreiber', codes: ['ÜNB', 'ÜNB (Strom)'] },
 };
 
 /**
