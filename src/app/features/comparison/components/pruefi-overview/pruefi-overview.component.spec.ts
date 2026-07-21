@@ -283,6 +283,7 @@ describe('PruefiOverviewComponent', () => {
         existsInOld: false,
         existsInNew: true,
         status: PruefiStatus.ADDED,
+        roles: [],
       };
       expect(component.getRowClass(pruefi)).toBe('bg-hf-positive-light');
     });
@@ -294,6 +295,7 @@ describe('PruefiOverviewComponent', () => {
         existsInOld: true,
         existsInNew: false,
         status: PruefiStatus.REMOVED,
+        roles: [],
       };
       expect(component.getRowClass(pruefi)).toBe('bg-hf-negative-light');
     });
@@ -305,6 +307,7 @@ describe('PruefiOverviewComponent', () => {
         existsInOld: true,
         existsInNew: true,
         status: PruefiStatus.UNCHANGED,
+        roles: [],
       };
       expect(component.getRowClass(pruefi)).toBe('');
     });
@@ -357,83 +360,6 @@ describe('PruefiOverviewComponent', () => {
       expect(component.showIdentical()).toBe(true);
       component.toggleFilter(component.filterToggles.find(t => t.key === 'identical')!);
       expect(component.showIdentical()).toBe(false);
-    });
-  });
-
-  describe('isPruefiVisible', () => {
-    it('should return showAdded value for ADDED status', () => {
-      const pruefi = {
-        pruefidentifikator: '11001',
-        name: 'Test',
-        existsInOld: false,
-        existsInNew: true,
-        status: PruefiStatus.ADDED,
-      };
-
-      expect(component.isPruefiVisible(pruefi)).toBe(true);
-      component.showAdded.set(false);
-      expect(component.isPruefiVisible(pruefi)).toBe(false);
-    });
-
-    it('should return showRemoved value for REMOVED status', () => {
-      const pruefi = {
-        pruefidentifikator: '11001',
-        name: 'Test',
-        existsInOld: true,
-        existsInNew: false,
-        status: PruefiStatus.REMOVED,
-      };
-
-      expect(component.isPruefiVisible(pruefi)).toBe(true);
-      component.showRemoved.set(false);
-      expect(component.isPruefiVisible(pruefi)).toBe(false);
-    });
-
-    it('should return true for UNCHANGED when diff summary not loaded', () => {
-      const pruefi = {
-        pruefidentifikator: '11001',
-        name: 'Test',
-        existsInOld: true,
-        existsInNew: true,
-        status: PruefiStatus.UNCHANGED,
-      };
-
-      // No diff summary loaded - should show by default
-      expect(component.isPruefiVisible(pruefi)).toBe(true);
-    });
-
-    it('should return showChanged value for UNCHANGED with line changes', () => {
-      const pruefi = {
-        pruefidentifikator: '11001',
-        name: 'Test',
-        existsInOld: true,
-        existsInNew: true,
-        status: PruefiStatus.UNCHANGED,
-      };
-
-      // Set diff summary with changes
-      component.diffSummary.set({ '11001': { added: 1, deleted: 0, modified: 0 } });
-
-      expect(component.isPruefiVisible(pruefi)).toBe(true);
-      component.showChanged.set(false);
-      expect(component.isPruefiVisible(pruefi)).toBe(false);
-    });
-
-    it('should return showIdentical value for UNCHANGED without line changes', () => {
-      const pruefi = {
-        pruefidentifikator: '11001',
-        name: 'Test',
-        existsInOld: true,
-        existsInNew: true,
-        status: PruefiStatus.UNCHANGED,
-      };
-
-      // Set diff summary without changes
-      component.diffSummary.set({ '11001': { added: 0, deleted: 0, modified: 0 } });
-
-      expect(component.isPruefiVisible(pruefi)).toBe(true);
-      component.showIdentical.set(false);
-      expect(component.isPruefiVisible(pruefi)).toBe(false);
     });
   });
 
@@ -525,6 +451,78 @@ describe('PruefiOverviewComponent', () => {
 
       component.showRemoved.set(false);
       expect(component.getFilteredCount(utilmdGroup)).toBe(1);
+    }));
+  });
+
+  describe('role filtering', () => {
+    const mockPruefisWithRoles = [
+      { pruefidentifikator: '11001', name: 'Lieferant Pruefi', roles: ['LF'] },
+      { pruefidentifikator: '11002', name: 'MSB Pruefi', roles: ['MSBA'] },
+      { pruefidentifikator: '11003', name: 'Unmapped Pruefi', roles: ['XYZ'] },
+    ];
+
+    function loadWithRoles(): void {
+      mockPrufidentifikatorenService.getPruefis.mockImplementation(() => of(mockPruefisWithRoles));
+      fixture.componentRef.setInput('formatVersionOld', 'FV2410');
+      fixture.componentRef.setInput('formatVersionNew', 'FV2504');
+      fixture.detectChanges();
+      tick();
+    }
+
+    it('should show all pruefis when all role toggles are enabled', fakeAsync(() => {
+      loadWithRoles();
+
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD')!;
+      expect(component.getFilteredPruefis(utilmdGroup).length).toBe(3);
+    }));
+
+    it('should hide pruefis whose base role is disabled', fakeAsync(() => {
+      loadWithRoles();
+
+      component.toggleRoleFilter(component.roleToggles.find(t => t.key === 'LF')!);
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD')!;
+      const filtered = component.getFilteredPruefis(utilmdGroup);
+
+      expect(filtered.find(p => p.pruefidentifikator === '11001')).toBeUndefined();
+      // MSBA maps to base role MSB, still enabled
+      expect(filtered.find(p => p.pruefidentifikator === '11002')).toBeDefined();
+    }));
+
+    it('should match variant codes under their base role (MSBA -> MSB)', fakeAsync(() => {
+      loadWithRoles();
+
+      component.toggleRoleFilter(component.roleToggles.find(t => t.key === 'MSB')!);
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD')!;
+      const filtered = component.getFilteredPruefis(utilmdGroup);
+
+      expect(filtered.find(p => p.pruefidentifikator === '11002')).toBeUndefined();
+    }));
+
+    it('should always show pruefis with only unmapped role codes', fakeAsync(() => {
+      loadWithRoles();
+
+      // Disable every known role - the unmapped-only pruefi should remain visible
+      component.roleToggles.forEach(toggle => toggle.signal.set(false));
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD')!;
+      const filtered = component.getFilteredPruefis(utilmdGroup);
+
+      expect(filtered.find(p => p.pruefidentifikator === '11003')).toBeDefined();
+      expect(filtered.length).toBe(1);
+    }));
+
+    it('should OR multiple enabled roles together', fakeAsync(() => {
+      loadWithRoles();
+
+      component.roleToggles.forEach(toggle => toggle.signal.set(false));
+      component.toggleRoleFilter(component.roleToggles.find(t => t.key === 'LF')!);
+      component.toggleRoleFilter(component.roleToggles.find(t => t.key === 'MSB')!);
+
+      const utilmdGroup = component.formatGroups().find(g => g.format === 'UTILMD')!;
+      const filtered = component.getFilteredPruefis(utilmdGroup);
+
+      // 11003 stays visible too - it has only an unmapped role code, which is
+      // always shown regardless of role-toggle state
+      expect(filtered.map(p => p.pruefidentifikator).sort()).toEqual(['11001', '11002', '11003']);
     }));
   });
 });
