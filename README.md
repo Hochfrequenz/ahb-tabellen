@@ -243,30 +243,30 @@ For local development against a server started with `npm run server:start`, use 
 ## 🚀 Deployment
 
 The application can be deployed to two environments: Stage and Production.
-The deployment process is automated using a combination of GitHub Actions, Pulumi, and Octopus Deploy.
+The deployment process is fully automated using a combination of GitHub Actions and Pulumi, and is triggered by pushing a git tag, which creates a GitHub release.
 
 ### Deployment Process Overview
 
 1. **Build**: GitHub Actions builds a Docker image and pushes it to the GitHub Container Registry
-2. **Infrastructure**: Pulumi manages the Azure resources
-3. **Deployment**: Octopus Deploy handles the container deployment to Azure by using Pulumi.
+2. **Release**: GitHub Actions creates a GitHub (pre-)release for the pushed tag
+3. **Infrastructure**: Pulumi manages the Azure resources
+4. **Deployment**: GitHub Actions uses Pulumi to deploy the container to Azure
 
 ### Stage Deployment
 
 To deploy to the stage environment:
 
 1. Set a new git tag in the format `v<major>.<minor>.<patch>-rc<rc>`, e.g. `v1.0.0-rc01`.
-2. This will automatically trigger the deployment pipeline and creates a new GitHub pre-release.
-3. The application will be deployed to [ahb-tabellen.stage.hochfrequenz.de](https://ahb-tabellen.stage.hochfrequenz.de).
+2. Pushing the tag automatically triggers the deployment pipeline and creates a new GitHub pre-release.
+3. The application is deployed to [ahb-tabellen.stage.hochfrequenz.de](https://ahb-tabellen.stage.hochfrequenz.de).
 
 ### Production Deployment
 
 To deploy to the production environment:
 
 1. Set a new git tag in the format `v<major>.<minor>.<patch>`, e.g. `v1.0.0`.
-2. This will trigger the deployment pipeline and creates a new GitHub release.
-3. A manual approval step in [Octopus Deploy](https://hochfrequenz.octopus.app) will be required
-4. After approval, the application will be deployed to [ahb-tabellen.hochfrequenz.de](https://ahb-tabellen.hochfrequenz.de)
+2. Pushing the tag automatically triggers the deployment pipeline and creates a new GitHub release.
+3. The application is deployed to [ahb-tabellen.hochfrequenz.de](https://ahb-tabellen.hochfrequenz.de)
 
 ## Update the database
 
