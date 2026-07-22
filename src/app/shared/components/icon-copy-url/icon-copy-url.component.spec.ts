@@ -28,11 +28,6 @@ describe('IconCopyUrlComponent', () => {
   });
 
   it('should copy current URL to clipboard', fakeAsync(() => {
-    Object.defineProperty(window, 'location', {
-      value: { href: 'https://no-edifacts-given.com' },
-      writable: true,
-    });
-
     const writeTextMock = jest.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText: writeTextMock },
@@ -42,7 +37,7 @@ describe('IconCopyUrlComponent', () => {
     component.onClickCopyUrl();
 
     tick();
-    expect(writeTextMock).toHaveBeenCalledWith('https://no-edifacts-given.com');
+    expect(writeTextMock).toHaveBeenCalledWith(window.location.href);
     tick(3000);
   }));
 });
