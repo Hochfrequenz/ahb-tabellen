@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 
@@ -6,10 +6,11 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
   selector: 'app-feature-selection-page',
   standalone: true,
   imports: [FooterComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './feature-selection-page.component.html',
 })
 export class FeatureSelectionPageComponent {
-  constructor(private router: Router) {}
+  private router = inject(Router);
 
   onAhbClick() {
     this.router.navigate(['/ahb']);

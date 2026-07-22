@@ -1,8 +1,9 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-fallback-page',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './fallback-page.component.html',
 })
 export class FallbackPageComponent {

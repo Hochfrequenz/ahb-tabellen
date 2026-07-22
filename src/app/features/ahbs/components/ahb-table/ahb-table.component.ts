@@ -8,6 +8,7 @@ import {
   signal,
   viewChild,
   inject,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Ahb } from '../../../../core/api';
 import { HighlightPipe, HighlightResult } from '../../../../shared/pipes/highlight.pipe';
@@ -24,9 +25,12 @@ interface ExpandedState {
   selector: 'app-ahb-table',
   standalone: true,
   imports: [HighlightPipe, IconLinkComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './ahb-table.component.html',
 })
 export class AhbTableComponent {
+  private readonly elementRef = inject(ElementRef);
+
   header = viewChild<ElementRef>('header');
 
   lines = input.required<Ahb['lines']>();
@@ -70,7 +74,7 @@ export class AhbTableComponent {
 
   private readonly domSanitizer = inject(DomSanitizer);
 
-  constructor(private readonly elementRef: ElementRef) {
+  constructor() {
     // Watch for highlight changes to reset the index and auto-expand rows
     effect(() => {
       const highlight = this.highlight();

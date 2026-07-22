@@ -1,17 +1,18 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, inject } from '@angular/core';
 import { AhbService } from '../../../../core/api';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-export-button',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './export-button.component.html',
 })
 export class ExportButtonComponent {
+  private ahbService = inject(AhbService);
+
   @Input() formatVersion!: string;
   @Input() pruefi!: string;
-
-  constructor(private ahbService: AhbService) {}
 
   async onClickExport(): Promise<void> {
     const blob = await firstValueFrom(

@@ -1,5 +1,11 @@
-import { Component, HostListener, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  HostListener,
+  ElementRef,
+  ChangeDetectionStrategy,
+  inject,
+} from '@angular/core';
+
 import { Router } from '@angular/router';
 
 interface FeatureOption {
@@ -11,11 +17,15 @@ interface FeatureOption {
 @Component({
   selector: 'app-feature-switcher',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './feature-switcher.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./feature-switcher.component.scss'],
 })
 export class FeatureSwitcherComponent {
+  private router = inject(Router);
+  private elementRef = inject(ElementRef);
+
   isDropdownOpen = false;
 
   readonly features: FeatureOption[] = [
@@ -23,11 +33,6 @@ export class FeatureSwitcherComponent {
     { value: 'search', label: 'Globale Suche', route: '/search' },
     { value: 'comparison', label: 'AHB Vergleich', route: '/compare' },
   ];
-
-  constructor(
-    private router: Router,
-    private elementRef: ElementRef
-  ) {}
 
   toggleDropdown(event?: Event): void {
     if (event) {
@@ -85,7 +90,7 @@ export class FeatureSwitcherComponent {
   }
 
   @HostListener('keydown.escape', ['$event'])
-  onEscapeKey(event: KeyboardEvent): void {
+  onEscapeKey(event: Event): void {
     if (this.isDropdownOpen) {
       this.isDropdownOpen = false;
       event.preventDefault();
@@ -93,7 +98,7 @@ export class FeatureSwitcherComponent {
   }
 
   @HostListener('keydown.arrowdown', ['$event'])
-  onArrowDown(event: KeyboardEvent): void {
+  onArrowDown(event: Event): void {
     if (this.isDropdownOpen) {
       event.preventDefault();
       this.focusNextOption();
@@ -105,7 +110,7 @@ export class FeatureSwitcherComponent {
   }
 
   @HostListener('keydown.arrowup', ['$event'])
-  onArrowUp(event: KeyboardEvent): void {
+  onArrowUp(event: Event): void {
     if (this.isDropdownOpen) {
       event.preventDefault();
       this.focusPreviousOption();
@@ -113,7 +118,7 @@ export class FeatureSwitcherComponent {
   }
 
   @HostListener('keydown.home', ['$event'])
-  onHomeKey(event: KeyboardEvent): void {
+  onHomeKey(event: Event): void {
     if (this.isDropdownOpen) {
       event.preventDefault();
       this.focusFirstOption();
@@ -121,7 +126,7 @@ export class FeatureSwitcherComponent {
   }
 
   @HostListener('keydown.end', ['$event'])
-  onEndKey(event: KeyboardEvent): void {
+  onEndKey(event: Event): void {
     if (this.isDropdownOpen) {
       event.preventDefault();
       this.focusLastOption();

@@ -1,5 +1,5 @@
-import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterLink } from '@angular/router';
 import { IconLogoComponent } from '../icon-logo/icon-logo.component';
 import { LoginButtonComponent } from '../login-button/login-button.component';
@@ -9,14 +9,9 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    IconLogoComponent,
-    LoginButtonComponent,
-    FeatureSwitcherComponent,
-  ],
+  imports: [RouterLink, IconLogoComponent, LoginButtonComponent, FeatureSwitcherComponent],
   templateUrl: './header.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [
     trigger('expandCollapse', [
       state(

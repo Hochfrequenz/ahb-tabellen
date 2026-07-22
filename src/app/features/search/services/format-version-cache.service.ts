@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { FormatVersionsService } from '../../../core/api/services/format-versions.service';
@@ -13,13 +13,15 @@ interface CachedFormatVersions {
   providedIn: 'root',
 })
 export class FormatVersionCacheService {
+  private formatVersionsService = inject(FormatVersionsService);
+
   private readonly CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
   private readonly CACHE_KEY = 'format_versions_cache';
 
   private formatVersionsSubject = new BehaviorSubject<string[]>([]);
   public formatVersions$ = this.formatVersionsSubject.asObservable();
 
-  constructor(private formatVersionsService: FormatVersionsService) {
+  constructor() {
     this.loadFromCache();
   }
 

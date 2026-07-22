@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { SearchService } from '../../../core/api/services/search.service';
@@ -14,6 +14,8 @@ interface CachedDirectionValues {
   providedIn: 'root',
 })
 export class RichtungCacheService {
+  private searchService = inject(SearchService);
+
   private readonly CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
   private readonly CACHE_KEY = 'richtung_values_cache';
 
@@ -23,7 +25,7 @@ export class RichtungCacheService {
   });
   public richtungValues$ = this.richtungValuesSubject.asObservable();
 
-  constructor(private searchService: SearchService) {
+  constructor() {
     this.loadFromCache();
   }
 
