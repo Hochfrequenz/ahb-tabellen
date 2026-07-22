@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform, inject } from '@angular/core';
+import { Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export interface HighlightResult {
@@ -12,7 +12,10 @@ export interface HighlightResult {
   standalone: true,
 })
 export class HighlightPipe implements PipeTransform {
-  private readonly domSanitizer = inject(DomSanitizer);
+  // Kept as constructor injection (not inject()): this pipe is also instantiated manually
+  // outside an Angular injection context in ahb-table.component.ts.
+  // eslint-disable-next-line @angular-eslint/prefer-inject
+  constructor(private readonly domSanitizer: DomSanitizer) {}
 
   transform(value: string | undefined, highlightText: string | undefined): SafeHtml;
   transform(

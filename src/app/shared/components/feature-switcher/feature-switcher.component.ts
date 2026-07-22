@@ -90,7 +90,7 @@ export class FeatureSwitcherComponent {
   }
 
   @HostListener('keydown.escape', ['$event'])
-  onEscapeKey(event: KeyboardEvent): void {
+  onEscapeKey(event: Event): void {
     if (this.isDropdownOpen) {
       this.isDropdownOpen = false;
       event.preventDefault();
@@ -98,7 +98,7 @@ export class FeatureSwitcherComponent {
   }
 
   @HostListener('keydown.arrowdown', ['$event'])
-  onArrowDown(event: KeyboardEvent): void {
+  onArrowDown(event: Event): void {
     if (this.isDropdownOpen) {
       event.preventDefault();
       this.focusNextOption();
@@ -110,7 +110,7 @@ export class FeatureSwitcherComponent {
   }
 
   @HostListener('keydown.arrowup', ['$event'])
-  onArrowUp(event: KeyboardEvent): void {
+  onArrowUp(event: Event): void {
     if (this.isDropdownOpen) {
       event.preventDefault();
       this.focusPreviousOption();
@@ -118,7 +118,7 @@ export class FeatureSwitcherComponent {
   }
 
   @HostListener('keydown.home', ['$event'])
-  onHomeKey(event: KeyboardEvent): void {
+  onHomeKey(event: Event): void {
     if (this.isDropdownOpen) {
       event.preventDefault();
       this.focusFirstOption();
@@ -126,7 +126,7 @@ export class FeatureSwitcherComponent {
   }
 
   @HostListener('keydown.end', ['$event'])
-  onEndKey(event: KeyboardEvent): void {
+  onEndKey(event: Event): void {
     if (this.isDropdownOpen) {
       event.preventDefault();
       this.focusLastOption();
