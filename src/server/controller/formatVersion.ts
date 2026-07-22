@@ -13,7 +13,7 @@ export default class FormatVersionController {
   }
 
   public async listPruefisByFormatVersion(req: Request, res: Response): Promise<void> {
-    const formatVersion = req.params['formatVersion'];
+    const formatVersion = req.params['formatVersion'] as string;
     const pruefis = await this.service.listPruefisByFormatVersion(formatVersion);
     res.status(200).setHeader('Content-Type', 'application/json').send(pruefis);
   }
