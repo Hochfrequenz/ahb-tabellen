@@ -1,4 +1,4 @@
-import { Component, effect, forwardRef, input } from '@angular/core';
+import { Component, effect, forwardRef, input, ChangeDetectionStrategy } from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,
@@ -20,6 +20,7 @@ interface PruefiOption {
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './pruefi-input.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

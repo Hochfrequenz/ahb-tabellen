@@ -1,8 +1,15 @@
-import { Component, ElementRef, ViewChild, Renderer2 } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  Renderer2,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 @Component({
   selector: 'app-icon-copy-url',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './icon-copy-url.component.html',
 })
 export class IconCopyUrlComponent {

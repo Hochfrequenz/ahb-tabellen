@@ -1,4 +1,4 @@
-import { Component, HostListener, ElementRef } from '@angular/core';
+import { Component, HostListener, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 
 import { Router } from '@angular/router';
 
@@ -13,6 +13,7 @@ interface FeatureOption {
   standalone: true,
   imports: [],
   templateUrl: './feature-switcher.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./feature-switcher.component.scss'],
 })
 export class FeatureSwitcherComponent {

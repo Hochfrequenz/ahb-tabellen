@@ -1,4 +1,11 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { Title } from '@angular/platform-browser';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -25,6 +32,7 @@ import { FormatVersionCacheService } from '../../../search/services/format-versi
     InputSearchEnhancedComponent,
     PruefiOverviewComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './comparison-landing-page.component.html',
 })
 export class ComparisonLandingPageComponent implements OnInit {

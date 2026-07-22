@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AuthService, User } from '@auth0/auth0-angular';
 import { CommonModule } from '@angular/common';
 import { Observable, BehaviorSubject, combineLatest, of } from 'rxjs';
@@ -13,6 +13,7 @@ type ExtendedAuthService = AuthService & {
   selector: 'app-login-button',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './login-button.component.html',
 })
 export class LoginButtonComponent implements OnInit {

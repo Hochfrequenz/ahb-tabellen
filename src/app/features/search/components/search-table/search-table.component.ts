@@ -1,4 +1,12 @@
-import { Component, Input, Output, EventEmitter, ViewChild, OnChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ViewChild,
+  OnChanges,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -13,6 +21,7 @@ import { SearchItem } from '../../../../core/api/models';
   templateUrl: './search-table.component.html',
   styleUrls: ['./search-table.component.scss'],
   imports: [MatTableModule, MatPaginatorModule, MatSortModule, MatButtonModule, MatIconModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class SearchTableComponent implements OnChanges {

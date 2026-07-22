@@ -1,10 +1,11 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { AhbService } from '../../../../core/api';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-export-button',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './export-button.component.html',
 })
 export class ExportButtonComponent {

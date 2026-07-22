@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, HostListener } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  Output,
+  EventEmitter,
+  HostListener,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { OverlayModule, ConnectedPosition } from '@angular/cdk/overlay';
@@ -29,6 +37,7 @@ import { RichtungCacheService } from '../../services/richtung-cache.service';
     MatButtonModule,
     MatTooltipModule,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class SearchFiltersComponent implements OnInit, OnDestroy {

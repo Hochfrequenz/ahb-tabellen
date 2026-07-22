@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { environment } from '../../../environments/environment';
 
@@ -7,6 +7,7 @@ import { environment } from '../../../environments/environment';
   standalone: true,
   imports: [],
   templateUrl: './solutions-footer.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './solutions-footer.component.scss',
 })
 export class SolutionsFooterComponent {

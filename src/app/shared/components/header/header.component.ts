@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterLink } from '@angular/router';
 import { IconLogoComponent } from '../icon-logo/icon-logo.component';
@@ -11,6 +11,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
   standalone: true,
   imports: [RouterLink, IconLogoComponent, LoginButtonComponent, FeatureSwitcherComponent],
   templateUrl: './header.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [
     trigger('expandCollapse', [
       state(

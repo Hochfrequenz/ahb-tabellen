@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
@@ -26,6 +26,7 @@ import { InputSearchEnhancedComponent } from '../../../../shared/components/inpu
     InputSearchEnhancedComponent,
     SolutionsFooterComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './ahb-landing-page.component.html',
 })
 export class AhbLandingPageComponent implements OnInit {

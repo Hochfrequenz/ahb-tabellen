@@ -18,7 +18,7 @@
       (nextClick)="onNextClick()"
       (previousClick)="onPreviousClick()"
       [selectedPosition]="(table()?.markIndex() ?? 0) + 1"
-      [totalResults]="table()?.markElements()?.length" />
+      [totalResults]="$safeNavigationMigration(table()?.markElements()?.length)" />
 
     <!-- Mobile projection -->
     <app-ahb-search-form-header
@@ -37,7 +37,7 @@
       (nextClick)="onNextClick()"
       (previousClick)="onPreviousClick()"
       [selectedPosition]="(table()?.markIndex() ?? 0) + 1"
-      [totalResults]="table()?.markElements()?.length" />
+      [totalResults]="$safeNavigationMigration(table()?.markElements()?.length)" />
   </app-header>
 
   <!-- Scrollable Content -->

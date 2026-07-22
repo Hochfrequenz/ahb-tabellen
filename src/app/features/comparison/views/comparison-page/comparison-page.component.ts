@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -43,6 +50,7 @@ export interface DiffDescription {
     ComparisonSearchFormHeaderComponent,
     MatProgressSpinnerModule,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './comparison-page.component.html',
 })
 export class ComparisonPageComponent implements OnInit, OnDestroy {

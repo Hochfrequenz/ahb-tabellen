@@ -1,4 +1,11 @@
-import { Component, effect, input, model, output } from '@angular/core';
+import {
+  Component,
+  effect,
+  input,
+  output,
+  ChangeDetectionStrategy,
+  linkedSignal,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IconMagnifyingGlassComponent } from '../icon-magnifying-glass/icon-magnifying-glass.component';
@@ -14,6 +21,7 @@ import { IconArrowRightComponent } from '../icon-arrow-right/icon-arrow-right.co
     IconArrowLeftComponent,
     IconArrowRightComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './input-search-enhanced.component.html',
 })
 export class InputSearchEnhancedComponent {
@@ -25,7 +33,8 @@ export class InputSearchEnhancedComponent {
   nextClick = output();
   previousClick = output();
 
-  searchQuery = model<string>();
+  searchQueryInput = input<string>(undefined, { alias: 'searchQuery' });
+  searchQuery = linkedSignal(this.searchQueryInput);
 
   constructor(
     private route: ActivatedRoute,

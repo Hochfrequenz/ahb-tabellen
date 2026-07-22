@@ -8,6 +8,7 @@ import {
   signal,
   SimpleChanges,
   WritableSignal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -69,6 +70,7 @@ interface RoleToggle {
   standalone: true,
   imports: [CommonModule, RouterModule, MatExpansionModule, MatProgressSpinnerModule],
   templateUrl: './pruefi-overview.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './pruefi-overview.component.scss',
 })
 export class PruefiOverviewComponent implements OnChanges {

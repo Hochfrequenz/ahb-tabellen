@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
@@ -9,6 +9,7 @@ import { Meta, Title } from '@angular/platform-browser';
   selector: 'app-landing-page',
   standalone: true,
   imports: [FooterComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './landing-page.component.html',
 })
 export class LandingPageComponent implements OnInit {

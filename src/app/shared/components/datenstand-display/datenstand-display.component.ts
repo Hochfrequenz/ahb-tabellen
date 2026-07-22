@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -8,6 +8,7 @@ import { MaintenanceService } from '../../../core/api/services/maintenance.servi
   selector: 'app-datenstand-display',
   standalone: true,
   imports: [],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './datenstand-display.component.html',
 })
 export class DatenstandDisplayComponent {

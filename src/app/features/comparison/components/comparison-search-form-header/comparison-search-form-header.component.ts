@@ -1,4 +1,13 @@
-import { Component, DestroyRef, inject, input, output, effect, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  output,
+  effect,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -19,6 +28,7 @@ import { forkJoin, map } from 'rxjs';
   selector: 'app-comparison-search-form-header',
   standalone: true,
   imports: [FormsModule, ReactiveFormsModule, PruefiInputComponent, MatProgressSpinnerModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './comparison-search-form-header.component.html',
 })
 export class ComparisonSearchFormHeaderComponent {

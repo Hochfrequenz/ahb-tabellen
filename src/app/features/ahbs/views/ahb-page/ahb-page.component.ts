@@ -6,6 +6,7 @@ import {
   OnDestroy,
   signal,
   computed,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Title } from '@angular/platform-browser';
@@ -48,6 +49,7 @@ import { getFormatOfPruefidentifikator, getCurrentEdifactFormatVersion } from '@
     DvgwFallbackPageComponent,
     MatProgressSpinnerModule,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './ahb-page.component.html',
 })
 export class AhbPageComponent implements OnInit, OnDestroy {

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
@@ -15,6 +15,7 @@ interface VersionInfo {
   standalone: true,
   imports: [],
   templateUrl: './version-display.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./version-display.component.css'],
 })
 export class VersionDisplayComponent {

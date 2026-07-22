@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 import { diffWords, Change } from 'diff';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
@@ -11,6 +11,7 @@ import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.util
   standalone: true,
   imports: [IconLinkComponent],
   templateUrl: './comparison-table.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './comparison-table.component.scss',
 })
 export class ComparisonTableComponent {

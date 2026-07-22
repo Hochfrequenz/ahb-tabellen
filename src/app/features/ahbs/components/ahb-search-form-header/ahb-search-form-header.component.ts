@@ -1,4 +1,4 @@
-import { Component, input, output, effect } from '@angular/core';
+import { Component, input, output, effect, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -14,6 +14,7 @@ import { FormatVersionSelectComponent } from '../format-version-select/format-ve
   selector: 'app-ahb-search-form-header',
   standalone: true,
   imports: [FormsModule, ReactiveFormsModule, FormatVersionSelectComponent, PruefiInputComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './ahb-search-form-header.component.html',
 })
 export class AhbSearchFormHeaderComponent {

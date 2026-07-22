@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
@@ -12,6 +12,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
   selector: 'app-mcp-info',
   standalone: true,
   imports: [RouterLink, FooterComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './mcp-info.component.html',
 })
 export class McpInfoComponent implements OnInit {

@@ -8,6 +8,7 @@ import {
   signal,
   viewChild,
   inject,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Ahb } from '../../../../core/api';
 import { HighlightPipe, HighlightResult } from '../../../../shared/pipes/highlight.pipe';
@@ -24,6 +25,7 @@ interface ExpandedState {
   selector: 'app-ahb-table',
   standalone: true,
   imports: [HighlightPipe, IconLinkComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './ahb-table.component.html',
 })
 export class AhbTableComponent {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 
@@ -6,6 +6,7 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
   selector: 'app-feature-selection-page',
   standalone: true,
   imports: [FooterComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './feature-selection-page.component.html',
 })
 export class FeatureSelectionPageComponent {
