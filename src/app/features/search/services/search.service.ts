@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   BehaviorSubject,
   Observable,
@@ -30,6 +30,8 @@ export interface SearchState {
   providedIn: 'root',
 })
 export class SearchService {
+  private apiSearchService = inject(ApiSearchService);
+
   private readonly initialState: SearchState = {
     page: 1,
     pageSize: 25,
@@ -67,8 +69,6 @@ export class SearchService {
       } as SearchQueryResponse);
     })
   );
-
-  constructor(private apiSearchService: ApiSearchService) {}
 
   updatePage(page: number): void {
     this.updateState({ page });

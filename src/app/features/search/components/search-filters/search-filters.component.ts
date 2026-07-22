@@ -6,6 +6,7 @@ import {
   EventEmitter,
   HostListener,
   ChangeDetectionStrategy,
+  inject,
 } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
@@ -41,6 +42,11 @@ import { RichtungCacheService } from '../../services/richtung-cache.service';
   standalone: true,
 })
 export class SearchFiltersComponent implements OnInit, OnDestroy {
+  private fb = inject(FormBuilder);
+  private formatVersionCacheService = inject(FormatVersionCacheService);
+  private formatCacheService = inject(FormatCacheService);
+  private richtungCacheService = inject(RichtungCacheService);
+
   @Output() queryChange = new EventEmitter<string>();
   @Output() filtersChange = new EventEmitter<SearchFilters>();
 
@@ -111,12 +117,7 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
     },
   ];
 
-  constructor(
-    private fb: FormBuilder,
-    private formatVersionCacheService: FormatVersionCacheService,
-    private formatCacheService: FormatCacheService,
-    private richtungCacheService: RichtungCacheService
-  ) {
+  constructor() {
     this.searchForm = this.fb.group({
       q: [''],
       ...this.filterFields.reduce(

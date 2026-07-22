@@ -1,4 +1,4 @@
-import { Component, OnInit, forwardRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, forwardRef, ChangeDetectionStrategy, inject } from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,
@@ -30,13 +30,13 @@ import {
   ],
 })
 export class FormatVersionSelectComponent implements ControlValueAccessor, OnInit {
+  private readonly formatVersionsService = inject(FormatVersionsService);
+
   control = new FormControl<string>('');
 
   formatVersions$!: Observable<{ value: string; label: string }[]>;
 
   public onChange?: (formatVersion: string | null) => void;
-
-  constructor(private readonly formatVersionsService: FormatVersionsService) {}
 
   ngOnInit(): void {
     this.control.disable();

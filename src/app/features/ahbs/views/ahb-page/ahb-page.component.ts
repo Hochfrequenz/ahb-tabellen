@@ -7,6 +7,7 @@ import {
   signal,
   computed,
   ChangeDetectionStrategy,
+  inject,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Title } from '@angular/platform-browser';
@@ -53,6 +54,12 @@ import { getFormatOfPruefidentifikator, getCurrentEdifactFormatVersion } from '@
   templateUrl: './ahb-page.component.html',
 })
 export class AhbPageComponent implements OnInit, OnDestroy {
+  private readonly ahbService = inject(AhbService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly title = inject(Title);
+
   // State management
   formatVersion = signal<string>('');
   pruefi = signal<string>('');
@@ -81,14 +88,6 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   errorOccurred = false;
 
   private destroy$ = new Subject<void>();
-
-  constructor(
-    private readonly ahbService: AhbService,
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly http: HttpClient,
-    private readonly title: Title
-  ) {}
 
   ngOnInit() {
     this.triggerWarmupIfNeeded();

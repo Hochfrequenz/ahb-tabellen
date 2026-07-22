@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
@@ -16,6 +16,8 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
   templateUrl: './mcp-info.component.html',
 })
 export class McpInfoComponent implements OnInit {
+  private readonly title = inject(Title);
+
   /**
    * The MCP endpoint lives at `/mcp` on the same origin the app is served from, so this
    * is correct for whichever environment (stage/prod) the user is currently on.
@@ -38,8 +40,6 @@ export class McpInfoComponent implements OnInit {
 }`;
 
   copied = false;
-
-  constructor(private readonly title: Title) {}
 
   ngOnInit(): void {
     this.title.setTitle('AHB-Tabellen - MCP-Integration');

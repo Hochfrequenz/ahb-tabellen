@@ -1,4 +1,10 @@
-import { Component, HostListener, ElementRef, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  ElementRef,
+  ChangeDetectionStrategy,
+  inject,
+} from '@angular/core';
 
 import { Router } from '@angular/router';
 
@@ -17,6 +23,9 @@ interface FeatureOption {
   styleUrls: ['./feature-switcher.component.scss'],
 })
 export class FeatureSwitcherComponent {
+  private router = inject(Router);
+  private elementRef = inject(ElementRef);
+
   isDropdownOpen = false;
 
   readonly features: FeatureOption[] = [
@@ -24,11 +33,6 @@ export class FeatureSwitcherComponent {
     { value: 'search', label: 'Globale Suche', route: '/search' },
     { value: 'comparison', label: 'AHB Vergleich', route: '/compare' },
   ];
-
-  constructor(
-    private router: Router,
-    private elementRef: ElementRef
-  ) {}
 
   toggleDropdown(event?: Event): void {
     if (event) {

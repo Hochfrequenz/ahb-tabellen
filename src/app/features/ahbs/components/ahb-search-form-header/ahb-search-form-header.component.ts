@@ -1,4 +1,4 @@
-import { Component, input, output, effect, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, effect, ChangeDetectionStrategy, inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -18,6 +18,8 @@ import { FormatVersionSelectComponent } from '../format-version-select/format-ve
   templateUrl: './ahb-search-form-header.component.html',
 })
 export class AhbSearchFormHeaderComponent {
+  private readonly router = inject(Router);
+
   formatVersion = input.required<string>();
   pruefi = input.required<string>();
 
@@ -29,7 +31,7 @@ export class AhbSearchFormHeaderComponent {
     pruefi: new FormControl('', Validators.required),
   });
 
-  constructor(private readonly router: Router) {
+  constructor() {
     // Update form when inputs change
     effect(() => {
       const newFormatVersion = this.formatVersion();

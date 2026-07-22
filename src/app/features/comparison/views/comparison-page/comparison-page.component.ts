@@ -5,6 +5,7 @@ import {
   signal,
   computed,
   ChangeDetectionStrategy,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -54,6 +55,14 @@ export interface DiffDescription {
   templateUrl: './comparison-page.component.html',
 })
 export class ComparisonPageComponent implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly ahbService = inject(AhbService);
+  private readonly prufidentifikatorenService = inject(PrufidentifikatorenService);
+  private readonly formatVersionCacheService = inject(FormatVersionCacheService);
+  private readonly title = inject(Title);
+  private readonly breakpointObserver = inject(BreakpointObserver);
+
   pruefi = signal<string>('');
   formatVersionOld = signal<string>('');
   formatVersionNew = signal<string>('');
@@ -175,16 +184,6 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   readonly currentLoadingMessage = computed(() => this.loadingMessages[this.currentMessageIndex()]);
 
   private destroy$ = new Subject<void>();
-
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly ahbService: AhbService,
-    private readonly prufidentifikatorenService: PrufidentifikatorenService,
-    private readonly formatVersionCacheService: FormatVersionCacheService,
-    private readonly title: Title,
-    private readonly breakpointObserver: BreakpointObserver
-  ) {}
 
   ngOnInit(): void {
     this.loadFormatVersions();

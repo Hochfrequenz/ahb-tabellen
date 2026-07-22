@@ -32,6 +32,10 @@ import { forkJoin, map } from 'rxjs';
   templateUrl: './comparison-search-form-header.component.html',
 })
 export class ComparisonSearchFormHeaderComponent {
+  private readonly router = inject(Router);
+  private readonly formatVersionCacheService = inject(FormatVersionCacheService);
+  private readonly prufidentifikatorenService = inject(PrufidentifikatorenService);
+
   private readonly destroyRef = inject(DestroyRef);
 
   formatVersionOld = input<string>('');
@@ -75,11 +79,7 @@ export class ComparisonSearchFormHeaderComponent {
     return this.headerSearchForm.controls.formatVersionNew.value;
   }
 
-  constructor(
-    private readonly router: Router,
-    private readonly formatVersionCacheService: FormatVersionCacheService,
-    private readonly prufidentifikatorenService: PrufidentifikatorenService
-  ) {
+  constructor() {
     // Load format versions for dropdown options
     this.formatVersionCacheService
       .getFormatVersions()

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -37,13 +37,13 @@ import { SolutionsFooterComponent } from '../../../../shared/components/solution
   standalone: true,
 })
 export class SearchPageComponent implements OnInit, OnDestroy {
+  private searchService = inject(SearchService);
+
   private destroy$ = new Subject<void>();
 
   searchResults: SearchQueryResponse | null = null;
   loading = false;
   error: string | null = null;
-
-  constructor(private searchService: SearchService) {}
 
   ngOnInit(): void {
     this.searchService.searchResults$.pipe(takeUntil(this.destroy$)).subscribe(results => {

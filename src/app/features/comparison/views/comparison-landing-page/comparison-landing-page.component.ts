@@ -36,17 +36,15 @@ import { FormatVersionCacheService } from '../../../search/services/format-versi
   templateUrl: './comparison-landing-page.component.html',
 })
 export class ComparisonLandingPageComponent implements OnInit {
+  private readonly title = inject(Title);
+  private readonly formatVersionCacheService = inject(FormatVersionCacheService);
+
   private readonly destroyRef = inject(DestroyRef);
 
   pruefiControl = new FormControl<string>('');
   formatVersionOld = signal<string>('');
   formatVersionNew = signal<string>('');
   validationError = signal<string | null>(null);
-
-  constructor(
-    private readonly title: Title,
-    private readonly formatVersionCacheService: FormatVersionCacheService
-  ) {}
 
   ngOnInit(): void {
     this.title.setTitle('AHB Vergleich - Formatversionen vergleichen');

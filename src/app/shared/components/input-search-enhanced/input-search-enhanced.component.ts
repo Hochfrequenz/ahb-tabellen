@@ -5,6 +5,7 @@ import {
   output,
   ChangeDetectionStrategy,
   linkedSignal,
+  inject,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -25,6 +26,9 @@ import { IconArrowRightComponent } from '../icon-arrow-right/icon-arrow-right.co
   templateUrl: './input-search-enhanced.component.html',
 })
 export class InputSearchEnhancedComponent {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
   selectedPosition = input<number | undefined>();
   totalResults = input<number | undefined>();
 
@@ -36,10 +40,7 @@ export class InputSearchEnhancedComponent {
   searchQueryInput = input<string>(undefined, { alias: 'searchQuery' });
   searchQuery = linkedSignal(this.searchQueryInput);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router
-  ) {
+  constructor() {
     // Read query parameters on initialization
     this.route.queryParams.subscribe(params => {
       const query = params['query'];

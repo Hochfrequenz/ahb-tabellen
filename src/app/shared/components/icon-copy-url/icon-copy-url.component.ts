@@ -4,6 +4,7 @@ import {
   ViewChild,
   Renderer2,
   ChangeDetectionStrategy,
+  inject,
 } from '@angular/core';
 
 @Component({
@@ -13,9 +14,9 @@ import {
   templateUrl: './icon-copy-url.component.html',
 })
 export class IconCopyUrlComponent {
-  @ViewChild('popover') popover!: ElementRef;
+  private renderer = inject(Renderer2);
 
-  constructor(private renderer: Renderer2) {}
+  @ViewChild('popover') popover!: ElementRef;
 
   onClickCopyUrl() {
     const currentUrl = window.location.href;

@@ -6,6 +6,7 @@ import {
   ViewChild,
   OnChanges,
   ChangeDetectionStrategy,
+  inject,
 } from '@angular/core';
 
 import { Router } from '@angular/router';
@@ -25,6 +26,8 @@ import { SearchItem } from '../../../../core/api/models';
   standalone: true,
 })
 export class SearchTableComponent implements OnChanges {
+  private router = inject(Router);
+
   @Input() data: SearchItem[] = [];
   @Input() totalItems = 0;
   @Input() page = 1;
@@ -36,8 +39,6 @@ export class SearchTableComponent implements OnChanges {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-
-  constructor(private router: Router) {}
 
   dataSource = new MatTableDataSource<SearchItem>([]);
   displayedColumns: string[] = [

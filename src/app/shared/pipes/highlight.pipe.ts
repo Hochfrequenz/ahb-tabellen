@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export interface HighlightResult {
@@ -12,7 +12,7 @@ export interface HighlightResult {
   standalone: true,
 })
 export class HighlightPipe implements PipeTransform {
-  constructor(private readonly domSanitizer: DomSanitizer) {}
+  private readonly domSanitizer = inject(DomSanitizer);
 
   transform(value: string | undefined, highlightText: string | undefined): SafeHtml;
   transform(
