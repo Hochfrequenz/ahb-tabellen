@@ -61,7 +61,7 @@ router.get('/pruefidentifikatoren/:formatVersion', async (req, res, next) => {
     .catch((err: Error) => next(err));
 });
 
-router.all('/**', (req, res) => {
+router.all('{/*splat}', (req, res) => {
   res.status(404);
   res.send({ message: 'not found' });
 });
