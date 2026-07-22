@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { MaintenanceService } from '../../../core/api/services/maintenance.service';
@@ -7,7 +7,7 @@ import { MaintenanceService } from '../../../core/api/services/maintenance.servi
 @Component({
   selector: 'app-datenstand-display',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './datenstand-display.component.html',
 })
 export class DatenstandDisplayComponent {

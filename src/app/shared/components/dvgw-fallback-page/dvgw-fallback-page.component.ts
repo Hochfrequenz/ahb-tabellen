@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-dvgw-fallback-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './dvgw-fallback-page.component.html',
 })
 export class DvgwFallbackPageComponent {

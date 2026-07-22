@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { HttpClient } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -13,7 +13,7 @@ interface VersionInfo {
 @Component({
   selector: 'app-version-display',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './version-display.component.html',
   styleUrls: ['./version-display.component.css'],
 })

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,7 +22,6 @@ import { SolutionsFooterComponent } from '../../../../shared/components/solution
   templateUrl: './search-page.component.html',
   styleUrls: ['./search-page.component.scss'],
   imports: [
-    CommonModule,
     MatToolbarModule,
     MatIconModule,
     MatButtonModule,

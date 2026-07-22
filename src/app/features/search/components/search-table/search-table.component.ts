@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, ViewChild, OnChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
@@ -12,14 +12,7 @@ import { SearchItem } from '../../../../core/api/models';
   selector: 'app-search-table',
   templateUrl: './search-table.component.html',
   styleUrls: ['./search-table.component.scss'],
-  imports: [
-    CommonModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatSortModule,
-    MatButtonModule,
-    MatIconModule,
-  ],
+  imports: [MatTableModule, MatPaginatorModule, MatSortModule, MatButtonModule, MatIconModule],
   standalone: true,
 })
 export class SearchTableComponent implements OnChanges {

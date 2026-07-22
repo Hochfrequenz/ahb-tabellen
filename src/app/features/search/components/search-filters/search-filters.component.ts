@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, Output, EventEmitter, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { OverlayModule, ConnectedPosition } from '@angular/cdk/overlay';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,7 +20,6 @@ import { RichtungCacheService } from '../../services/richtung-cache.service';
   templateUrl: './search-filters.component.html',
   styleUrls: ['./search-filters.component.scss'],
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     OverlayModule,
     MatFormFieldModule,

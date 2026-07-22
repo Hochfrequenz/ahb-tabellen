@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Title } from '@angular/platform-browser';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,7 +16,6 @@ import { FormatVersionCacheService } from '../../../search/services/format-versi
   selector: 'app-comparison-landing-page',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     HeaderComponent,

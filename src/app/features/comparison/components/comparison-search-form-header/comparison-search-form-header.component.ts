@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 import { PruefiInputComponent } from '../../../ahbs/components/pruefi-input/pruefi-input.component';
 import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PrufidentifikatorenService } from '../../../../core/api';
 import { forkJoin, map } from 'rxjs';
@@ -18,13 +18,7 @@ import { forkJoin, map } from 'rxjs';
 @Component({
   selector: 'app-comparison-search-form-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    PruefiInputComponent,
-    MatProgressSpinnerModule,
-  ],
+  imports: [FormsModule, ReactiveFormsModule, PruefiInputComponent, MatProgressSpinnerModule],
   templateUrl: './comparison-search-form-header.component.html',
 })
 export class ComparisonSearchFormHeaderComponent {

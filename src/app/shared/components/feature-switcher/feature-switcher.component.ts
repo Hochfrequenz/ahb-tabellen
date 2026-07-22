@@ -1,5 +1,5 @@
 import { Component, HostListener, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 
 interface FeatureOption {
@@ -11,7 +11,7 @@ interface FeatureOption {
 @Component({
   selector: 'app-feature-switcher',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './feature-switcher.component.html',
   styleUrls: ['./feature-switcher.component.scss'],
 })
