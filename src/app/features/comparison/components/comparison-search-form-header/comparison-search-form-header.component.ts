@@ -1,4 +1,13 @@
-import { Component, DestroyRef, inject, input, output, effect, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  output,
+  effect,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -10,7 +19,7 @@ import { Router } from '@angular/router';
 import { PruefiInputComponent } from '../../../ahbs/components/pruefi-input/pruefi-input.component';
 import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PrufidentifikatorenService } from '../../../../core/api';
 import { forkJoin, map } from 'rxjs';
@@ -18,16 +27,15 @@ import { forkJoin, map } from 'rxjs';
 @Component({
   selector: 'app-comparison-search-form-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    PruefiInputComponent,
-    MatProgressSpinnerModule,
-  ],
+  imports: [FormsModule, ReactiveFormsModule, PruefiInputComponent, MatProgressSpinnerModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './comparison-search-form-header.component.html',
 })
 export class ComparisonSearchFormHeaderComponent {
+  private readonly router = inject(Router);
+  private readonly formatVersionCacheService = inject(FormatVersionCacheService);
+  private readonly prufidentifikatorenService = inject(PrufidentifikatorenService);
+
   private readonly destroyRef = inject(DestroyRef);
 
   formatVersionOld = input<string>('');
@@ -71,11 +79,7 @@ export class ComparisonSearchFormHeaderComponent {
     return this.headerSearchForm.controls.formatVersionNew.value;
   }
 
-  constructor(
-    private readonly router: Router,
-    private readonly formatVersionCacheService: FormatVersionCacheService,
-    private readonly prufidentifikatorenService: PrufidentifikatorenService
-  ) {
+  constructor() {
     // Load format versions for dropdown options
     this.formatVersionCacheService
       .getFormatVersions()

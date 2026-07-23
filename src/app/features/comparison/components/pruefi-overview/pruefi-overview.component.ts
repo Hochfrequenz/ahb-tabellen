@@ -8,6 +8,7 @@ import {
   signal,
   SimpleChanges,
   WritableSignal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -69,9 +70,12 @@ interface RoleToggle {
   standalone: true,
   imports: [CommonModule, RouterModule, MatExpansionModule, MatProgressSpinnerModule],
   templateUrl: './pruefi-overview.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './pruefi-overview.component.scss',
 })
 export class PruefiOverviewComponent implements OnChanges {
+  private readonly prufidentifikatorenService = inject(PrufidentifikatorenService);
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly ahbService = inject(AhbService);
 
@@ -206,8 +210,6 @@ export class PruefiOverviewComponent implements OnChanges {
 
     return cache;
   });
-
-  constructor(private readonly prufidentifikatorenService: PrufidentifikatorenService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (

@@ -29,16 +29,17 @@
   </span>
 
   <div class="dropdown-menu" [class.open]="isDropdownOpen" role="menu">
-    <div
-      *ngFor="let feature of features"
-      class="dropdown-option"
-      (click)="selectFeature(feature, $event)"
-      (keydown.enter)="selectFeature(feature, $event)"
-      (keydown.space)="selectFeature(feature, $event)"
-      tabindex="0"
-      role="menuitem"
-      [class.selected]="isFeatureSelected(feature)">
-      {{ feature.label }}
-    </div>
+    @for (feature of features; track feature) {
+      <div
+        class="dropdown-option"
+        (click)="selectFeature(feature, $event)"
+        (keydown.enter)="selectFeature(feature, $event)"
+        (keydown.space)="selectFeature(feature, $event)"
+        tabindex="0"
+        role="menuitem"
+        [class.selected]="isFeatureSelected(feature)">
+        {{ feature.label }}
+      </div>
+    }
   </div>
 </div>

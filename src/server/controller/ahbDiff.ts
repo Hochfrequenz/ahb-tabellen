@@ -10,7 +10,7 @@ export default class AhbDiffController {
 
   public async get(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const pruefi = req.params['pruefi'];
+      const pruefi = req.params['pruefi'] as string;
       const formatVersionNew = req.query['format-version-new'] as string;
       const formatVersionOld = req.query['format-version-old'] as string;
 

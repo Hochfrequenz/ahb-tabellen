@@ -20,21 +20,26 @@
     <ng-container matColumnDef="pruefidentifikator">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Prüfidentifikator</mat-header-cell>
       <mat-cell *matCellDef="let row" [class]="row.pruefidentifikator ? 'p-0' : ''">
-        <button
-          *ngIf="row.pruefidentifikator"
-          class="w-full h-full min-h-[40px] px-3 py-2 text-left justify-start border-0 bg-transparent text-hf-grell-rot font-medium flex items-center gap-2 focus:outline-2 focus:outline-offset-[-2px]"
-          (click)="onPruefidentifikatorClick(row)"
-          [attr.aria-label]="'Navigate to AHB table for ' + formatCellValue(row.pruefidentifikator)"
-          tabindex="0">
-          {{ formatCellValue(row.pruefidentifikator) }}
-          <mat-icon
-            class="text-base w-4 h-4 opacity-70"
-            fontSet="mdi"
-            fontIcon="mdi-open-in-new"></mat-icon>
-        </button>
-        <span *ngIf="!row.pruefidentifikator" class="block px-3 py-2 text-gray-500 italic">
-          {{ formatCellValue(row.pruefidentifikator) }}
-        </span>
+        @if (row.pruefidentifikator) {
+          <button
+            class="w-full h-full min-h-[40px] px-3 py-2 text-left justify-start border-0 bg-transparent text-hf-grell-rot font-medium flex items-center gap-2 focus:outline-2 focus:outline-offset-[-2px]"
+            (click)="onPruefidentifikatorClick(row)"
+            [attr.aria-label]="
+              'Navigate to AHB table for ' + formatCellValue(row.pruefidentifikator)
+            "
+            tabindex="0">
+            {{ formatCellValue(row.pruefidentifikator) }}
+            <mat-icon
+              class="text-base w-4 h-4 opacity-70"
+              fontSet="mdi"
+              fontIcon="mdi-open-in-new"></mat-icon>
+          </button>
+        }
+        @if (!row.pruefidentifikator) {
+          <span class="block px-3 py-2 text-gray-500 italic">
+            {{ formatCellValue(row.pruefidentifikator) }}
+          </span>
+        }
       </mat-cell>
     </ng-container>
 

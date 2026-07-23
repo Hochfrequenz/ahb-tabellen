@@ -12,6 +12,9 @@ export interface HighlightResult {
   standalone: true,
 })
 export class HighlightPipe implements PipeTransform {
+  // Kept as constructor injection (not inject()): this pipe is also instantiated manually
+  // outside an Angular injection context in ahb-table.component.ts.
+  // eslint-disable-next-line @angular-eslint/prefer-inject
   constructor(private readonly domSanitizer: DomSanitizer) {}
 
   transform(value: string | undefined, highlightText: string | undefined): SafeHtml;

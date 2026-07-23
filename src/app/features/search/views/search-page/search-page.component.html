@@ -33,35 +33,40 @@
         <div class="results-header">
           <h2 class="text-xl font-medium text-hf-text-color">
             Ergebnisse
-            <span *ngIf="searchResults" class="result-count">
-              ({{ searchResults.total }} items)
-            </span>
+            @if (searchResults) {
+              <span class="result-count"> ({{ searchResults.total }} items) </span>
+            }
           </h2>
         </div>
       </div>
 
       <!-- Search Results Table (header sticks to top) -->
 
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner diameter="40"></mat-spinner>
-        <p>Suche läuft…</p>
-      </div>
+      @if (loading) {
+        <div class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Suche läuft…</p>
+        </div>
+      }
 
-      <div *ngIf="error" class="error-container">
-        <mat-icon color="warn" fontSet="mdi" fontIcon="mdi-alert"></mat-icon>
-        <p>{{ error }}</p>
-      </div>
+      @if (error) {
+        <div class="error-container">
+          <mat-icon color="warn" fontSet="mdi" fontIcon="mdi-alert"></mat-icon>
+          <p>{{ error }}</p>
+        </div>
+      }
 
-      <app-search-table
-        *ngIf="searchResults && !loading && !error"
-        [data]="searchResults.items || []"
-        [totalItems]="searchResults.total || 0"
-        [page]="searchResults.page || 1"
-        [pageSize]="searchResults.pageSize || 25"
-        (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)"
-        (sortChange)="onSortChange($event)">
-      </app-search-table>
+      @if (searchResults && !loading && !error) {
+        <app-search-table
+          [data]="searchResults.items || []"
+          [totalItems]="searchResults.total || 0"
+          [page]="searchResults.page || 1"
+          [pageSize]="searchResults.pageSize || 25"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+          (sortChange)="onSortChange($event)">
+        </app-search-table>
+      }
 
       <!-- Solutions footer inside scroll: visible only on small screens -->
       <app-solutions-footer class="block md:hidden"></app-solutions-footer>
