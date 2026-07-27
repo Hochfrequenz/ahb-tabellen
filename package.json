@@ -81,7 +81,7 @@
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.65.0",
     "autoprefixer": "^10.4.21",
-    "concurrently": "^9.1.2",
+    "concurrently": "^10.0.4",
     "eslint": "^9.28.0",
     "jest": "^30.0.2",
     "jest-environment-jsdom": "^30.2.0",
