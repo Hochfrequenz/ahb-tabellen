@@ -52,7 +52,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "cors": "^2.8.5",
     "diff": "^8.0.2",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.4.2",
     "express": "^5.1.0",
     "express-oauth2-jwt-bearer": "^1.9.1",
     "prettier": "^3.5.3",
