@@ -1,5 +1,5 @@
 src/app/core/api
 azure-mock/data
-pulumi
+infra
 src/assets/companystylesheets
 CHANGELOG.md
