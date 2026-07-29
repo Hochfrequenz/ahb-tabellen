@@ -71,7 +71,7 @@ const resourceGroup = new resources.ResourceGroup(resourceGroupName, {
 });
 
 // Create an Azure Storage Account
-const storageAccount = new storage.StorageAccount("ahbtabellen", {
+new storage.StorageAccount("ahbtabellen", {
     resourceGroupName: resourceGroup.name,
     location: resourceGroup.location,
     sku: {
