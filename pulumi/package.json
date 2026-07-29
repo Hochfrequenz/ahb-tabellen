@@ -1,0 +1,11 @@
+{
+    "name": "ahb-tabellen-pulumi",
+    "main": "index.ts",
+    "devDependencies": {
+        "@types/node": "^22.0.0"
+    },
+    "dependencies": {
+        "@pulumi/pulumi": "3.162.0",
+        "@pulumi/azure-native": "2.90.0"
+    }
+}

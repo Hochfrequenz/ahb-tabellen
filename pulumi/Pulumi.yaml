@@ -1,8 +1,5 @@
 name: ahb-tabellen
-runtime:
-  name: python
-  options:
-    virtualenv: venv
+runtime: nodejs
 description: "AHB-tables for humans \U0001F916"
 config:
   pulumi:tags:
