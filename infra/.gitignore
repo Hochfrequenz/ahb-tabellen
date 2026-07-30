@@ -1,0 +1,7 @@
+node_modules/
+bin/
+*.tsbuildinfo
+
+# leftover from the Python program this project was migrated from
+venv/
+__pycache__/

@@ -249,10 +249,11 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@5f78996ec6a07117a0f27a6ec83b594f4a3e9701
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@3eba9d50f57a159cb8b6177f4305aefe1d43812b
     with:
       pulumi_stack_name: stage
       docker_tag: ${{ needs.build-stage.outputs.docker-tag }}
+      working_directory: infra
     secrets:
       azure_client_id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
       azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
@@ -266,10 +267,11 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@5f78996ec6a07117a0f27a6ec83b594f4a3e9701
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@3eba9d50f57a159cb8b6177f4305aefe1d43812b
     with:
       pulumi_stack_name: prod
       docker_tag: ${{ needs.build-production.outputs.docker-tag }}
+      working_directory: infra
     secrets:
       azure_client_id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
       azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
