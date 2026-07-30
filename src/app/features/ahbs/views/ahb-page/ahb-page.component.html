@@ -18,7 +18,7 @@
       (nextClick)="onNextClick()"
       (previousClick)="onPreviousClick()"
       [selectedPosition]="(table()?.markIndex() ?? 0) + 1"
-      [totalResults]="table()?.markElements()?.length" />
+      [totalResults]="$safeNavigationMigration(table()?.markElements()?.length)" />
 
     <!-- Mobile projection -->
     <app-ahb-search-form-header
@@ -37,82 +37,84 @@
       (nextClick)="onNextClick()"
       (previousClick)="onPreviousClick()"
       [selectedPosition]="(table()?.markIndex() ?? 0) + 1"
-      [totalResults]="table()?.markElements()?.length" />
+      [totalResults]="$safeNavigationMigration(table()?.markElements()?.length)" />
   </app-header>
 
   <!-- Scrollable Content -->
-  <div #scroll class="flex-1 overflow-auto relative bg-hf-pastell-rot pb-10" *ngIf="!errorOccurred">
-    <!-- Metadata Section -->
-    @if (ahb$ | async; as ahb) {
-      <div class="flex flex-col md:flex-row mb-10">
-        <section class="pt-10 mx-5">
-          <h2 class="border-b-2 inline-block border-hf-grell-rose pb-[12px] mb-[20px] uppercase">
-            Anwendungshandbücher für Menschen
-          </h2>
-          <h3 class="font-bold text-[20px]">
-            Anwendungshandbuch {{ ahb.meta.pruefidentifikator }}
-          </h3>
-          <p class="text-[20px] mb-5">{{ ahb.meta.description }}</p>
-          <p class="text-[14px]">
-            <span class="font-bold">Kommunikationsrichtungen:</span>
-            {{ ahb.meta.direction }}
-          </p>
-          <p class="text-[14px]">
-            <span class="font-bold">Version:</span>
-            <!-- naming is not consistent at bdew. In XML it is 'versionsnummer', in the AHB pdf documents it is 'version' -->
-            {{ ahb.meta.versionsnummer }}
-          </p>
-          <p class="text-[14px]">
-            <span class="font-bold">Publikationsdatum:</span>
-            <!-- naming is not consistent at bdew. In XML it is 'veroeffentlichungsdatum', in the AHB pdf documents it is 'publikationsdatum' -->
-            {{ ahb.meta.veroeffentlichungsdatum | date: 'dd.MM.yyyy' }}
-          </p>
-          <p class="text-[14px]">
-            <span class="font-bold"> Format: </span>
-            {{ edifactFormat() }}
-          </p>
-        </section>
-        <section class="pt-10 mx-5 text-right flex-1">
-          <div class="flex justify-end items-center space-x-3">
-            <app-icon-copy-url />
-            <app-export-button [formatVersion]="formatVersion()" [pruefi]="pruefi()" />
-          </div>
-        </section>
-      </div>
-    }
+  @if (!errorOccurred) {
+    <div #scroll class="flex-1 overflow-auto relative bg-hf-pastell-rot pb-10">
+      <!-- Metadata Section -->
+      @if (ahb$ | async; as ahb) {
+        <div class="flex flex-col md:flex-row mb-10">
+          <section class="pt-10 mx-5">
+            <h2 class="border-b-2 inline-block border-hf-grell-rose pb-[12px] mb-[20px] uppercase">
+              Anwendungshandbücher für Menschen
+            </h2>
+            <h3 class="font-bold text-[20px]">
+              Anwendungshandbuch {{ ahb.meta.pruefidentifikator }}
+            </h3>
+            <p class="text-[20px] mb-5">{{ ahb.meta.description }}</p>
+            <p class="text-[14px]">
+              <span class="font-bold">Kommunikationsrichtungen:</span>
+              {{ ahb.meta.direction }}
+            </p>
+            <p class="text-[14px]">
+              <span class="font-bold">Version:</span>
+              <!-- naming is not consistent at bdew. In XML it is 'versionsnummer', in the AHB pdf documents it is 'version' -->
+              {{ ahb.meta.versionsnummer }}
+            </p>
+            <p class="text-[14px]">
+              <span class="font-bold">Publikationsdatum:</span>
+              <!-- naming is not consistent at bdew. In XML it is 'veroeffentlichungsdatum', in the AHB pdf documents it is 'publikationsdatum' -->
+              {{ ahb.meta.veroeffentlichungsdatum | date: 'dd.MM.yyyy' }}
+            </p>
+            <p class="text-[14px]">
+              <span class="font-bold"> Format: </span>
+              {{ edifactFormat() }}
+            </p>
+          </section>
+          <section class="pt-10 mx-5 text-right flex-1">
+            <div class="flex justify-end items-center space-x-3">
+              <app-icon-copy-url />
+              <app-export-button [formatVersion]="formatVersion()" [pruefi]="pruefi()" />
+            </div>
+          </section>
+        </div>
+      }
+      <!-- Table Section -->
+      @if (lines$ | async; as lines) {
+        <app-ahb-table
+          [lines]="lines"
+          [highlight]="searchQuery()"
+          [formatVersion]="formatVersion()"
+          [pruefi]="pruefi()"
+          (scrollToElement)="scrollToElement($event.element, $event.offsetY)" />
+      } @else {
+        <div class="h-full flex flex-col items-center justify-center">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p class="mt-4 text-gray-500">AHB-Tabelle wird geladen ...</p>
+        </div>
+      }
+      <!-- Solutions footer inside scroll: visible only on small screens -->
+      <app-solutions-footer class="block md:hidden"></app-solutions-footer>
+    </div>
+  }
 
-    <!-- Table Section -->
-    @if (lines$ | async; as lines) {
-      <app-ahb-table
-        [lines]="lines"
-        [highlight]="searchQuery()"
-        [formatVersion]="formatVersion()"
-        [pruefi]="pruefi()"
-        (scrollToElement)="scrollToElement($event.element, $event.offsetY)" />
-    } @else {
-      <div class="h-full flex flex-col items-center justify-center">
-        <mat-spinner diameter="40"></mat-spinner>
-        <p class="mt-4 text-gray-500">AHB-Tabelle wird geladen ...</p>
-      </div>
-    }
-
-    <!-- Solutions footer inside scroll: visible only on small screens -->
-    <app-solutions-footer class="block md:hidden"></app-solutions-footer>
-  </div>
-
-  <div *ngIf="errorOccurred" class="flex-1 flex items-center justify-center">
-    <!-- Show DVGW fallback page for specific Prüfidentifikatoren -->
-    <app-dvgw-fallback-page
-      *ngIf="isDvgwPruefi()"
-      class="w-11/12 max-w-4xl"></app-dvgw-fallback-page>
-
-    <!-- Show regular fallback page for other cases -->
-    <app-fallback-page
-      *ngIf="!isDvgwPruefi()"
-      class="w-11/12 max-w-4xl"
-      [pruefi]="pruefi()"
-      [formatVersion]="formatVersion()"></app-fallback-page>
-  </div>
+  @if (errorOccurred) {
+    <div class="flex-1 flex items-center justify-center">
+      <!-- Show DVGW fallback page for specific Prüfidentifikatoren -->
+      @if (isDvgwPruefi()) {
+        <app-dvgw-fallback-page class="w-11/12 max-w-4xl"></app-dvgw-fallback-page>
+      }
+      <!-- Show regular fallback page for other cases -->
+      @if (!isDvgwPruefi()) {
+        <app-fallback-page
+          class="w-11/12 max-w-4xl"
+          [pruefi]="pruefi()"
+          [formatVersion]="formatVersion()"></app-fallback-page>
+      }
+    </div>
+  }
 
   <!-- Solutions footer for desktop/tablet: visible on md+ screens at bottom -->
   <app-solutions-footer class="flex-none hidden md:block"></app-solutions-footer>

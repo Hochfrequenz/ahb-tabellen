@@ -1,5 +1,12 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+
 import { Title } from '@angular/platform-browser';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,7 +23,6 @@ import { FormatVersionCacheService } from '../../../search/services/format-versi
   selector: 'app-comparison-landing-page',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     HeaderComponent,
@@ -26,20 +32,19 @@ import { FormatVersionCacheService } from '../../../search/services/format-versi
     InputSearchEnhancedComponent,
     PruefiOverviewComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './comparison-landing-page.component.html',
 })
 export class ComparisonLandingPageComponent implements OnInit {
+  private readonly title = inject(Title);
+  private readonly formatVersionCacheService = inject(FormatVersionCacheService);
+
   private readonly destroyRef = inject(DestroyRef);
 
   pruefiControl = new FormControl<string>('');
   formatVersionOld = signal<string>('');
   formatVersionNew = signal<string>('');
   validationError = signal<string | null>(null);
-
-  constructor(
-    private readonly title: Title,
-    private readonly formatVersionCacheService: FormatVersionCacheService
-  ) {}
 
   ngOnInit(): void {
     this.title.setTitle('AHB Versionsvergleich - Formatversionen vergleichen');

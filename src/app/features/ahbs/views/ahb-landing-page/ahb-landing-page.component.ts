@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
@@ -26,9 +26,13 @@ import { InputSearchEnhancedComponent } from '../../../../shared/components/inpu
     InputSearchEnhancedComponent,
     SolutionsFooterComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './ahb-landing-page.component.html',
 })
 export class AhbLandingPageComponent implements OnInit {
+  private readonly router = inject(Router);
+  private readonly title = inject(Title);
+
   form = new FormGroup({
     formatVersion: new FormControl<string>('', {
       nonNullable: true,
@@ -37,10 +41,7 @@ export class AhbLandingPageComponent implements OnInit {
     pruefi: new FormControl<string>('', { nonNullable: true, validators: [Validators.required] }),
   });
 
-  constructor(
-    private readonly router: Router,
-    private readonly title: Title
-  ) {
+  constructor() {
     // Subscribe to pruefi value changes
     this.form.controls.pruefi.valueChanges.subscribe(value => {
       // If we have a 5-digit number and a format version, navigate immediately

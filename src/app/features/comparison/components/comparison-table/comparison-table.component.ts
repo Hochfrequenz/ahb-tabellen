@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+
 import { diffWords, Change } from 'diff';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
@@ -9,8 +9,9 @@ import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.util
 @Component({
   selector: 'app-comparison-table',
   standalone: true,
-  imports: [CommonModule, IconLinkComponent],
+  imports: [IconLinkComponent],
   templateUrl: './comparison-table.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './comparison-table.component.scss',
 })
 export class ComparisonTableComponent {

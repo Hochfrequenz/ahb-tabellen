@@ -1,4 +1,11 @@
-import { Component, effect, forwardRef, input } from '@angular/core';
+import {
+  Component,
+  effect,
+  forwardRef,
+  input,
+  ChangeDetectionStrategy,
+  inject,
+} from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,
@@ -20,6 +27,7 @@ interface PruefiOption {
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './pruefi-input.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -29,6 +37,8 @@ interface PruefiOption {
   ],
 })
 export class PruefiInputComponent implements ControlValueAccessor {
+  private readonly prufidentifikatorenService = inject(PrufidentifikatorenService);
+
   formatVersion = input.required<string | null>();
 
   control = new FormControl<string>('');
@@ -51,7 +61,7 @@ export class PruefiInputComponent implements ControlValueAccessor {
 
   public onChange?: (pruefi: string | null) => void;
 
-  constructor(private readonly prufidentifikatorenService: PrufidentifikatorenService) {
+  constructor() {
     effect(() => {
       const formatVersion = this.formatVersion();
       if (!formatVersion) {

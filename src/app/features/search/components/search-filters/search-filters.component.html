@@ -52,39 +52,45 @@
 
   <!-- Individual Filters -->
   <div class="filter-grid">
-    <div *ngFor="let field of filterFields" class="filter-field">
-      <mat-form-field appearance="fill" class="filter-input">
-        <mat-label>{{ field.label }}</mat-label>
-
-        <!-- Select dropdown for format_version -->
-        <mat-select
-          *ngIf="field.type === 'select'"
-          [formControlName]="field.key"
-          [placeholder]="'Wähle ' + field.label.toLowerCase()"
-          [multiple]="field.multiple">
-          <mat-option *ngIf="!field.multiple" value="">Alle {{ field.label }}</mat-option>
-          <mat-option *ngFor="let option of field.options" [value]="option">
-            {{ option }}
-          </mat-option>
-        </mat-select>
-
-        <!-- Text input for other fields -->
-        <input
-          *ngIf="field.type === 'text'"
-          matInput
-          [formControlName]="field.key"
-          [placeholder]="'Filtern nach ' + field.label" />
-
-        <button
-          mat-icon-button
-          matSuffix
-          *ngIf="searchForm.get(field.key)?.value"
-          (click)="searchForm.get(field.key)?.setValue('')"
-          matTooltip="Filter zurücksetzen">
-          <mat-icon fontSet="mdi" fontIcon="mdi-close"></mat-icon>
-        </button>
-      </mat-form-field>
-    </div>
+    @for (field of filterFields; track field) {
+      <div class="filter-field">
+        <mat-form-field appearance="fill" class="filter-input">
+          <mat-label>{{ field.label }}</mat-label>
+          <!-- Select dropdown for format_version -->
+          @if (field.type === 'select') {
+            <mat-select
+              [formControlName]="field.key"
+              [placeholder]="'Wähle ' + field.label.toLowerCase()"
+              [multiple]="field.multiple">
+              @if (!field.multiple) {
+                <mat-option value="">Alle {{ field.label }}</mat-option>
+              }
+              @for (option of field.options; track option) {
+                <mat-option [value]="option">
+                  {{ option }}
+                </mat-option>
+              }
+            </mat-select>
+          }
+          <!-- Text input for other fields -->
+          @if (field.type === 'text') {
+            <input
+              matInput
+              [formControlName]="field.key"
+              [placeholder]="'Filtern nach ' + field.label" />
+          }
+          @if (searchForm.get(field.key)?.value) {
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="searchForm.get(field.key)?.setValue('')"
+              matTooltip="Filter zurücksetzen">
+              <mat-icon fontSet="mdi" fontIcon="mdi-close"></mat-icon>
+            </button>
+          }
+        </mat-form-field>
+      </div>
+    }
   </div>
 
   <!-- Filter Actions -->
@@ -96,9 +102,9 @@
       [disabled]="getActiveFilterCount() === 0">
       <mat-icon fontSet="mdi" fontIcon="mdi-close-all"></mat-icon>
       Alle Suchfilter zurücksetzen
-      <span *ngIf="getActiveFilterCount() > 0" class="filter-count">
-        ({{ getActiveFilterCount() }})
-      </span>
+      @if (getActiveFilterCount() > 0) {
+        <span class="filter-count"> ({{ getActiveFilterCount() }}) </span>
+      }
     </button>
   </div>
 </div>

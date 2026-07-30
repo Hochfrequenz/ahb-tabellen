@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { AuthService, User } from '@auth0/auth0-angular';
 import { CommonModule } from '@angular/common';
 import { Observable, BehaviorSubject, combineLatest, of } from 'rxjs';
@@ -13,15 +13,16 @@ type ExtendedAuthService = AuthService & {
   selector: 'app-login-button',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './login-button.component.html',
 })
 export class LoginButtonComponent implements OnInit {
+  auth = inject(AuthService);
+
   authState$!: Observable<{ isAuthenticated: boolean; isLoading: boolean }>;
   buttonText$ = new BehaviorSubject<string>('Einloggen');
 
   private isDevelopment = !environment.isProduction || window.location.hostname === 'localhost';
-
-  constructor(public auth: AuthService) {}
 
   ngOnInit() {
     this.authState$ = combineLatest([
