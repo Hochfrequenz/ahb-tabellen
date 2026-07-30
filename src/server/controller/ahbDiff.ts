@@ -34,4 +34,18 @@ export default class AhbDiffController {
       next(error);
     }
   }
+
+  public async getPruefiDiff(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const pruefiOld = req.params['pruefiOld'];
+      const pruefiNew = req.params['pruefiNew'];
+      const formatVersion = req.query['format-version'] as string;
+
+      const result = await this.service.getPruefiDiff(formatVersion, pruefiOld, pruefiNew);
+
+      res.status(200).setHeader('Content-Type', 'application/json').json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

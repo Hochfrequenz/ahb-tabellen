@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, of, combineLatest, forkJoin } from 'rxjs';
+import { Subject, of, combineLatest } from 'rxjs';
 import { takeUntil, catchError, switchMap } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -11,27 +11,19 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
-import { ComparisonTableComponent } from '../../components/comparison-table/comparison-table.component';
-import { ComparisonSearchFormHeaderComponent } from '../../components/comparison-search-form-header/comparison-search-form-header.component';
-import { AhbService, AhbDiff, AhbDiffLine, PrufidentifikatorenService } from '../../../../core/api';
-import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
+import { ComparisonTableComponent } from '../../../comparison/components/comparison-table/comparison-table.component';
+import { PruefiComparisonSearchFormHeaderComponent } from '../../components/pruefi-comparison-search-form-header/pruefi-comparison-search-form-header.component';
+import {
+  AhbService,
+  AhbPruefiDiff,
+  AhbDiffLine,
+  PrufidentifikatorenService,
+} from '../../../../core/api';
 import { getCurrentEdifactFormatVersion } from '@hochfrequenz/efoli';
-
-export interface DiffStats {
-  added: number;
-  deleted: number;
-  modified: number;
-  unchanged: number;
-  total: number;
-}
-
-export interface DiffDescription {
-  descriptionOld?: string | null;
-  descriptionNew?: string | null;
-}
+import { DiffStats } from '../../../comparison/views/comparison-page/comparison-page.component';
 
 @Component({
-  selector: 'app-comparison-page',
+  selector: 'app-pruefi-comparison-page',
   standalone: true,
   imports: [
     CommonModule,
@@ -40,15 +32,15 @@ export interface DiffDescription {
     FooterComponent,
     SolutionsFooterComponent,
     ComparisonTableComponent,
-    ComparisonSearchFormHeaderComponent,
+    PruefiComparisonSearchFormHeaderComponent,
     MatProgressSpinnerModule,
   ],
-  templateUrl: './comparison-page.component.html',
+  templateUrl: './pruefi-comparison-page.component.html',
 })
-export class ComparisonPageComponent implements OnInit, OnDestroy {
-  pruefi = signal<string>('');
-  formatVersionOld = signal<string>('');
-  formatVersionNew = signal<string>('');
+export class PruefiComparisonPageComponent implements OnInit, OnDestroy {
+  pruefiOld = signal<string>('');
+  pruefiNew = signal<string>('');
+  formatVersion = signal<string>('');
 
   /** Whether the viewport is at least medium (768px) - Tailwind's md breakpoint */
   isDesktop = signal<boolean>(false);
@@ -98,7 +90,7 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   ];
 
   /** Current diff data as a signal for reactive filtering */
-  private readonly diffData = signal<AhbDiff | null>(null);
+  private readonly diffData = signal<AhbPruefiDiff | null>(null);
 
   /** Computed filtered lines based on filter toggle states - automatically updates when filters or diff data change */
   readonly filteredLines = computed(() => {
@@ -142,18 +134,18 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   errorOccurred = false;
   errorMessage = '';
   errorDetails = signal<{
-    pruefi: string;
-    fvNew: string;
-    fvOld: string;
-    existsInOld: boolean;
-    existsInNew: boolean;
+    pruefiOld: string;
+    pruefiNew: string;
+    formatVersion: string;
+    existsOld: boolean;
+    existsNew: boolean;
   } | null>(null);
 
   /** Entertaining loading messages that rotate while waiting */
   readonly loadingMessages = [
     'Lade Vergleich...',
     'Durchforste die AHB-Zeilen...',
-    'Vergleiche Formatversionen...',
+    'Vergleiche Prüfidentifikatoren...',
     'Suche nach Unterschieden...',
     'Analysiere Änderungen...',
     'Fast geschafft...',
@@ -173,44 +165,37 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly ahbService: AhbService,
     private readonly prufidentifikatorenService: PrufidentifikatorenService,
-    private readonly formatVersionCacheService: FormatVersionCacheService,
     private readonly title: Title,
     private readonly breakpointObserver: BreakpointObserver
   ) {}
 
   ngOnInit(): void {
-    this.loadFormatVersions();
     this.initBreakpointObserver();
 
-    // Combine params and queryParams to avoid race condition
     combineLatest([this.route.params, this.route.queryParams])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([params, queryParams]) => {
-        const pruefi = params['pruefi'];
-        const fvOld = queryParams['fv-old'];
-        const fvNew = queryParams['fv-new'];
+        const pruefiOld = params['pruefiOld'];
+        const pruefiNew = params['pruefiNew'];
+        const formatVersionParam = queryParams['format-version'];
 
-        const resolvedFvOld =
-          fvOld?.toLowerCase() === 'current' ? getCurrentEdifactFormatVersion() : fvOld;
-        const resolvedFvNew =
-          fvNew?.toLowerCase() === 'current' ? getCurrentEdifactFormatVersion() : fvNew;
+        const resolvedFormatVersion =
+          formatVersionParam?.toLowerCase() === 'current'
+            ? getCurrentEdifactFormatVersion()
+            : formatVersionParam;
 
-        if (
-          (fvOld?.toLowerCase() === 'current' || fvNew?.toLowerCase() === 'current') &&
-          resolvedFvOld &&
-          resolvedFvNew
-        ) {
-          this.navigateToComparison(pruefi, resolvedFvOld, resolvedFvNew, true);
+        if (formatVersionParam?.toLowerCase() === 'current' && resolvedFormatVersion) {
+          this.navigateToComparison(pruefiOld, pruefiNew, resolvedFormatVersion, true);
           return;
         }
 
-        if (pruefi) this.pruefi.set(pruefi);
-        if (resolvedFvOld) this.formatVersionOld.set(resolvedFvOld);
-        if (resolvedFvNew) this.formatVersionNew.set(resolvedFvNew);
+        if (pruefiOld) this.pruefiOld.set(pruefiOld);
+        if (pruefiNew) this.pruefiNew.set(pruefiNew);
+        if (resolvedFormatVersion) this.formatVersion.set(resolvedFormatVersion);
 
         this.updateTitle();
 
-        if (this.pruefi() && this.formatVersionOld() && this.formatVersionNew()) {
+        if (this.pruefiOld() && this.pruefiNew() && this.formatVersion()) {
           this.loadDiff();
         }
       });
@@ -236,20 +221,6 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadFormatVersions(): void {
-    this.formatVersionCacheService
-      .getFormatVersions()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: versions => {
-          if (!this.formatVersionNew() && versions.length >= 2) {
-            this.formatVersionNew.set(versions[versions.length - 1]);
-            this.formatVersionOld.set(versions[versions.length - 2]);
-          }
-        },
-      });
-  }
-
   private initBreakpointObserver(): void {
     // Tailwind's md breakpoint is 768px
     this.breakpointObserver
@@ -260,29 +231,28 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  onVersionOldChange(version: string): void {
-    this.navigateToComparison(this.pruefi(), version, this.formatVersionNew());
+  onFormatVersionChange(formatVersion: string): void {
+    this.navigateToComparison(this.pruefiOld(), this.pruefiNew(), formatVersion);
   }
 
-  onVersionNewChange(version: string): void {
-    this.navigateToComparison(this.pruefi(), this.formatVersionOld(), version);
+  onPruefiOldChange(pruefiOld: string): void {
+    this.navigateToComparison(pruefiOld, this.pruefiNew(), this.formatVersion());
   }
 
-  onPruefiChange(pruefi: string): void {
-    this.navigateToComparison(pruefi, this.formatVersionOld(), this.formatVersionNew());
+  onPruefiNewChange(pruefiNew: string): void {
+    this.navigateToComparison(this.pruefiOld(), pruefiNew, this.formatVersion());
   }
 
   private navigateToComparison(
-    pruefi: string,
-    fvOld: string,
-    fvNew: string,
+    pruefiOld: string,
+    pruefiNew: string,
+    formatVersion: string,
     replaceUrl = false
   ): void {
-    if (pruefi && fvOld && fvNew) {
-      this.router.navigate(['/compare', pruefi], {
+    if (pruefiOld && pruefiNew && formatVersion) {
+      this.router.navigate(['/compare-pruefis', pruefiOld, pruefiNew], {
         queryParams: {
-          'fv-old': fvOld,
-          'fv-new': fvNew,
+          'format-version': formatVersion,
         },
         replaceUrl,
       });
@@ -299,30 +269,34 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     this.updateTitle();
 
     this.ahbService
-      .getAhbDiff({
-        pruefi: this.pruefi(),
-        'format-version-new': this.formatVersionNew(),
-        'format-version-old': this.formatVersionOld(),
+      .getPruefiDiff({
+        pruefiOld: this.pruefiOld(),
+        pruefiNew: this.pruefiNew(),
+        'format-version': this.formatVersion(),
       })
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
           this.errorOccurred = true;
           if (error.status === 404) {
-            // Check which version(s) contain the pruefi to provide accurate error message
             return this.checkPruefiExistence().pipe(
-              switchMap(({ existsInOld, existsInNew }) => {
+              switchMap(({ existsOld, existsNew }) => {
                 this.errorDetails.set({
-                  pruefi: this.pruefi(),
-                  fvNew: this.formatVersionNew(),
-                  fvOld: this.formatVersionOld(),
-                  existsInOld,
-                  existsInNew,
+                  pruefiOld: this.pruefiOld(),
+                  pruefiNew: this.pruefiNew(),
+                  formatVersion: this.formatVersion(),
+                  existsOld,
+                  existsNew,
                 });
                 this.errorMessage = '';
                 return of(null);
               })
             );
+          } else if (error.status === 400) {
+            this.errorDetails.set(null);
+            this.errorMessage =
+              error.error?.message ?? 'Die beiden Prüfidentifikatoren müssen unterschiedlich sein.';
+            return of(null);
           } else {
             this.errorDetails.set(null);
             this.errorMessage = 'Ein Fehler ist aufgetreten.';
@@ -338,21 +312,17 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   }
 
   private checkPruefiExistence() {
-    const pruefi = this.pruefi();
-    return forkJoin({
-      existsInOld: this.prufidentifikatorenService
-        .getPruefis({ 'format-version': this.formatVersionOld() })
-        .pipe(
-          catchError(() => of([])),
-          switchMap(pruefis => of(pruefis.some(p => p.pruefidentifikator === pruefi)))
-        ),
-      existsInNew: this.prufidentifikatorenService
-        .getPruefis({ 'format-version': this.formatVersionNew() })
-        .pipe(
-          catchError(() => of([])),
-          switchMap(pruefis => of(pruefis.some(p => p.pruefidentifikator === pruefi)))
-        ),
-    });
+    const formatVersion = this.formatVersion();
+    return this.prufidentifikatorenService.getPruefis({ 'format-version': formatVersion }).pipe(
+      catchError(() => of([])),
+      switchMap(pruefis => {
+        const ids = pruefis.map(p => p.pruefidentifikator);
+        return of({
+          existsOld: ids.includes(this.pruefiOld()),
+          existsNew: ids.includes(this.pruefiNew()),
+        });
+      })
+    );
   }
 
   private computeStats(lines: AhbDiffLine[]): DiffStats {
@@ -377,9 +347,9 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   }
 
   private updateTitle(): void {
-    const parts = ['AHB Versionsvergleich', this.pruefi()];
-    if (this.formatVersionOld() && this.formatVersionNew()) {
-      parts.push(`${this.formatVersionOld()} → ${this.formatVersionNew()}`);
+    const parts = ['AHB Prüfi-Vergleich', this.pruefiOld(), this.pruefiNew()];
+    if (this.formatVersion()) {
+      parts.push(this.formatVersion());
     }
     this.title.setTitle(parts.filter(Boolean).join(' | '));
   }

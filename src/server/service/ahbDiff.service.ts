@@ -1,4 +1,9 @@
-import AhbDiffRepository, { AhbDiffResult, AhbDiffSummary } from '../repository/ahbDiff';
+import AhbDiffRepository, {
+  AhbDiffResult,
+  AhbDiffSummary,
+  PruefiDiffResult,
+} from '../repository/ahbDiff';
+import { ValidationError } from '../infrastructure/errors';
 import { assertPruefi, resolveFormatVersion } from './validation';
 import { extractEbdKey } from './ebd';
 
@@ -45,5 +50,33 @@ export default class AhbDiffService {
     const resolvedOld = resolveFormatVersion(formatVersionOld, 'format-version-old');
 
     return this.repository.getSummary(resolvedNew, resolvedOld);
+  }
+
+  public async getPruefiDiff(
+    formatVersion: string,
+    pruefiOld: string,
+    pruefiNew: string
+  ): Promise<PruefiDiffResult> {
+    assertPruefi(pruefiOld);
+    assertPruefi(pruefiNew);
+    if (pruefiOld === pruefiNew) {
+      throw new ValidationError(
+        `Prüfidentifikator ${pruefiOld} cannot be compared with itself. Choose two different Prüfidentifikatoren.`
+      );
+    }
+    const resolvedFormatVersion = resolveFormatVersion(formatVersion, 'format-version');
+
+    const result = await this.repository.getPruefiDiff(resolvedFormatVersion, pruefiOld, pruefiNew);
+
+    for (const line of result.lines) {
+      if (line.old) {
+        line.old.ebd_key = extractEbdKey(line.old.qualifier);
+      }
+      if (line.new) {
+        line.new.ebd_key = extractEbdKey(line.new.qualifier);
+      }
+    }
+
+    return result;
   }
 }

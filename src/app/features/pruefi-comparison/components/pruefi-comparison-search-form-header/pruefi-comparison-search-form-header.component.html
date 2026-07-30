@@ -1,0 +1,37 @@
+<form [formGroup]="headerSearchForm" class="flex items-center gap-2">
+  <!-- Format Version Select -->
+  <div class="flex flex-col items-start h-16 w-36 pt-2">
+    <select
+      id="header-format-version"
+      class="inline-block border-2 border-white rounded-lg bg-hf-pastell-rose py-3 ps-3 pe-8 focus:outline-0 w-full"
+      formControlName="formatVersion">
+      @for (fv of formatVersions; track fv) {
+        <option [value]="fv">{{ fv }}</option>
+      }
+    </select>
+    <label
+      for="header-format-version"
+      class="ml-3 -mt-14 text-xs inline-block text-slate-500 text-[12px] bg-white px-1">
+      Formatversion
+    </label>
+  </div>
+
+  <!-- Pruefi 1 Input -->
+  <app-pruefi-input
+    class="inline-block h-16 w-64"
+    formControlName="pruefiOld"
+    [formatVersion]="headerSearchForm.controls.formatVersion.value" />
+
+  <span class="text-hf-text-color">↔</span>
+
+  <!-- Pruefi 2 Input -->
+  <app-pruefi-input
+    class="inline-block h-16 w-64"
+    formControlName="pruefiNew"
+    [formatVersion]="headerSearchForm.controls.formatVersion.value" />
+
+  <!-- Validation Spinner -->
+  @if (isValidating()) {
+    <mat-spinner diameter="24"></mat-spinner>
+  }
+</form>

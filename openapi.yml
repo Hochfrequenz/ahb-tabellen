@@ -217,6 +217,46 @@ paths:
                 $ref: '#/components/schemas/AhbDiff'
         '404':
           description: Pruefidentifikator not found in one or both format versions
+  /api/pruefi-diff/{pruefiOld}/{pruefiNew}:
+    get:
+      tags:
+        - ahb
+      summary: Get a diff comparison between two different Pruefidentifikatoren within the same format version
+      operationId: getPruefiDiff
+      parameters:
+        - name: pruefiOld
+          in: path
+          description: First Pruefidentifikator to compare
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{5}$'
+            example: '13002'
+        - name: pruefiNew
+          in: path
+          description: Second Pruefidentifikator to compare
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{5}$'
+            example: '13003'
+        - name: format-version
+          in: query
+          description: The format version both Pruefidentifikatoren are compared in (FVxxxx code, 'current', or an ISO date YYYY-MM-DD)
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AhbPruefiDiff'
+        '400':
+          description: pruefiOld and pruefiNew are identical
+        '404':
+          description: One or both Pruefidentifikatoren not found in the given format version
   /api/pruefidentifikatoren/{format-version}:
     get:
       tags:
@@ -603,6 +643,43 @@ components:
             - pruefidentifikator
             - format_version_new
             - format_version_old
+      required:
+        - lines
+        - meta
+    AhbPruefiDiff:
+      type: object
+      description: >
+        Diff comparison between two different Pruefidentifikatoren within the same format version
+        (as opposed to AhbDiff, which compares the same Pruefidentifikator across two format versions)
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/AhbDiffLine'
+        meta:
+          type: object
+          properties:
+            format_version:
+              type: string
+              example: 'FV2410'
+            pruefidentifikator_old:
+              type: string
+              example: '13002'
+            pruefidentifikator_new:
+              type: string
+              example: '13003'
+            description_new:
+              type: string
+              nullable: true
+              description: Description of the new (second) Pruefidentifikator
+            description_old:
+              type: string
+              nullable: true
+              description: Description of the old (first) Pruefidentifikator
+          required:
+            - format_version
+            - pruefidentifikator_old
+            - pruefidentifikator_new
       required:
         - lines
         - meta

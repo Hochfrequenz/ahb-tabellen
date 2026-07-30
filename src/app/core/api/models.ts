@@ -8,6 +8,7 @@ export type { AhbDiffLine } from './models/ahb-diff-line';
 export type { AhbDiffSide } from './models/ahb-diff-side';
 export type { AhbDiffStats } from './models/ahb-diff-stats';
 export type { AhbDiffSummary } from './models/ahb-diff-summary';
+export type { AhbPruefiDiff } from './models/ahb-pruefi-diff';
 export type { Datenstand } from './models/datenstand';
 export type { DirectionValues } from './models/direction-values';
 export type { FilterValue } from './models/filter-value';

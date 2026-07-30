@@ -26,6 +26,7 @@ describe('AhbDiffController', () => {
     mockService = {
       getDiff: jest.fn(),
       getSummary: jest.fn(),
+      getPruefiDiff: jest.fn(),
     } as unknown as jest.Mocked<AhbDiffService>;
 
     controller = new AhbDiffController(mockService);
@@ -94,6 +95,43 @@ describe('AhbDiffController', () => {
       mockReq.query = { 'format-version-new': 'FV2504', 'format-version-old': 'FV2410' };
 
       await controller.getSummary(mockReq as Request, mockRes as Response, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('getPruefiDiff', () => {
+    it('delegates to the service and serializes the diff result', async () => {
+      const mockResult = {
+        lines: [],
+        meta: {
+          format_version: 'FV2410',
+          pruefidentifikator_old: '13002',
+          pruefidentifikator_new: '13003',
+        },
+      };
+      mockService.getPruefiDiff.mockResolvedValue(mockResult);
+
+      mockReq.params = { pruefiOld: '13002', pruefiNew: '13003' };
+      mockReq.query = { 'format-version': 'FV2410' };
+
+      await controller.getPruefiDiff(mockReq as Request, mockRes as Response, mockNext);
+
+      expect(mockService.getPruefiDiff).toHaveBeenCalledWith('FV2410', '13002', '13003');
+      expect(mockStatus).toHaveBeenCalledWith(200);
+      expect(mockSetHeader).toHaveBeenCalledWith('Content-Type', 'application/json');
+      expect(mockJson).toHaveBeenCalledWith(mockResult);
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    it('forwards service errors to next()', async () => {
+      const error = new Error('boom');
+      mockService.getPruefiDiff.mockRejectedValue(error);
+
+      mockReq.params = { pruefiOld: '13002', pruefiNew: '13003' };
+      mockReq.query = { 'format-version': 'FV2410' };
+
+      await controller.getPruefiDiff(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalledWith(error);
     });
