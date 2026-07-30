@@ -19,7 +19,7 @@ const imageNameWithTag = `${imageName}:${imageTag}`;
 const ghcrToken = config.requireSecret("ghcr_token");
 
 const containerPort = config.getNumber("containerPort");
-if (!containerPort) {
+if (containerPort === undefined) {
     throw new Error("containerPort must be set");
 }
 
