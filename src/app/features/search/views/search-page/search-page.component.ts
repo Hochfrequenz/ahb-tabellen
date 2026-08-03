@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
+
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,7 +22,6 @@ import { SolutionsFooterComponent } from '../../../../shared/components/solution
   templateUrl: './search-page.component.html',
   styleUrls: ['./search-page.component.scss'],
   imports: [
-    CommonModule,
     MatToolbarModule,
     MatIconModule,
     MatButtonModule,
@@ -34,16 +33,17 @@ import { SolutionsFooterComponent } from '../../../../shared/components/solution
     FooterComponent,
     SolutionsFooterComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class SearchPageComponent implements OnInit, OnDestroy {
+  private searchService = inject(SearchService);
+
   private destroy$ = new Subject<void>();
 
   searchResults: SearchQueryResponse | null = null;
   loading = false;
   error: string | null = null;
-
-  constructor(private searchService: SearchService) {}
 
   ngOnInit(): void {
     this.searchService.searchResults$.pipe(takeUntil(this.destroy$)).subscribe(results => {

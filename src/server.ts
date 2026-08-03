@@ -61,10 +61,10 @@ mountMcp(server);
 server.use(httpErrorHandler);
 
 // Serve static files from /browser
-server.get('*.*', express.static(distFolder, { maxAge: '1y' }));
+server.get('*file.*ext', express.static(distFolder, { maxAge: '1y' }));
 
 // All regular routes serve angular
-server.get('*', async (_, res) => res.sendFile(join(distFolder, indexHtml)));
+server.get('{/*splat}', async (_, res) => res.sendFile(join(distFolder, indexHtml)));
 
 const port = process.env['PORT'] || 3000;
 server.listen(port, () => {

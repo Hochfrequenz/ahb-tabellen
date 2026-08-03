@@ -2,7 +2,7 @@
 
 Pulumi is a modern infrastructure as code tool that allows you to create, deploy, and manage infrastructure on any cloud using your favorite language.
 
-We chose Python.
+We chose TypeScript.
 
 ## Requirements
 
@@ -10,21 +10,14 @@ You need to have the following tools installed on your machine:
 
 - [Pulumi](https://www.pulumi.com/docs/get-started/install/)
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
-- [Python](https://www.python.org/downloads/)
+- [Node.js](https://nodejs.org/)
 
-## Setup Python Virtual Environment
+## Setup
 
-To create a virtual environment use the following command:
-
-```bash
-python -m venv .venv
-```
-
-Activate the virtual environment and install the dependencies:
+Install the dependencies:
 
 ```bash
-source .venv/bin/activate
-pip install -r requirements.txt
+npm install
 ```
 
 ## Regular Used Commands

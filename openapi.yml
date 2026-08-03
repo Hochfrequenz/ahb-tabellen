@@ -321,6 +321,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Datenstand'
+  /api/health:
+    get:
+      tags:
+        - maintenance
+      summary: Health check of the application and its SQLite database
+      description: >
+        Health check endpoint consumed by [Oh Dear](https://ohdear.app/). The
+        `oh-dear-health-check-secret` request header must match the server's configured secret.
+        Returns HTTP 200 when all checks pass and HTTP 500 when at least one check failed or crashed.
+      operationId: getHealth
+      parameters:
+        - name: oh-dear-health-check-secret
+          in: header
+          description: Shared secret that must match the server's configured Oh Dear health check secret.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: All health checks passed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+        '401':
+          description: Missing or invalid health check secret
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckError'
+        '500':
+          description: At least one health check failed or crashed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+        '503':
+          description: >
+            Health check misconfiguration — the `OH_DEAR_HEALTH_CHECK_SECRET` environment
+            variable is not set on the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
@@ -781,3 +825,77 @@ components:
           example: '01.04.2025'
       required:
         - veroeffentlichungsdatum
+    HealthCheckResponse:
+      type: object
+      description: Aggregated result of all individual health checks
+      properties:
+        finishedAt:
+          type: integer
+          description: Unix timestamp (seconds) at which the health check finished
+          example: 1743500000
+        checkResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthCheckResult'
+      required:
+        - finishedAt
+        - checkResults
+    HealthCheckResult:
+      type: object
+      description: Result of a single health check
+      properties:
+        name:
+          type: string
+          example: 'SQLiteConnection'
+        label:
+          type: string
+          example: 'SQLite Database Connection'
+        notificationMessage:
+          type: string
+          nullable: true
+          description: Message intended for notification channels, null when there is nothing to report
+        shortSummary:
+          type: string
+          example: 'Connected - Tables verified'
+        status:
+          type: string
+          enum:
+            - ok
+            - warning
+            - failed
+            - crashed
+            - skipped
+        meta:
+          type: object
+          description: Additional check-specific details
+          additionalProperties: true
+      required:
+        - name
+        - label
+        - notificationMessage
+        - shortSummary
+        - status
+    HealthCheckError:
+      type: object
+      description: Error returned when the health check secret is missing or invalid
+      properties:
+        error:
+          type: string
+          example: 'Invalid health check secret'
+      required:
+        - error
+    ErrorResponse:
+      type: object
+      description: Standard error body produced by the global error handler
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code
+          example: 'EXTERNAL_SERVICE_ERROR'
+        message:
+          type: string
+          description: Human-readable error message
+          example: 'OH_DEAR_HEALTH_CHECK_SECRET environment variable is not set'
+      required:
+        - error
+        - message

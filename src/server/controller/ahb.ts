@@ -16,8 +16,8 @@ export default class AHBController {
 
   public async get(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const pruefi = req.params['pruefi'];
-      const formatVersion = req.params['formatVersion'];
+      const pruefi = req.params['pruefi'] as string;
+      const formatVersion = req.params['formatVersion'] as string;
       const format = (req.query['format'] as string) || 'json';
 
       const {

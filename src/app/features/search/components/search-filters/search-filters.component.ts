@@ -1,5 +1,14 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  Output,
+  EventEmitter,
+  HostListener,
+  ChangeDetectionStrategy,
+  inject,
+} from '@angular/core';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { OverlayModule, ConnectedPosition } from '@angular/cdk/overlay';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,7 +29,6 @@ import { RichtungCacheService } from '../../services/richtung-cache.service';
   templateUrl: './search-filters.component.html',
   styleUrls: ['./search-filters.component.scss'],
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     OverlayModule,
     MatFormFieldModule,
@@ -30,9 +38,15 @@ import { RichtungCacheService } from '../../services/richtung-cache.service';
     MatButtonModule,
     MatTooltipModule,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class SearchFiltersComponent implements OnInit, OnDestroy {
+  private fb = inject(FormBuilder);
+  private formatVersionCacheService = inject(FormatVersionCacheService);
+  private formatCacheService = inject(FormatCacheService);
+  private richtungCacheService = inject(RichtungCacheService);
+
   @Output() queryChange = new EventEmitter<string>();
   @Output() filtersChange = new EventEmitter<SearchFilters>();
 
@@ -103,12 +117,7 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
     },
   ];
 
-  constructor(
-    private fb: FormBuilder,
-    private formatVersionCacheService: FormatVersionCacheService,
-    private formatCacheService: FormatCacheService,
-    private richtungCacheService: RichtungCacheService
-  ) {
+  constructor() {
     this.searchForm = this.fb.group({
       q: [''],
       ...this.filterFields.reduce(

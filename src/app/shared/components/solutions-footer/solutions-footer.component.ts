@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-solutions-footer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './solutions-footer.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './solutions-footer.component.scss',
 })
 export class SolutionsFooterComponent {

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { Observable, of } from 'rxjs';
@@ -9,9 +9,9 @@ import { environment } from '../environments/environment';
   providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  private isDevelopment = !environment.isProduction || window.location.hostname === 'localhost';
+  private auth = inject(AuthService);
 
-  constructor(private auth: AuthService) {}
+  private isDevelopment = !environment.isProduction || window.location.hostname === 'localhost';
 
   canActivate(_: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
     if (this.isDevelopment) {

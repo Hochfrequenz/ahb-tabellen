@@ -1,3 +1,3 @@
-<a *ngIf="version" title="Commit {{ commitId }} built on {{ buildDate }}" href="/version">{{
-  version
-}}</a>
+@if (version) {
+  <a title="Commit {{ commitId }} built on {{ buildDate }}" href="/version">{{ version }}</a>
+}
