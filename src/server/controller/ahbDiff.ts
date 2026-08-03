@@ -37,8 +37,8 @@ export default class AhbDiffController {
 
   public async getPruefiDiff(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const pruefiOld = req.params['pruefiOld'];
-      const pruefiNew = req.params['pruefiNew'];
+      const pruefiOld = req.params['pruefiOld'] as string;
+      const pruefiNew = req.params['pruefiNew'] as string;
       const formatVersion = req.query['format-version'] as string;
 
       const result = await this.service.getPruefiDiff(formatVersion, pruefiOld, pruefiNew);

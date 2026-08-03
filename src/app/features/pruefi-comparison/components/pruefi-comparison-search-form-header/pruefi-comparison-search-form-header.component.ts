@@ -28,6 +28,10 @@ import { map } from 'rxjs';
   templateUrl: './pruefi-comparison-search-form-header.component.html',
 })
 export class PruefiComparisonSearchFormHeaderComponent {
+  private readonly router = inject(Router);
+  private readonly formatVersionCacheService = inject(FormatVersionCacheService);
+  private readonly prufidentifikatorenService = inject(PrufidentifikatorenService);
+
   private readonly destroyRef = inject(DestroyRef);
 
   formatVersion = input<string>('');
@@ -50,11 +54,7 @@ export class PruefiComparisonSearchFormHeaderComponent {
     pruefiNew: new FormControl('', Validators.required),
   });
 
-  constructor(
-    private readonly router: Router,
-    private readonly formatVersionCacheService: FormatVersionCacheService,
-    private readonly prufidentifikatorenService: PrufidentifikatorenService
-  ) {
+  constructor() {
     this.formatVersionCacheService
       .getFormatVersions()
       .pipe(takeUntilDestroyed())

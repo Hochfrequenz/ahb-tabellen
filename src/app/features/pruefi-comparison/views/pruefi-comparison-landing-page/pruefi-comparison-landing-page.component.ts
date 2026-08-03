@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -27,15 +27,13 @@ import { PruefiSelectionOverviewComponent } from '../../components/pruefi-select
   templateUrl: './pruefi-comparison-landing-page.component.html',
 })
 export class PruefiComparisonLandingPageComponent implements OnInit {
+  private readonly title = inject(Title);
+  private readonly router = inject(Router);
+
   pruefiOldControl = new FormControl<string>('');
   pruefiNewControl = new FormControl<string>('');
   formatVersion = signal<string>(getCurrentEdifactFormatVersion());
   validationError = signal<string | null>(null);
-
-  constructor(
-    private readonly title: Title,
-    private readonly router: Router
-  ) {}
 
   ngOnInit(): void {
     this.title.setTitle('AHB Prüfi-Vergleich - Zwei Prüfidentifikatoren vergleichen');

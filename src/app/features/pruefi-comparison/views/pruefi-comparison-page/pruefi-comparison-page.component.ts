@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -38,6 +38,13 @@ import { DiffStats } from '../../../comparison/views/comparison-page/comparison-
   templateUrl: './pruefi-comparison-page.component.html',
 })
 export class PruefiComparisonPageComponent implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly ahbService = inject(AhbService);
+  private readonly prufidentifikatorenService = inject(PrufidentifikatorenService);
+  private readonly title = inject(Title);
+  private readonly breakpointObserver = inject(BreakpointObserver);
+
   pruefiOld = signal<string>('');
   pruefiNew = signal<string>('');
   formatVersion = signal<string>('');
@@ -159,15 +166,6 @@ export class PruefiComparisonPageComponent implements OnInit, OnDestroy {
   readonly currentLoadingMessage = computed(() => this.loadingMessages[this.currentMessageIndex()]);
 
   private destroy$ = new Subject<void>();
-
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly ahbService: AhbService,
-    private readonly prufidentifikatorenService: PrufidentifikatorenService,
-    private readonly title: Title,
-    private readonly breakpointObserver: BreakpointObserver
-  ) {}
 
   ngOnInit(): void {
     this.initBreakpointObserver();

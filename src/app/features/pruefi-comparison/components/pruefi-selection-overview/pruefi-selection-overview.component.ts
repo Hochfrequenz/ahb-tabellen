@@ -46,6 +46,8 @@ interface RoleToggle {
   templateUrl: './pruefi-selection-overview.component.html',
 })
 export class PruefiSelectionOverviewComponent implements OnChanges {
+  private readonly prufidentifikatorenService = inject(PrufidentifikatorenService);
+
   private readonly destroyRef = inject(DestroyRef);
 
   @Input() formatVersion = '';
@@ -78,8 +80,6 @@ export class PruefiSelectionOverviewComponent implements OnChanges {
     }
     return cache;
   });
-
-  constructor(private readonly prufidentifikatorenService: PrufidentifikatorenService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['formatVersion'] && this.formatVersion) {
