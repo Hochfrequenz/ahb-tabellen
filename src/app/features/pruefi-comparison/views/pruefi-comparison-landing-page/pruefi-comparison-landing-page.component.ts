@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -24,6 +24,7 @@ import { PruefiSelectionOverviewComponent } from '../../components/pruefi-select
     PruefiComparisonSearchFormHeaderComponent,
     PruefiSelectionOverviewComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './pruefi-comparison-landing-page.component.html',
 })
 export class PruefiComparisonLandingPageComponent implements OnInit {

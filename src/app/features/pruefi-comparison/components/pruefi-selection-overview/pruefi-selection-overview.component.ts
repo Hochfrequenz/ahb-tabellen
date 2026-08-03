@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
@@ -43,6 +44,7 @@ interface RoleToggle {
   selector: 'app-pruefi-selection-overview',
   standalone: true,
   imports: [CommonModule, MatExpansionModule, MatProgressSpinnerModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './pruefi-selection-overview.component.html',
 })
 export class PruefiSelectionOverviewComponent implements OnChanges {

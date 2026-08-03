@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  OnDestroy,
+  signal,
+  computed,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -35,6 +43,7 @@ import { DiffStats } from '../../../comparison/views/comparison-page/comparison-
     PruefiComparisonSearchFormHeaderComponent,
     MatProgressSpinnerModule,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './pruefi-comparison-page.component.html',
 })
 export class PruefiComparisonPageComponent implements OnInit, OnDestroy {

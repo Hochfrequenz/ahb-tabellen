@@ -1,4 +1,13 @@
-import { Component, DestroyRef, inject, input, output, effect, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  output,
+  effect,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -25,6 +34,7 @@ import { map } from 'rxjs';
     PruefiInputComponent,
     MatProgressSpinnerModule,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './pruefi-comparison-search-form-header.component.html',
 })
 export class PruefiComparisonSearchFormHeaderComponent {
