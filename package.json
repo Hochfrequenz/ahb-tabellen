@@ -49,7 +49,7 @@
     "@auth0/auth0-angular": "^2.2.3",
     "@hochfrequenz/efoli": "^0.0.8",
     "@mdi/font": "^7.4.47",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "cors": "^2.8.5",
     "diff": "^8.0.2",
     "dotenv": "^17.4.2",
