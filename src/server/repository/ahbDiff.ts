@@ -1,7 +1,7 @@
 /**
  * AHB Diff Repository
  *
- * Uses the v_ahb_diff view which pre-computes diff status and joins both versions.
+ * Uses the v_ahb_formatversion_diff view which pre-computes diff status and joins both versions.
  * The view compares AHB status fields to determine added/modified/deleted/unchanged status.
  *
  * The raw SQL uses parameterized queries to prevent SQL injection.
@@ -101,7 +101,7 @@ export default class AhbDiffRepository {
       await AppDataSource.initialize();
     }
 
-    // Query the v_ahb_diff view directly - it already has the diff logic built-in
+    // Query the v_ahb_formatversion_diff view directly - it already has the diff logic built-in
     // new_format_version = new version, old_format_version = old version
     const query = `
       SELECT
@@ -131,7 +131,7 @@ export default class AhbDiffRepository {
         new_line_name,
         new_bedingung,
         new_bedingungsfehler
-      FROM v_ahb_diff
+      FROM v_ahb_formatversion_diff
       WHERE new_pruefidentifikator = ?
         AND old_pruefidentifikator = ?
         AND new_format_version = ?
@@ -158,7 +158,7 @@ export default class AhbDiffRepository {
     }
 
     // Transform raw rows into the expected API structure
-    // Map v_ahb_diff columns to the AhbDiffSide format expected by the frontend
+    // Map v_ahb_formatversion_diff columns to the AhbDiffSide format expected by the frontend
     const lines: AhbDiffLineJoined[] = rawRows.map(row => this.mapRawRowToLine(row));
 
     // Fetch descriptions for both versions
@@ -196,12 +196,10 @@ export default class AhbDiffRepository {
   /**
    * Diff two different Pruefidentifikatoren within the same format version.
    *
-   * Unlike {@link getDiff}, this cannot use the precomputed `v_ahb_diff` view: that view's
-   * `version_pairs` CTE is restricted to `old.pruefidentifikator = new.pruefidentifikator` (see the
-   * view definition), so it has no rows for a "different Prüfi, same format version" pair. Instead
-   * this replicates the view's modified/unchanged/added/deleted logic directly against
-   * `v_ahbtabellen`, scoped to the one explicit pair requested (rather than cross-joining every
-   * Prüfi combination, which the view avoids for performance/generation-time reasons).
+   * Uses the precomputed `v_ahb_pruefi_diff` view (the counterpart to `v_ahb_formatversion_diff`
+   * for same-format-version, different-Pruefi pairs). The view only stores each unordered pair once,
+   * keyed by `old_pruefidentifikator < new_pruefidentifikator`, so callers requesting the reverse
+   * order are normalized before querying and the result sides are swapped back afterwards.
    */
   public async getPruefiDiff(
     formatVersion: string,
@@ -213,7 +211,7 @@ export default class AhbDiffRepository {
     }
 
     // Check existence up front (also doubles as the description lookup below): unlike getDiff,
-    // this query doesn't go through the precomputed v_ahb_diff view (which only ever generates
+    // this query doesn't go through the precomputed v_ahb_formatversion_diff view (which only ever generates
     // pairs for Pruefis that exist in both requested versions), so a missing Pruefi here would
     // otherwise silently produce a diff where every line looks "added"/"deleted" instead of 404.
     const descriptionQuery = `
@@ -249,177 +247,66 @@ export default class AhbDiffRepository {
       );
     }
 
+    // v_ahb_pruefi_diff only stores each unordered pair once, keyed by
+    // old_pruefidentifikator < new_pruefidentifikator (lexicographically) - it's generated from a
+    // JOIN across every Pruefi pair per format version, so storing both orderings would double an
+    // already large view for no benefit. The caller's pruefiOld/pruefiNew have no inherent
+    // "old/new" meaning (unlike format versions), so we query using the normalized (min, max) order
+    // and swap the old/new sides back afterwards if the caller asked for the reverse order.
+    const [queryOld, queryNew] =
+      pruefiOld < pruefiNew ? [pruefiOld, pruefiNew] : [pruefiNew, pruefiOld];
+    const needsSwap = queryOld !== pruefiOld;
+
     const query = `
-      -- Modified and unchanged rows (id_path exists for both Pruefis in this format version)
       SELECT
-        CASE
-          WHEN IFNULL(old_tbl.line_ahb_status, '') != IFNULL(new_tbl.line_ahb_status, '')
-              OR IFNULL(old_tbl.bedingung, '') != IFNULL(new_tbl.bedingung, '')
-              OR IFNULL(old_tbl.line_name, '') != IFNULL(new_tbl.line_name, '')
-              THEN 'modified'
-          ELSE 'unchanged'
-        END AS diff_status,
-        CASE
-          WHEN IFNULL(old_tbl.line_ahb_status, '') != IFNULL(new_tbl.line_ahb_status, '')
-              OR IFNULL(old_tbl.bedingung, '') != IFNULL(new_tbl.bedingung, '')
-              OR IFNULL(old_tbl.line_name, '') != IFNULL(new_tbl.line_name, '')
-              THEN
-              TRIM(
-                      CASE
-                          WHEN IFNULL(old_tbl.line_ahb_status, '') != IFNULL(new_tbl.line_ahb_status, '')
-                              THEN 'line_ahb_status, '
-                          ELSE '' END ||
-                      CASE
-                          WHEN IFNULL(old_tbl.bedingung, '') != IFNULL(new_tbl.bedingung, '')
-                              THEN 'bedingung, '
-                          ELSE '' END ||
-                      CASE
-                          WHEN IFNULL(old_tbl.line_name, '') != IFNULL(new_tbl.line_name, '')
-                              THEN 'line_name'
-                          ELSE '' END
-                  , ', ')
-          ELSE NULL
-        END AS changed_columns,
-        new_tbl.id_path AS id_path,
-        new_tbl.sort_path AS sort_path,
-        new_tbl.path AS path,
-        new_tbl.line_type AS line_type,
-        old_tbl.format_version AS old_format_version,
-        old_tbl.pruefidentifikator AS old_pruefidentifikator,
-        old_tbl.segmentgroup_key AS old_segmentgroup_key,
-        old_tbl.segment_code AS old_segment_code,
-        old_tbl.data_element AS old_data_element,
-        old_tbl.qualifier AS old_qualifier,
-        old_tbl.line_ahb_status AS old_line_ahb_status,
-        old_tbl.line_name AS old_line_name,
-        old_tbl.bedingung AS old_bedingung,
-        old_tbl.bedingungsfehler AS old_bedingungsfehler,
-        new_tbl.format_version AS new_format_version,
-        new_tbl.pruefidentifikator AS new_pruefidentifikator,
-        new_tbl.segmentgroup_key AS new_segmentgroup_key,
-        new_tbl.segment_code AS new_segment_code,
-        new_tbl.data_element AS new_data_element,
-        new_tbl.qualifier AS new_qualifier,
-        new_tbl.line_ahb_status AS new_line_ahb_status,
-        new_tbl.line_name AS new_line_name,
-        new_tbl.bedingung AS new_bedingung,
-        new_tbl.bedingungsfehler AS new_bedingungsfehler
-      FROM v_ahbtabellen new_tbl
-      JOIN v_ahbtabellen old_tbl
-        ON old_tbl.id_path = new_tbl.id_path
-        AND old_tbl.format_version = ?
-        AND old_tbl.pruefidentifikator = ?
-      WHERE new_tbl.format_version = ?
-        AND new_tbl.pruefidentifikator = ?
-
-      UNION ALL
-
-      -- Added rows (exist for the new Pruefi but not for the old one)
-      SELECT
-        'added' AS diff_status,
-        NULL AS changed_columns,
-        new_tbl.id_path,
-        new_tbl.sort_path,
-        new_tbl.path,
-        new_tbl.line_type,
-        ? AS old_format_version,
-        ? AS old_pruefidentifikator,
-        NULL AS old_segmentgroup_key,
-        NULL AS old_segment_code,
-        NULL AS old_data_element,
-        NULL AS old_qualifier,
-        NULL AS old_line_ahb_status,
-        NULL AS old_line_name,
-        NULL AS old_bedingung,
-        NULL AS old_bedingungsfehler,
-        new_tbl.format_version AS new_format_version,
-        new_tbl.pruefidentifikator AS new_pruefidentifikator,
-        new_tbl.segmentgroup_key AS new_segmentgroup_key,
-        new_tbl.segment_code AS new_segment_code,
-        new_tbl.data_element AS new_data_element,
-        new_tbl.qualifier AS new_qualifier,
-        new_tbl.line_ahb_status AS new_line_ahb_status,
-        new_tbl.line_name AS new_line_name,
-        new_tbl.bedingung AS new_bedingung,
-        new_tbl.bedingungsfehler AS new_bedingungsfehler
-      FROM v_ahbtabellen new_tbl
-      WHERE new_tbl.format_version = ?
-        AND new_tbl.pruefidentifikator = ?
-        AND NOT EXISTS (
-          SELECT 1 FROM v_ahbtabellen old_tbl
-          WHERE old_tbl.format_version = ?
-            AND old_tbl.pruefidentifikator = ?
-            AND old_tbl.id_path = new_tbl.id_path
-        )
-
-      UNION ALL
-
-      -- Deleted rows (exist for the old Pruefi but not for the new one)
-      SELECT
-        'deleted' AS diff_status,
-        NULL AS changed_columns,
-        old_tbl.id_path,
-        old_tbl.sort_path,
-        old_tbl.path,
-        old_tbl.line_type,
-        old_tbl.format_version AS old_format_version,
-        old_tbl.pruefidentifikator AS old_pruefidentifikator,
-        old_tbl.segmentgroup_key AS old_segmentgroup_key,
-        old_tbl.segment_code AS old_segment_code,
-        old_tbl.data_element AS old_data_element,
-        old_tbl.qualifier AS old_qualifier,
-        old_tbl.line_ahb_status AS old_line_ahb_status,
-        old_tbl.line_name AS old_line_name,
-        old_tbl.bedingung AS old_bedingung,
-        old_tbl.bedingungsfehler AS old_bedingungsfehler,
-        ? AS new_format_version,
-        ? AS new_pruefidentifikator,
-        NULL AS new_segmentgroup_key,
-        NULL AS new_segment_code,
-        NULL AS new_data_element,
-        NULL AS new_qualifier,
-        NULL AS new_line_ahb_status,
-        NULL AS new_line_name,
-        NULL AS new_bedingung,
-        NULL AS new_bedingungsfehler
-      FROM v_ahbtabellen old_tbl
-      WHERE old_tbl.format_version = ?
-        AND old_tbl.pruefidentifikator = ?
-        AND NOT EXISTS (
-          SELECT 1 FROM v_ahbtabellen new_tbl
-          WHERE new_tbl.format_version = ?
-            AND new_tbl.pruefidentifikator = ?
-            AND new_tbl.id_path = old_tbl.id_path
-        )
-
+        diff_status,
+        changed_columns,
+        id_path,
+        sort_path,
+        path,
+        line_type,
+        old_format_version,
+        old_pruefidentifikator,
+        old_segmentgroup_key,
+        old_segment_code,
+        old_data_element,
+        old_qualifier,
+        old_line_ahb_status,
+        old_line_name,
+        old_bedingung,
+        old_bedingungsfehler,
+        new_format_version,
+        new_pruefidentifikator,
+        new_segmentgroup_key,
+        new_segment_code,
+        new_data_element,
+        new_qualifier,
+        new_line_ahb_status,
+        new_line_name,
+        new_bedingung,
+        new_bedingungsfehler
+      FROM v_ahb_pruefi_diff
+      WHERE old_format_version = ?
+        AND old_pruefidentifikator = ?
+        AND new_pruefidentifikator = ?
       ORDER BY sort_path ASC
     `;
 
     const diffQueryStart = performance.now();
     const rawRows: RawDiffRow[] = await AppDataSource.query(query, [
       formatVersion,
-      pruefiOld,
-      formatVersion,
-      pruefiNew,
-      formatVersion,
-      pruefiOld,
-      formatVersion,
-      pruefiNew,
-      formatVersion,
-      pruefiOld,
-      formatVersion,
-      pruefiNew,
-      formatVersion,
-      pruefiOld,
-      formatVersion,
-      pruefiNew,
+      queryOld,
+      queryNew,
     ]);
     const diffQueryMs = performance.now() - diffQueryStart;
     console.log(
       `[AhbDiff] Pruefi diff query: ${diffQueryMs.toFixed(1)}ms, rows=${rawRows.length}, formatVersion=${formatVersion}, pruefiOld=${pruefiOld}, pruefiNew=${pruefiNew}`
     );
 
-    const lines: AhbDiffLineJoined[] = rawRows.map(row => this.mapRawRowToLine(row));
+    const lines: AhbDiffLineJoined[] = rawRows.map(row => {
+      const line = this.mapRawRowToLine(row);
+      return needsSwap ? this.swapDiffSides(line) : line;
+    });
 
     return {
       lines,
@@ -486,6 +373,26 @@ export default class AhbDiffRepository {
     };
   }
 
+  /**
+   * Swap the old/new sides of a {@link getPruefiDiff} line, flipping added/deleted accordingly.
+   * Used when the caller's pruefiOld is lexicographically greater than pruefiNew, since
+   * v_ahb_pruefi_diff only stores each pair in ascending order.
+   */
+  private swapDiffSides(line: AhbDiffLineJoined): AhbDiffLineJoined {
+    const diffStatus =
+      line.diff_status === 'added'
+        ? 'deleted'
+        : line.diff_status === 'deleted'
+          ? 'added'
+          : line.diff_status;
+    return {
+      ...line,
+      diff_status: diffStatus,
+      old: line.new,
+      new: line.old,
+    };
+  }
+
   public async getSummary(
     formatVersionNew: string,
     formatVersionOld: string
@@ -500,7 +407,7 @@ export default class AhbDiffRepository {
         SUM(CASE WHEN diff_status = 'added' THEN 1 ELSE 0 END) as added,
         SUM(CASE WHEN diff_status = 'deleted' THEN 1 ELSE 0 END) as deleted,
         SUM(CASE WHEN diff_status = 'modified' THEN 1 ELSE 0 END) as modified
-      FROM v_ahb_diff
+      FROM v_ahb_formatversion_diff
       WHERE new_format_version = ? AND old_format_version = ?
       GROUP BY COALESCE(new_pruefidentifikator, old_pruefidentifikator)
     `;

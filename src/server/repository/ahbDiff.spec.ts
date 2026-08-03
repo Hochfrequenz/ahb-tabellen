@@ -10,7 +10,7 @@ jest.mock('../infrastructure/database', () => ({
   },
 }));
 
-// Mock row structure matching the new v_ahb_diff view with old_/new_ prefixes
+// Mock row structure matching the v_ahb_formatversion_diff/v_ahb_pruefi_diff view with old_/new_ prefixes
 interface MockDiffRow {
   diff_status: string;
   changed_columns: string | null;
@@ -42,7 +42,7 @@ interface MockDiffRow {
   new_bedingungsfehler: string | null;
 }
 
-// Helper to create a mock row matching the new v_ahb_diff structure
+// Helper to create a mock row matching the v_ahb_formatversion_diff/v_ahb_pruefi_diff structure
 function createMockRow(overrides: Partial<MockDiffRow> = {}): MockDiffRow {
   return {
     diff_status: 'unchanged',
@@ -409,7 +409,7 @@ describe('AhbDiffRepository', () => {
       );
     });
 
-    it('passes the format version and both pruefis to the queries in the correct order', async () => {
+    it('passes the format version and both pruefis (already ascending) to the queries', async () => {
       const mockRawRows = [createMockRow()];
 
       (AppDataSource.query as jest.Mock)
@@ -423,24 +423,48 @@ describe('AhbDiffRepository', () => {
       expect(firstCallArgs[1]).toEqual(['FV2410', '13002', '13003']);
 
       const secondCallArgs = (AppDataSource.query as jest.Mock).mock.calls[1];
-      expect(secondCallArgs[1]).toEqual([
-        'FV2410',
-        '13002',
-        'FV2410',
-        '13003',
-        'FV2410',
-        '13002',
-        'FV2410',
-        '13003',
-        'FV2410',
-        '13002',
-        'FV2410',
-        '13003',
-        'FV2410',
-        '13002',
-        'FV2410',
-        '13003',
-      ]);
+      expect(secondCallArgs[1]).toEqual(['FV2410', '13002', '13003']);
+    });
+
+    it('normalizes to ascending order when pruefiOld > pruefiNew, and swaps sides back', async () => {
+      // v_ahb_pruefi_diff only stores old_pruefidentifikator < new_pruefidentifikator, so
+      // requesting ('13003', '13002') must query as ('13002', '13003') and swap the result.
+      const mockRawRows = [
+        createMockRow({
+          diff_status: 'added',
+          old_pruefidentifikator: '13002',
+          new_pruefidentifikator: '13003',
+          old_segmentgroup_key: null,
+          old_segment_code: null,
+          old_data_element: null,
+          old_qualifier: null,
+          old_line_ahb_status: null,
+          old_line_name: null,
+          new_segmentgroup_key: 'SG2',
+          new_segment_code: 'SEG2',
+        }),
+      ];
+
+      (AppDataSource.query as jest.Mock)
+        .mockResolvedValueOnce([
+          { description: 'Desc New', pruefidentifikator: '13003' },
+          { description: 'Desc Old', pruefidentifikator: '13002' },
+        ])
+        .mockResolvedValueOnce(mockRawRows);
+
+      const result = await repository.getPruefiDiff('FV2410', '13003', '13002');
+
+      const diffCallArgs = (AppDataSource.query as jest.Mock).mock.calls[1];
+      expect(diffCallArgs[1]).toEqual(['FV2410', '13002', '13003']);
+
+      // The view's "added" (exists only for 13003) becomes "deleted" from the caller's
+      // perspective (exists only for their pruefiNew=13002, i.e. missing on their pruefiOld=13003 side).
+      expect(result.lines[0].diff_status).toBe('deleted');
+      expect(result.lines[0].old).not.toBeNull();
+      expect(result.lines[0].old?.segmentgroup_key).toBe('SG2');
+      expect(result.lines[0].new).toBeNull();
+      expect(result.meta.pruefidentifikator_old).toBe('13003');
+      expect(result.meta.pruefidentifikator_new).toBe('13002');
     });
 
     it('handles missing (null) description text gracefully', async () => {
