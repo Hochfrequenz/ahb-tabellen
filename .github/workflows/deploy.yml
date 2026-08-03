@@ -249,7 +249,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@3eba9d50f57a159cb8b6177f4305aefe1d43812b
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@34fe37930a5982285b67a7a9dc180805baee4e0f
     with:
       pulumi_stack_name: stage
       docker_tag: ${{ needs.build-stage.outputs.docker-tag }}
@@ -267,7 +267,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@3eba9d50f57a159cb8b6177f4305aefe1d43812b
+    uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@34fe37930a5982285b67a7a9dc180805baee4e0f
     with:
       pulumi_stack_name: prod
       docker_tag: ${{ needs.build-production.outputs.docker-tag }}
