@@ -28,6 +28,28 @@ export class ComparisonTableComponent {
   /** Whether to show the conditions/hints/formats column */
   @Input() showConditionsColumn = false;
 
+  /** True when comparing two different Pruefis (rather than the same Pruefi across format versions). */
+  private get isPruefiComparison(): boolean {
+    return !!this.pruefiOld && !!this.pruefiNew && this.pruefiOld !== this.pruefiNew;
+  }
+
+  /**
+   * Header label for the old/left side: "Prüfi X" for a Pruefi comparison (the format version is
+   * the same on both sides there, so it wouldn't distinguish the columns), "Alte Version (FV)" otherwise.
+   */
+  get headerLabelOld(): string {
+    return this.isPruefiComparison
+      ? `Prüfi ${this.pruefiOld}`
+      : `Alte Version (${this.formatVersionOld})`;
+  }
+
+  /** Header label for the new/right side: "Prüfi Y" for a Pruefi comparison, "Neue Version (FV)" otherwise. */
+  get headerLabelNew(): string {
+    return this.isPruefiComparison
+      ? `Prüfi ${this.pruefiNew}`
+      : `Neue Version (${this.formatVersionNew})`;
+  }
+
   getRowClass(line: AhbDiffLine): string {
     switch (line.diff_status) {
       case 'added':
