@@ -21,6 +21,13 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'compare-pruefis',
+    loadChildren: async () =>
+      (await import('./features/pruefi-comparison/pruefi-comparison.routes'))
+        .PRUEFI_COMPARISON_ROUTES,
+    canActivate: [AuthGuard],
+  },
+  {
     path: '',
     loadChildren: async () =>
       (await import('./features/landingpage/landingpage.routes')).LANDINGPAGE_ROUTES,

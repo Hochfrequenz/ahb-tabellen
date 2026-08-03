@@ -47,7 +47,7 @@ export class ComparisonLandingPageComponent implements OnInit {
   validationError = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.title.setTitle('AHB Vergleich - Formatversionen vergleichen');
+    this.title.setTitle('AHB Versionsvergleich - Formatversionen vergleichen');
 
     // Load default format versions once at the landing page level
     // to avoid race conditions from multiple search-form-header instances.

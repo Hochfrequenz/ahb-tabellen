@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 export type DiffStatus = 'unchanged' | 'modified' | 'added' | 'deleted';
 export type DiffLineType = 'segmentgroup' | 'segment' | 'dataelementgroup' | 'dataelement' | 'code';
 
-@Entity({ name: 'v_ahb_diff', synchronize: false })
+@Entity({ name: 'v_ahb_formatversion_diff', synchronize: false })
 export class AhbDiffLine {
   @Column({ type: 'varchar', nullable: true })
   diff_status?: DiffStatus;

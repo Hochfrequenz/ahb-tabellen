@@ -1,0 +1,121 @@
+<!-- Loading State -->
+@if (isLoading) {
+  <div class="flex justify-center items-center py-12">
+    <mat-spinner diameter="40" aria-label="Lade Prüfidentifikatoren"></mat-spinner>
+  </div>
+}
+
+<!-- Error State -->
+@if (errorMessage) {
+  <div class="text-center p-8 bg-hf-grell-rose text-hf-weiches-schwarz rounded-lg">
+    <h2 class="text-xl font-bold mb-2">Fehler</h2>
+    <p>{{ errorMessage }}</p>
+  </div>
+}
+
+<!-- Content -->
+@if (!isLoading && !errorMessage && formatGroups().length > 0) {
+  <div>
+    <!-- Role Filter Toggles (sticky below header) -->
+    @if (roleToggles.length > 0) {
+      <div class="sticky top-0 z-10 bg-hf-pastell-rose py-2 mb-2">
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+          @for (roleToggle of roleToggles; track roleToggle.key) {
+            <button
+              type="button"
+              (click)="toggleRoleFilter(roleToggle)"
+              [class.opacity-40]="!roleToggle.signal()"
+              class="px-3 py-1.5 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2 bg-white text-hf-text-color focus:ring-gray-400 hover:ring-gray-400"
+              [attr.aria-pressed]="roleToggle.signal() ? 'true' : 'false'"
+              [attr.aria-label]="'Rolle ' + roleToggle.label + ' ein-/ausblenden'"
+              [title]="'Rolle ' + roleToggle.label + ' ein-/ausblenden'">
+              {{ roleToggle.label }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <mat-accordion multi>
+      @for (group of formatGroups(); track group.format) {
+        <mat-expansion-panel [expanded]="false" class="mat-elevation-z0">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <span class="font-semibold">{{ group.format }}</span>
+            </mat-panel-title>
+            <mat-panel-description>
+              {{ getFilteredCount(group) }} / {{ group.pruefis.length }} Prüfidentifikatoren
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div class="overflow-x-auto bg-hf-sub-header-background-color">
+            <table class="w-full text-sm bg-hf-sub-header-background-color">
+              <caption class="sr-only">
+                Prüfidentifikatoren für
+                {{
+                  group.format
+                }}
+                in
+                {{
+                  formatVersion
+                }}
+              </caption>
+              <thead>
+                <tr class="bg-white">
+                  <th class="px-3 py-2 text-left font-medium">Prüfidentifikator</th>
+                  <th class="px-3 py-2 text-left font-medium">Name</th>
+                  <th class="px-3 py-2 text-center font-medium">Auswahl</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pruefi of getFilteredPruefis(group); track pruefi.pruefidentifikator) {
+                  <tr class="border-b border-hf-pastell-rose" [ngClass]="getRowClass(pruefi)">
+                    <td class="px-3 py-2 font-mono">{{ pruefi.pruefidentifikator }}</td>
+                    <td class="px-3 py-2">{{ pruefi.name }}</td>
+                    <td class="px-3 py-2 text-center">
+                      <div class="flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          (click)="selectPruefiOld.emit(pruefi.pruefidentifikator)"
+                          class="px-2 py-1 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
+                          [ngClass]="
+                            isSelectedAsOld(pruefi)
+                              ? 'bg-hf-dunkel-rose text-white focus:ring-hf-dunkel-rose hover:ring-hf-dunkel-rose'
+                              : 'bg-white text-hf-text-color focus:ring-gray-400 hover:ring-gray-400'
+                          "
+                          [attr.aria-pressed]="isSelectedAsOld(pruefi) ? 'true' : 'false'"
+                          title="Als Prüfi 1 wählen">
+                          Prüfi 1
+                        </button>
+                        <button
+                          type="button"
+                          (click)="selectPruefiNew.emit(pruefi.pruefidentifikator)"
+                          class="px-2 py-1 rounded font-medium cursor-pointer transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
+                          [ngClass]="
+                            isSelectedAsNew(pruefi)
+                              ? 'bg-hf-dunkel-rose text-white focus:ring-hf-dunkel-rose hover:ring-hf-dunkel-rose'
+                              : 'bg-white text-hf-text-color focus:ring-gray-400 hover:ring-gray-400'
+                          "
+                          [attr.aria-pressed]="isSelectedAsNew(pruefi) ? 'true' : 'false'"
+                          title="Als Prüfi 2 wählen">
+                          Prüfi 2
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </mat-expansion-panel>
+      }
+    </mat-accordion>
+  </div>
+}
+
+<!-- Empty State -->
+@if (!isLoading && !errorMessage && formatGroups().length === 0 && formatVersion) {
+  <div class="text-center p-8 bg-white rounded-lg">
+    <p class="text-gray-500">Keine Prüfidentifikatoren gefunden.</p>
+  </div>
+}

@@ -35,6 +35,10 @@ router.get('/ahb-diff/:pruefi', (req, res, next) => {
   ahbDiffController.get(req, res, next);
 });
 
+router.get('/pruefi-diff/:pruefiOld/:pruefiNew', (req, res, next) => {
+  ahbDiffController.getPruefiDiff(req, res, next);
+});
+
 router.post('/search/query', (req, res, next) => {
   searchController.query(req, res, next);
 });

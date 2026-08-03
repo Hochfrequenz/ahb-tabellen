@@ -14,6 +14,7 @@ import { StrictHttpResponse } from '../strict-http-response';
 import { Ahb } from '../models/ahb';
 import { AhbDiff } from '../models/ahb-diff';
 import { AhbDiffSummary } from '../models/ahb-diff-summary';
+import { AhbPruefiDiff } from '../models/ahb-pruefi-diff';
 import { getAhb$Csv } from '../fn/ahb/get-ahb-csv';
 import { GetAhb$Csv$Params } from '../fn/ahb/get-ahb-csv';
 import { getAhb$Json } from '../fn/ahb/get-ahb-json';
@@ -24,6 +25,8 @@ import { getAhbDiff } from '../fn/ahb/get-ahb-diff';
 import { GetAhbDiff$Params } from '../fn/ahb/get-ahb-diff';
 import { getAhbDiffSummary } from '../fn/ahb/get-ahb-diff-summary';
 import { GetAhbDiffSummary$Params } from '../fn/ahb/get-ahb-diff-summary';
+import { getPruefiDiff } from '../fn/ahb/get-pruefi-diff';
+import { GetPruefiDiff$Params } from '../fn/ahb/get-pruefi-diff';
 
 
 /**
@@ -191,6 +194,39 @@ export class AhbService extends BaseService {
   getAhbDiff(params: GetAhbDiff$Params, context?: HttpContext): Observable<AhbDiff> {
     return this.getAhbDiff$Response(params, context).pipe(
       map((r: StrictHttpResponse<AhbDiff>): AhbDiff => r.body)
+    );
+  }
+
+  /** Path part for operation `getPruefiDiff()` */
+  static readonly GetPruefiDiffPath = '/api/pruefi-diff/{pruefiOld}/{pruefiNew}';
+
+  /**
+   * Get a diff comparison between two different Pruefidentifikatoren within the same format version.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getPruefiDiff()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getPruefiDiff$Response(params: GetPruefiDiff$Params, context?: HttpContext): Observable<StrictHttpResponse<AhbPruefiDiff>> {
+    return getPruefiDiff(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get a diff comparison between two different Pruefidentifikatoren within the same format version.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getPruefiDiff$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getPruefiDiff(params: GetPruefiDiff$Params, context?: HttpContext): Observable<AhbPruefiDiff> {
+    return this.getPruefiDiff$Response(params, context).pipe(
+      map((r: StrictHttpResponse<AhbPruefiDiff>): AhbPruefiDiff => r.body)
     );
   }
 

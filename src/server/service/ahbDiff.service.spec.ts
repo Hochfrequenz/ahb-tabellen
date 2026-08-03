@@ -10,6 +10,7 @@ describe('AhbDiffService', () => {
     mockRepository = {
       getDiff: jest.fn(),
       getSummary: jest.fn(),
+      getPruefiDiff: jest.fn(),
     } as unknown as jest.Mocked<AhbDiffRepository>;
 
     service = new AhbDiffService(mockRepository);
@@ -91,6 +92,72 @@ describe('AhbDiffService', () => {
       await expect(service.getSummary('invalid', 'FV2410')).rejects.toThrow(ValidationError);
       await expect(service.getSummary('FV2504', 'invalid')).rejects.toThrow('format-version-old');
       expect(mockRepository.getSummary).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getPruefiDiff', () => {
+    it('delegates valid parameters to the repository', async () => {
+      const result = {
+        lines: [],
+        meta: {
+          format_version: 'FV2410',
+          pruefidentifikator_old: '13002',
+          pruefidentifikator_new: '13003',
+        },
+      };
+      mockRepository.getPruefiDiff.mockResolvedValue(result);
+
+      await expect(service.getPruefiDiff('FV2410', '13002', '13003')).resolves.toBe(result);
+      expect(mockRepository.getPruefiDiff).toHaveBeenCalledWith('FV2410', '13002', '13003');
+    });
+
+    it('detects the EBD key per side from the qualifier', async () => {
+      const result = {
+        lines: [
+          { old: { qualifier: 'E_0401' }, new: { qualifier: 'foo' } },
+          { old: null, new: { qualifier: 'siehe E_0500' } },
+        ],
+        meta: {
+          format_version: 'FV2410',
+          pruefidentifikator_old: '13002',
+          pruefidentifikator_new: '13003',
+        },
+      } as never;
+      mockRepository.getPruefiDiff.mockResolvedValue(result);
+
+      const diff = await service.getPruefiDiff('FV2410', '13002', '13003');
+      expect(diff.lines[0].old?.ebd_key).toBe('E_0401');
+      expect(diff.lines[0].new?.ebd_key).toBeNull();
+      expect(diff.lines[1].old).toBeNull();
+      expect(diff.lines[1].new?.ebd_key).toBe('E_0500');
+    });
+
+    it.each(['1234', 'abcde'])('rejects invalid pruefiOld %p', async invalid => {
+      await expect(service.getPruefiDiff('FV2410', invalid, '13003')).rejects.toThrow(
+        'Invalid Prüfidentifikator format'
+      );
+      expect(mockRepository.getPruefiDiff).not.toHaveBeenCalled();
+    });
+
+    it.each(['1234', 'abcde'])('rejects invalid pruefiNew %p', async invalid => {
+      await expect(service.getPruefiDiff('FV2410', '13002', invalid)).rejects.toThrow(
+        'Invalid Prüfidentifikator format'
+      );
+      expect(mockRepository.getPruefiDiff).not.toHaveBeenCalled();
+    });
+
+    it('rejects comparing a Pruefi with itself', async () => {
+      await expect(service.getPruefiDiff('FV2410', '13002', '13002')).rejects.toThrow(
+        ValidationError
+      );
+      expect(mockRepository.getPruefiDiff).not.toHaveBeenCalled();
+    });
+
+    it('rejects a missing/invalid format-version with a field-specific message', async () => {
+      await expect(service.getPruefiDiff('invalid', '13002', '13003')).rejects.toThrow(
+        'format-version'
+      );
+      expect(mockRepository.getPruefiDiff).not.toHaveBeenCalled();
     });
   });
 

@@ -18,10 +18,37 @@ export class ComparisonTableComponent {
   @Input() lines: AhbDiffLine[] = [];
   @Input() formatVersionOld = '';
   @Input() formatVersionNew = '';
+  /** Pruefi shown on both sides (format-version comparison). Ignored if pruefiOld/pruefiNew are set. */
   @Input() pruefi = '';
+  /** Pruefi shown on the old side (Pruefi-vs-Pruefi comparison). Falls back to `pruefi`. */
+  @Input() pruefiOld = '';
+  /** Pruefi shown on the new side (Pruefi-vs-Pruefi comparison). Falls back to `pruefi`. */
+  @Input() pruefiNew = '';
 
   /** Whether to show the conditions/hints/formats column */
   @Input() showConditionsColumn = false;
+
+  /** True when comparing two different Pruefis (rather than the same Pruefi across format versions). */
+  private get isPruefiComparison(): boolean {
+    return !!this.pruefiOld && !!this.pruefiNew && this.pruefiOld !== this.pruefiNew;
+  }
+
+  /**
+   * Header label for the old/left side: "Prüfi X" for a Pruefi comparison (the format version is
+   * the same on both sides there, so it wouldn't distinguish the columns), "Alte Version (FV)" otherwise.
+   */
+  get headerLabelOld(): string {
+    return this.isPruefiComparison
+      ? `Prüfi ${this.pruefiOld}`
+      : `Alte Version (${this.formatVersionOld})`;
+  }
+
+  /** Header label for the new/right side: "Prüfi Y" for a Pruefi comparison, "Neue Version (FV)" otherwise. */
+  get headerLabelNew(): string {
+    return this.isPruefiComparison
+      ? `Prüfi ${this.pruefiNew}`
+      : `Neue Version (${this.formatVersionNew})`;
+  }
 
   getRowClass(line: AhbDiffLine): string {
     switch (line.diff_status) {
@@ -189,12 +216,17 @@ export class ComparisonTableComponent {
       .replace(/'/g, '&#039;');
   }
 
-  generateBedingungsbaumDeepLink(expression: string, formatVersion: string): string | null {
+  generateBedingungsbaumDeepLink(
+    expression: string,
+    formatVersion: string,
+    side: 'old' | 'new' = 'old'
+  ): string | null {
     if (!expression || !expression.includes('[')) {
       return null;
     }
+    const pruefiForSide = (side === 'old' ? this.pruefiOld : this.pruefiNew) || this.pruefi;
     const encodedExpression = encodeURIComponent(expression);
-    return `${environment.bedingungsbaumBaseUrl}/tree/?format=${getFormatFromPruefi(this.pruefi)}&format_version=${formatVersion}&expression=${encodedExpression}`;
+    return `${environment.bedingungsbaumBaseUrl}/tree/?format=${getFormatFromPruefi(pruefiForSide)}&format_version=${formatVersion}&expression=${encodedExpression}`;
   }
 
   generateEbdDeepLink(ebdKey: string | null | undefined, formatVersion: string): string | null {

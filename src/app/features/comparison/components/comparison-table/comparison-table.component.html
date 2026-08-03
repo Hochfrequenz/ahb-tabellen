@@ -5,13 +5,13 @@
         <th
           [attr.colspan]="showConditionsColumn ? 7 : 6"
           class="px-2 py-2 text-center text-base uppercase bg-hf-grell-rose">
-          Alte Version ({{ formatVersionOld }})
+          {{ headerLabelOld }}
         </th>
         <th class="w-4 bg-hf-pastell-rose"></th>
         <th
           [attr.colspan]="showConditionsColumn ? 7 : 6"
           class="px-2 py-2 text-center text-base uppercase bg-hf-grell-rose">
-          Neue Version ({{ formatVersionNew }})
+          {{ headerLabelNew }}
         </th>
       </tr>
       <tr class="text-sm">
@@ -103,7 +103,7 @@
             class="px-2 py-1.5 border-b border-hf-grell-rose break-words"
             [class]="getChangedColumnClass(line, 'line_ahb_status')">
             @if (
-              generateBedingungsbaumDeepLink(getAhbStatus(line, 'old'), formatVersionOld);
+              generateBedingungsbaumDeepLink(getAhbStatus(line, 'old'), formatVersionOld, 'old');
               as treeLink
             ) {
               <a
@@ -173,7 +173,7 @@
             class="px-2 py-1.5 border-b border-hf-grell-rose break-words"
             [class]="getChangedColumnClass(line, 'line_ahb_status')">
             @if (
-              generateBedingungsbaumDeepLink(getAhbStatus(line, 'new'), formatVersionNew);
+              generateBedingungsbaumDeepLink(getAhbStatus(line, 'new'), formatVersionNew, 'new');
               as treeLink
             ) {
               <a

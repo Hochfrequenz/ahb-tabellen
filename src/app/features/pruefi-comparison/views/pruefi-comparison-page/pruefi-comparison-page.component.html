@@ -1,28 +1,28 @@
 <div class="h-screen flex flex-col">
   <app-header class="flex-none">
     <!-- Desktop projection -->
-    <app-comparison-search-form-header
+    <app-pruefi-comparison-search-form-header
       slot="search-form"
       class="flex-1"
-      [formatVersionOld]="formatVersionOld()"
-      [formatVersionNew]="formatVersionNew()"
-      [pruefi]="pruefi()"
+      [formatVersion]="formatVersion()"
+      [pruefiOld]="pruefiOld()"
+      [pruefiNew]="pruefiNew()"
       [navigateOnSubmit]="false"
-      (formatVersionOldChange)="onVersionOldChange($event)"
-      (formatVersionNewChange)="onVersionNewChange($event)"
-      (pruefiChange)="onPruefiChange($event)" />
+      (formatVersionChange)="onFormatVersionChange($event)"
+      (pruefiOldChange)="onPruefiOldChange($event)"
+      (pruefiNewChange)="onPruefiNewChange($event)" />
 
     <!-- Mobile projection -->
-    <app-comparison-search-form-header
+    <app-pruefi-comparison-search-form-header
       slot="search-form-mobile"
       class="w-full"
-      [formatVersionOld]="formatVersionOld()"
-      [formatVersionNew]="formatVersionNew()"
-      [pruefi]="pruefi()"
+      [formatVersion]="formatVersion()"
+      [pruefiOld]="pruefiOld()"
+      [pruefiNew]="pruefiNew()"
       [navigateOnSubmit]="false"
-      (formatVersionOldChange)="onVersionOldChange($event)"
-      (formatVersionNewChange)="onVersionNewChange($event)"
-      (pruefiChange)="onPruefiChange($event)" />
+      (formatVersionChange)="onFormatVersionChange($event)"
+      (pruefiOldChange)="onPruefiOldChange($event)"
+      (pruefiNewChange)="onPruefiNewChange($event)" />
   </app-header>
 
   <!-- Scrollable Content -->
@@ -30,7 +30,7 @@
     <!-- Title and description (scrolls away) -->
     <div class="px-4 md:px-6 lg:px-8 pt-6 mb-4">
       <h1 class="text-2xl font-bold text-hf-text-color mb-1">
-        AHB Versionsvergleich: {{ pruefi() }}
+        AHB Prüfi-Vergleich: {{ pruefiOld() }} ↔ {{ pruefiNew() }}
       </h1>
       @if (description(); as desc) {
         @if (desc.descriptionOld || desc.descriptionNew) {
@@ -38,7 +38,7 @@
             @if (desc.descriptionOld === desc.descriptionNew) {
               {{ desc.descriptionNew }}
             } @else {
-              {{ desc.descriptionOld }} → {{ desc.descriptionNew }}
+              {{ desc.descriptionOld }} ↔ {{ desc.descriptionNew }}
             }
           </p>
         }
@@ -93,21 +93,20 @@
           <h2 class="text-2xl font-bold mb-4">Fehler</h2>
           @if (errorDetails(); as details) {
             <p class="mb-4">
-              @if (!details.existsInOld && !details.existsInNew) {
-                Prüfidentifikator <strong>{{ details.pruefi }}</strong> wurde weder in
-                <strong>{{ details.fvOld }}</strong> noch in <strong>{{ details.fvNew }}</strong>
-                gefunden.
-              } @else if (!details.existsInOld && details.existsInNew) {
-                Prüfidentifikator <strong>{{ details.pruefi }}</strong> existiert nur in
-                <strong>{{ details.fvNew }}</strong> (neu hinzugefügt). In
-                <strong>{{ details.fvOld }}</strong> ist dieser Prüfidentifikator nicht vorhanden.
-              } @else if (details.existsInOld && !details.existsInNew) {
-                Prüfidentifikator <strong>{{ details.pruefi }}</strong> existiert nur in
-                <strong>{{ details.fvOld }}</strong
-                >. In <strong>{{ details.fvNew }}</strong> wurde dieser Prüfidentifikator entfernt.
+              @if (!details.existsOld && !details.existsNew) {
+                Weder Prüfidentifikator <strong>{{ details.pruefiOld }}</strong> noch
+                <strong>{{ details.pruefiNew }}</strong> wurden in
+                <strong>{{ details.formatVersion }}</strong> gefunden.
+              } @else if (!details.existsOld) {
+                Prüfidentifikator <strong>{{ details.pruefiOld }}</strong> konnte nicht in
+                <strong>{{ details.formatVersion }}</strong> gefunden werden.
+              } @else if (!details.existsNew) {
+                Prüfidentifikator <strong>{{ details.pruefiNew }}</strong> konnte nicht in
+                <strong>{{ details.formatVersion }}</strong> gefunden werden.
               } @else {
                 Ein unerwarteter Fehler ist beim Vergleich von
-                <strong>{{ details.pruefi }}</strong> aufgetreten.
+                <strong>{{ details.pruefiOld }}</strong> und
+                <strong>{{ details.pruefiNew }}</strong> aufgetreten.
               }
             </p>
           } @else {
@@ -122,9 +121,10 @@
       } @else if (filteredLines().length > 0) {
         <app-comparison-table
           [lines]="filteredLines()"
-          [formatVersionOld]="formatVersionOld()"
-          [formatVersionNew]="formatVersionNew()"
-          [pruefi]="pruefi()"
+          [formatVersionOld]="formatVersion()"
+          [formatVersionNew]="formatVersion()"
+          [pruefiOld]="pruefiOld()"
+          [pruefiNew]="pruefiNew()"
           [showConditionsColumn]="showConditionsColumn()" />
       } @else if (stats()) {
         <!-- Has data but all filtered out -->
@@ -133,7 +133,7 @@
         </div>
       } @else {
         <div class="text-center py-12 text-gray-500">
-          Bitte wählen Sie zwei Formatversionen zum Vergleichen aus.
+          Bitte wählen Sie eine Formatversion und zwei Prüfidentifikatoren zum Vergleichen aus.
         </div>
       }
     </div>

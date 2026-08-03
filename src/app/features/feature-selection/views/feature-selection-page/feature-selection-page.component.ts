@@ -24,6 +24,10 @@ export class FeatureSelectionPageComponent {
     this.router.navigate(['/compare']);
   }
 
+  onPruefiComparisonClick() {
+    this.router.navigate(['/compare-pruefis']);
+  }
+
   onMcpClick() {
     this.router.navigate(['/mcp-integration']);
   }
