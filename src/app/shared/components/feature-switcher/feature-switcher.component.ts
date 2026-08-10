@@ -8,6 +8,8 @@ import {
 
 import { Router } from '@angular/router';
 
+import { environment } from '../../../environments/environment';
+
 interface FeatureOption {
   value: string;
   label: string;
@@ -32,7 +34,9 @@ export class FeatureSwitcherComponent {
     { value: 'ahb', label: 'AHB-Tabellen', route: '/ahb' },
     { value: 'search', label: 'Globale Suche', route: '/search' },
     { value: 'comparison', label: 'AHB Versionsvergleich', route: '/compare' },
-    { value: 'pruefi-comparison', label: 'AHB Prüfi-Vergleich', route: '/compare-pruefis' },
+    ...(environment.enablePruefiComparison
+      ? [{ value: 'pruefi-comparison', label: 'AHB Prüfi-Vergleich', route: '/compare-pruefis' }]
+      : []),
   ];
 
   toggleDropdown(event?: Event): void {

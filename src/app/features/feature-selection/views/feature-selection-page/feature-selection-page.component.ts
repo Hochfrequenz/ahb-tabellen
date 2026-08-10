@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-feature-selection-page',
@@ -11,6 +12,8 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
 })
 export class FeatureSelectionPageComponent {
   private router = inject(Router);
+
+  readonly showPruefiComparison = environment.enablePruefiComparison;
 
   onAhbClick() {
     this.router.navigate(['/ahb']);

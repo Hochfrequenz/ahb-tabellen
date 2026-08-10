@@ -9,4 +9,5 @@ export interface EnvironmentInterface {
   baseUrl: string;
   warmupUrl?: string;
   allowSearchIndexing: boolean;
+  enablePruefiComparison: boolean;
 }

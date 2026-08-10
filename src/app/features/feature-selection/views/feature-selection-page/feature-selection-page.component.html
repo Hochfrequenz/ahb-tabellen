@@ -93,32 +93,34 @@
         </div>
 
         <!-- AHB Pruefi Comparison Card -->
-        <div
-          (click)="onPruefiComparisonClick()"
-          (keydown.enter)="onPruefiComparisonClick()"
-          (keydown.space)="onPruefiComparisonClick()"
-          tabindex="0"
-          role="button"
-          class="bg-hf-pastell-rose rounded-3xl p-6 md:p-8 cursor-pointer transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-black/10 focus:outline-none">
-          <div class="flex flex-col items-center text-center">
-            <div class="mb-4">
-              <img
-                src="assets/companystylesheet/icons/vergleich.svg"
-                alt="AHB Prüfi-Vergleich Icon"
-                class="w-12 h-12 md:w-16 md:h-16" />
-            </div>
-            <h2 class="text-xl md:text-2xl text-hf-weiches-schwarz font-semibold mb-3">
-              AHB Prüfi-Vergleich
-            </h2>
-            <p class="text-hf-weiches-schwarz text-sm md:text-base opacity-80 leading-relaxed">
-              Zwei Prüfidentifikatoren innerhalb derselben Formatversion vergleichen und
-              Unterschiede visualisieren.
-            </p>
-            <div class="mt-4 text-xs md:text-sm text-hf-weiches-schwarz opacity-60">
-              Klicken zum Öffnen →
+        @if (showPruefiComparison) {
+          <div
+            (click)="onPruefiComparisonClick()"
+            (keydown.enter)="onPruefiComparisonClick()"
+            (keydown.space)="onPruefiComparisonClick()"
+            tabindex="0"
+            role="button"
+            class="bg-hf-pastell-rose rounded-3xl p-6 md:p-8 cursor-pointer transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-black/10 focus:outline-none">
+            <div class="flex flex-col items-center text-center">
+              <div class="mb-4">
+                <img
+                  src="assets/companystylesheet/icons/vergleich.svg"
+                  alt="AHB Prüfi-Vergleich Icon"
+                  class="w-12 h-12 md:w-16 md:h-16" />
+              </div>
+              <h2 class="text-xl md:text-2xl text-hf-weiches-schwarz font-semibold mb-3">
+                AHB Prüfi-Vergleich
+              </h2>
+              <p class="text-hf-weiches-schwarz text-sm md:text-base opacity-80 leading-relaxed">
+                Zwei Prüfidentifikatoren innerhalb derselben Formatversion vergleichen und
+                Unterschiede visualisieren.
+              </p>
+              <div class="mt-4 text-xs md:text-sm text-hf-weiches-schwarz opacity-60">
+                Klicken zum Öffnen →
+              </div>
             </div>
           </div>
-        </div>
+        }
       </div>
 
       <!-- MCP / KI-Anbindung wide tile -->
