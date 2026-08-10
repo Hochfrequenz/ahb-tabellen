@@ -10,4 +10,5 @@ export const environment: EnvironmentInterface = {
   auth0ClientId: 'Hku0EniRjy4B2krnx1sCwTIOzAiVta1B',
   baseUrl: 'http://localhost:4200',
   allowSearchIndexing: false,
+  enablePruefiComparison: true,
 };
