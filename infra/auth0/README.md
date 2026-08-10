@@ -19,27 +19,39 @@ Out of scope for now: tenant settings, connections, Actions/Rules, roles & RBAC.
 
 ## One-time setup
 
-1. **Create a Management M2M app** in Auth0 named e.g. `Pulumi Management`,
-   authorized for the Auth0 Management API with (at least) these scopes:
-   `read:clients`, `update:clients`, `create:clients`,
-   `read:resource_servers`, `update:resource_servers`, `create:resource_servers`,
-   `read:client_grants`, `update:client_grants`.
-   Trim to what is actually needed.
+1. **Create two Management M2M apps** in Auth0 (least privilege — both preview
+   and deploy execute this project's code with the Management API in scope):
+
+   - `Pulumi Auth0 (read-only)` — used by the PR **preview**. Grant only read
+     scopes: `read:clients`, `read:resource_servers`, `read:client_grants`.
+   - `Pulumi Auth0 (deploy)` — used by `pulumi up` on `main`. Grant the write
+     scopes it actually needs: `read:clients`, `update:clients`, `create:clients`,
+     `read:resource_servers`, `update:resource_servers`, `create:resource_servers`,
+     `read:client_grants`, `update:client_grants`. Trim to what is needed.
+
+   (A single app also works for local use; the split matters for CI, where a PR
+   could otherwise run with write credentials.)
 
 2. **Configure credentials** (local):
 
    ```bash
    cd infra/auth0
-   npm install
+   npm ci
    pulumi stack select shared   # or: pulumi stack init shared
    pulumi config set auth0:domain auth.hochfrequenz.de
-   pulumi config set auth0:clientId <PULUMI_MGMT_M2M_CLIENT_ID>
-   pulumi config set --secret auth0:clientSecret <PULUMI_MGMT_M2M_CLIENT_SECRET>
+   pulumi config set auth0:clientId <M2M_CLIENT_ID>
+   pulumi config set --secret auth0:clientSecret <M2M_CLIENT_SECRET>
    ```
 
-3. **Mirror to CI**: add a GitHub Actions secret so `deploy-auth0.yml` can run.
-   The workflow reads `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`
-   from repo secrets, plus the existing `PULUMI_ACCESS_TOKEN`.
+3. **Wire up CI** (`deploy-auth0.yml`). All jobs also need the existing
+   `PULUMI_ACCESS_TOKEN`.
+
+   - **Repo secrets** (used by the preview job): `AUTH0_DOMAIN`,
+     `AUTH0_PREVIEW_CLIENT_ID`, `AUTH0_PREVIEW_CLIENT_SECRET` (the read-only app).
+   - **Protected `auth0` GitHub Environment** (used by the deploy job): add
+     `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET` (the deploy app) and configure
+     **required reviewers** so a human approves before the tenant is changed.
+     `AUTH0_DOMAIN` is read from repo secrets.
 
 ## Importing the existing (live) resources
 
