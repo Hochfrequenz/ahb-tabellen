@@ -1,0 +1,73 @@
+name: Deploy Auth0 (Pulumi)
+
+# Manages the shared Auth0 tenant as code (issue #903).
+# - PRs touching infra/auth0/** get a `pulumi preview` posted as a comment.
+# - Merges to main run `pulumi up` against the single `shared` stack.
+#
+# This is intentionally self-contained (does not use the reusable Hochfrequenz
+# deploy workflow, which is Azure-OIDC specific). Auth0 provider credentials come
+# from repo secrets; Pulumi state lives in Pulumi Cloud.
+
+on:
+  pull_request:
+    paths:
+      - 'infra/auth0/**'
+      - '.github/workflows/deploy-auth0.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/auth0/**'
+      - '.github/workflows/deploy-auth0.yml'
+
+# Never run two Auth0 deployments against the shared tenant at once.
+concurrency:
+  group: auth0-shared
+  cancel-in-progress: false
+
+jobs:
+  auth0:
+    name: ${{ github.event_name == 'pull_request' && 'Preview' || 'Deploy' }} Auth0
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # required to post the preview comment
+    env:
+      AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+      AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
+      AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
+    defaults:
+      run:
+        working-directory: infra/auth0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Pulumi preview (PR)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: pulumi/actions@v6
+        with:
+          command: preview
+          stack-name: shared
+          work-dir: infra/auth0
+          comment-on-pr: true
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      - name: Pulumi up (main)
+        if: ${{ github.event_name == 'push' }}
+        uses: pulumi/actions@v6
+        with:
+          command: up
+          stack-name: shared
+          work-dir: infra/auth0
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
