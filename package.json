@@ -92,7 +92,7 @@
     "ng-mocks": "^14.15.3",
     "ng-openapi-gen": "^1.0.5",
     "npm-watch": "^0.13.0",
-    "postcss": "^8.5.23",
+    "postcss": "^8.5.26",
     "tailwindcss": "^4.1.18",
     "angular-eslint": "^22.1.0",
     "tsx": "^4.23.9",
