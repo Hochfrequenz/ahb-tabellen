@@ -1,15 +1,17 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { diffWords, Change } from 'diff';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
 import { environment } from '../../../../environments/environment';
 import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.utils';
+import { isHiddenBedingungChange } from '../../../../shared/utils/diff-line.utils';
 
 @Component({
   selector: 'app-comparison-table',
   standalone: true,
-  imports: [IconLinkComponent],
+  imports: [IconLinkComponent, MatTooltipModule],
   templateUrl: './comparison-table.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './comparison-table.component.scss',
@@ -27,6 +29,17 @@ export class ComparisonTableComponent {
 
   /** Whether to show the conditions/hints/formats column */
   @Input() showConditionsColumn = false;
+
+  /** Emitted when the user clicks the hint on a row whose only change is in the hidden Bedingung column. */
+  @Output() revealConditions = new EventEmitter<void>();
+
+  /**
+   * True when the row is `modified` but the change sits exclusively in the hidden Bedingung column,
+   * so nothing appears changed in the default view (issue #895). Used to show a clickable hint.
+   */
+  isBedingungOnlyChange(line: AhbDiffLine): boolean {
+    return isHiddenBedingungChange(line);
+  }
 
   /** True when comparing two different Pruefis (rather than the same Pruefi across format versions). */
   private get isPruefiComparison(): boolean {

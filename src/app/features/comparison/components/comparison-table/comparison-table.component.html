@@ -117,6 +117,16 @@
             } @else {
               {{ getAhbStatus(line, 'old') || '-' }}
             }
+            @if (!showConditionsColumn && isBedingungOnlyChange(line)) {
+              <button
+                type="button"
+                (click)="revealConditions.emit()"
+                matTooltip="Diese Zeile ist als geändert markiert, aber die Änderung steckt in der Bedingung. Klicken, um die Bedingungen einzublenden."
+                aria-label="Änderung steckt in der Bedingung – Bedingungen einblenden"
+                class="ml-1 align-super font-bold text-hf-neutral-dark cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-hf-neutral-dark rounded">
+                *
+              </button>
+            }
           </td>
           @if (showConditionsColumn) {
             <td class="px-2 py-1.5 border-b border-hf-grell-rose break-words">
@@ -186,6 +196,16 @@
               </a>
             } @else {
               {{ getAhbStatus(line, 'new') || '-' }}
+            }
+            @if (!showConditionsColumn && isBedingungOnlyChange(line)) {
+              <button
+                type="button"
+                (click)="revealConditions.emit()"
+                matTooltip="Diese Zeile ist als geändert markiert, aber die Änderung steckt in der Bedingung. Klicken, um die Bedingungen einzublenden."
+                aria-label="Änderung steckt in der Bedingung – Bedingungen einblenden"
+                class="ml-1 align-super font-bold text-hf-neutral-dark cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-hf-neutral-dark rounded">
+                *
+              </button>
             }
           </td>
           @if (showConditionsColumn) {

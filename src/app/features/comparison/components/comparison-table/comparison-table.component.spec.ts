@@ -58,4 +58,59 @@ describe('ComparisonTableComponent', () => {
       expect(headerCells[2].textContent.trim()).toBe('Prüfi 55003');
     });
   });
+
+  describe('hidden Bedingung change hint (issue #895)', () => {
+    const markerSelector = 'button[aria-label^="Änderung steckt in der Bedingung"]';
+
+    const bedingungOnlyLine = {
+      diff_status: 'modified',
+      id_path: 'p1',
+      sort_path: 's1',
+      changed_columns: ['bedingung'],
+      old: { line_ahb_status: 'Muss [2]', bedingung: 'Wenn A' },
+      new: { line_ahb_status: 'Muss [2]', bedingung: 'Wenn B' },
+    };
+
+    it('shows a "*" hint on both sides when the only change is the hidden Bedingung', () => {
+      fixture.componentRef.setInput('lines', [bedingungOnlyLine]);
+      fixture.componentRef.setInput('showConditionsColumn', false);
+      fixture.detectChanges();
+
+      const markers = fixture.nativeElement.querySelectorAll(markerSelector);
+      expect(markers.length).toBe(2);
+      expect(markers[0].textContent.trim()).toBe('*');
+    });
+
+    it('hides the hint once the Bedingungen column is shown', () => {
+      fixture.componentRef.setInput('lines', [bedingungOnlyLine]);
+      fixture.componentRef.setInput('showConditionsColumn', true);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelectorAll(markerSelector).length).toBe(0);
+    });
+
+    it('does not show the hint when a visible column also changed', () => {
+      fixture.componentRef.setInput('lines', [
+        { ...bedingungOnlyLine, changed_columns: ['line_ahb_status', 'bedingung'] },
+      ]);
+      fixture.componentRef.setInput('showConditionsColumn', false);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelectorAll(markerSelector).length).toBe(0);
+    });
+
+    it('emits revealConditions when the hint is clicked', () => {
+      const emitSpy = jasmine.createSpy('revealConditions');
+      component.revealConditions.subscribe(emitSpy);
+
+      fixture.componentRef.setInput('lines', [bedingungOnlyLine]);
+      fixture.componentRef.setInput('showConditionsColumn', false);
+      fixture.detectChanges();
+
+      const marker = fixture.nativeElement.querySelector(markerSelector) as HTMLButtonElement;
+      marker.click();
+
+      expect(emitSpy).toHaveBeenCalledTimes(1);
+    });
+  });
 });

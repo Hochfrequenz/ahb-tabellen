@@ -82,6 +82,14 @@
             Bedingungen
           </button>
         </div>
+
+        <!-- Legend: explains the "*" marker on rows whose only change is in the hidden Bedingung -->
+        @if (hiddenBedingungChangeCount() > 0) {
+          <p class="mt-1.5 text-xs text-gray-600">
+            <span class="font-bold align-super">*</span> Diese Zeile ist nur in der Bedingung
+            geändert. Klicke auf das * oder auf „Bedingungen“, um die Änderung anzuzeigen.
+          </p>
+        }
       </div>
     }
 
@@ -125,7 +133,8 @@
           [formatVersionNew]="formatVersion()"
           [pruefiOld]="pruefiOld()"
           [pruefiNew]="pruefiNew()"
-          [showConditionsColumn]="showConditionsColumn()" />
+          [showConditionsColumn]="showConditionsColumn()"
+          (revealConditions)="showConditionsColumn.set(true)" />
       } @else if (stats()) {
         <!-- Has data but all filtered out -->
         <div class="text-center py-12 text-gray-500">
