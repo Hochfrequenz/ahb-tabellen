@@ -15,4 +15,5 @@ export class SolutionsFooterComponent {
   public fristenkalenderUrl = environment.fristenkalenderBaseUrl;
   public bedingungsbaumUrl = environment.bedingungsbaumBaseUrl;
   public ebdUrl = environment.ebdBaseUrl;
+  public makoProzesseUrl = environment.makoProzesseBaseUrl;
 }

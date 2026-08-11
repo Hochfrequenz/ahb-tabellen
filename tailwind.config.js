@@ -13,6 +13,11 @@ module.exports = {
         white: '#ffffff',
         // the hf colors are defined in hochfrequenz.css
         // see: https://github.com/Hochfrequenz/companystylesheet/blob/933394932c5c97328a891c2bd3e72dbb6cecd357/css/hochfrequenz.css
+        // SOURCE OF TRUTH: src/assets/companystylesheet/css/hochfrequenz.css (git submodule).
+        // These hexes are a hand-maintained mirror of it, and so is the :root block in
+        // src/styles.scss - the two mirrors have already drifted (e.g. dunkel-mint exists
+        // here but not there). When adding a colour, update the submodule pin first, then
+        // both mirrors.
         hf: {
           'text-color': '#40313E',
           // Greens
@@ -44,6 +49,10 @@ module.exports = {
           'pastell-mint': '#c6e7d2',
           'grell-mint': '#85cb9c',
           'dunkel-mint': '#549976',
+          // Lila/Violett (MaKo-Prozesse)
+          'pastell-lila': '#d5d1f0',
+          'grell-lila': '#aca3e1',
+          'dunkel-lila': '#8f84d7',
           // Neutral
           'neutral-grau': '#e7e6e5',
           'off-white': '#e7e6e5',
