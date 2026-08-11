@@ -27,7 +27,6 @@ import {
   AhbDiffLine,
   PrufidentifikatorenService,
 } from '../../../../core/api';
-import { isHiddenBedingungChange } from '../../../../shared/utils/diff-line.utils';
 import { getCurrentEdifactFormatVersion } from '@hochfrequenz/efoli';
 import { DiffStats } from '../../../comparison/views/comparison-page/comparison-page.component';
 
@@ -135,11 +134,6 @@ export class PruefiComparisonPageComponent implements OnInit, OnDestroy {
     const diff = this.diffData();
     return diff?.lines ? this.computeStats(diff.lines) : null;
   });
-
-  /** Number of rows whose only change is in the (by default hidden) Bedingung column (issue #895). */
-  readonly hiddenBedingungChangeCount = computed(
-    () => this.diffData()?.lines?.filter(isHiddenBedingungChange).length ?? 0
-  );
 
   /** Computed description from diff data */
   readonly description = computed(() => {

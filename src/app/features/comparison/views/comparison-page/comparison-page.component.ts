@@ -23,7 +23,6 @@ import { ComparisonTableComponent } from '../../components/comparison-table/comp
 import { ComparisonSearchFormHeaderComponent } from '../../components/comparison-search-form-header/comparison-search-form-header.component';
 import { AhbService, AhbDiff, AhbDiffLine, PrufidentifikatorenService } from '../../../../core/api';
 import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
-import { isHiddenBedingungChange } from '../../../../shared/utils/diff-line.utils';
 import { getCurrentEdifactFormatVersion } from '@hochfrequenz/efoli';
 
 export interface DiffStats {
@@ -144,11 +143,6 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
     const diff = this.diffData();
     return diff?.lines ? this.computeStats(diff.lines) : null;
   });
-
-  /** Number of rows whose only change is in the (by default hidden) Bedingung column (issue #895). */
-  readonly hiddenBedingungChangeCount = computed(
-    () => this.diffData()?.lines?.filter(isHiddenBedingungChange).length ?? 0
-  );
 
   /** Computed description from diff data */
   readonly description = computed(() => {
