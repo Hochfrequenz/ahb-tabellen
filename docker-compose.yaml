@@ -6,7 +6,7 @@ services:
       args:
         BUILD_DATE: dummy
         COMMIT_DATE: dummy
-        COMMIT_ID: wip
+        COMMIT_HASH: wip
         VERSION: v0.0.0-local
     ports:
       - 4000:4000
