@@ -82,14 +82,6 @@
             Bedingungen
           </button>
         </div>
-
-        <!-- Legend: explains the "*" marker on rows whose only change is in the hidden Bedingung -->
-        @if (hiddenBedingungChangeCount() > 0) {
-          <p class="mt-1.5 text-xs text-gray-600">
-            <span class="font-bold align-super">*</span> Diese Zeile ist nur in der Bedingung
-            geändert. Klicke auf das * oder auf „Bedingungen“, um die Änderung anzuzeigen.
-          </p>
-        }
       </div>
     }
 
@@ -144,6 +136,14 @@
         <div class="text-center py-12 text-gray-500">
           Bitte wählen Sie eine Formatversion und zwei Prüfidentifikatoren zum Vergleichen aus.
         </div>
+      }
+
+      <!-- Legend for the "*" marker (issue #895), shown at the bottom of the pastell-rose area -->
+      @if (hiddenBedingungChangeCount() > 0) {
+        <p class="mt-4 text-xs text-gray-600">
+          <span class="font-bold align-super">*</span> Diese Zeile ist nur in der Bedingung
+          geändert. Klicke auf das * oder auf „Bedingungen“, um die Änderung anzuzeigen.
+        </p>
       }
     </div>
 
