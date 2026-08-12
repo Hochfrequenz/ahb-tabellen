@@ -100,7 +100,7 @@ describe('ComparisonTableComponent', () => {
     });
 
     it('emits revealConditions when the hint is clicked', () => {
-      const emitSpy = jasmine.createSpy('revealConditions');
+      const emitSpy = jest.fn();
       component.revealConditions.subscribe(emitSpy);
 
       fixture.componentRef.setInput('lines', [bedingungOnlyLine]);
