@@ -52,8 +52,9 @@ describe('SolutionsFooterComponent', () => {
     expect(dockerEnvironment.makoProzesseBaseUrl).toBe('https://mako-prozesse.hochfrequenz.de');
   });
 
-  // The Dolmetscher is live in production and has no staging host, so every environment
-  // points at the same production URL -- pinned here for the same reason as above.
+  // The Dolmetscher is live in production; its *.stage host exists but serves an invalid
+  // TLS certificate, so every environment points at the same production URL -- pinned here
+  // for the same reason as above.
   it('pins the Dolmetscher URL of every built environment', () => {
     expect(productionEnvironment.dolmetscherBaseUrl).toBe('https://dolmetscher.hochfrequenz.de');
     expect(stageEnvironment.dolmetscherBaseUrl).toBe('https://dolmetscher.hochfrequenz.de');
