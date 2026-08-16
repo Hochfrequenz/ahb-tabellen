@@ -16,4 +16,5 @@ export class SolutionsFooterComponent {
   public bedingungsbaumUrl = environment.bedingungsbaumBaseUrl;
   public ebdUrl = environment.ebdBaseUrl;
   public makoProzesseUrl = environment.makoProzesseBaseUrl;
+  public dolmetscherUrl = environment.dolmetscherBaseUrl;
 }

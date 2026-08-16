@@ -25,7 +25,7 @@ describe('SolutionsFooterComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('renders all five solution links with their expected hrefs', () => {
+  it('renders all six solution links with their expected hrefs', () => {
     const links = fixture.nativeElement.querySelectorAll('#solutions a');
 
     expect(
@@ -39,6 +39,7 @@ describe('SolutionsFooterComponent', () => {
       ['Bedingungsbaum', environment.bedingungsbaumBaseUrl],
       ['Entscheidungsbaumdiagramm', environment.ebdBaseUrl],
       ['MaKo-Prozesse', environment.makoProzesseBaseUrl],
+      ['Dolmetscher', environment.dolmetscherBaseUrl],
     ]);
   });
 
@@ -49,5 +50,13 @@ describe('SolutionsFooterComponent', () => {
     expect(productionEnvironment.makoProzesseBaseUrl).toBe('https://mako-prozesse.hochfrequenz.de');
     expect(stageEnvironment.makoProzesseBaseUrl).toBe('https://mako-prozesse.hochfrequenz.de');
     expect(dockerEnvironment.makoProzesseBaseUrl).toBe('https://mako-prozesse.hochfrequenz.de');
+  });
+
+  // The Dolmetscher is live in production and has no staging host, so every environment
+  // points at the same production URL -- pinned here for the same reason as above.
+  it('pins the Dolmetscher URL of every built environment', () => {
+    expect(productionEnvironment.dolmetscherBaseUrl).toBe('https://dolmetscher.hochfrequenz.de');
+    expect(stageEnvironment.dolmetscherBaseUrl).toBe('https://dolmetscher.hochfrequenz.de');
+    expect(dockerEnvironment.dolmetscherBaseUrl).toBe('https://dolmetscher.hochfrequenz.de');
   });
 });

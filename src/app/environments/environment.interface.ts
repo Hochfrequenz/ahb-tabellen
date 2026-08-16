@@ -11,6 +11,11 @@ export interface EnvironmentInterface {
    * is live; re-check once it is.
    */
   makoProzesseBaseUrl: string;
+  /**
+   * The Marktnachrichten-Dolmetscher, live at https://dolmetscher.hochfrequenz.de. It has no
+   * staging host, so every environment points at production.
+   */
+  dolmetscherBaseUrl: string;
   auth0Domain: string;
   auth0ClientId: string;
   baseUrl: string;
