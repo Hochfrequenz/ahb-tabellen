@@ -97,6 +97,6 @@
     "angular-eslint": "^22.1.0",
     "tsx": "^4.23.9",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.66.0"
+    "typescript-eslint": "^8.67.0"
   }
 }
