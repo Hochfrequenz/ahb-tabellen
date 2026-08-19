@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
+import { pruefiComparisonEnabledGuard } from './guards/pruefi-comparison-enabled.guard';
 
 export const routes: Routes = [
   {
@@ -25,7 +26,7 @@ export const routes: Routes = [
     loadChildren: async () =>
       (await import('./features/pruefi-comparison/pruefi-comparison.routes'))
         .PRUEFI_COMPARISON_ROUTES,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, pruefiComparisonEnabledGuard],
   },
   {
     path: '',
