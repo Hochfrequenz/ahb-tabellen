@@ -45,6 +45,8 @@ server.get('/version', (_, res) =>
     commitHash: process.env['COMMIT_HASH'] || 'unknown',
     commitDate: process.env['COMMIT_DATE'] || 'unknown',
     buildBranch: process.env['BUILD_BRANCH'] || 'unknown',
+    environment: process.env['ENVIRONMENT'] || 'unknown (local)',
+    name: 'ahb-tabellen',
   })
 );
 server.get('/health', (_, res) => res.send());
