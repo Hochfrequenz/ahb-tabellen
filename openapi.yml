@@ -640,6 +640,12 @@ components:
         buildBranch:
           type: string
           example: 'main'
+        environment:
+          type: string
+          example: 'production'
+        name:
+          type: string
+          example: 'ahb-tabellen'
     DirectionValues:
       type: object
       properties:
