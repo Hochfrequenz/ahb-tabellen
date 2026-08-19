@@ -40,10 +40,11 @@ AppDataSource.initialize()
 
 server.get('/version', (_, res) =>
   res.send({
-    buildDate: process.env['BUILD_DATE'] || 'unknown',
-    commitDate: process.env['COMMIT_DATE'] || 'unknown',
-    commitId: process.env['COMMIT_ID'] || 'unknown',
     version: process.env['VERSION'] || 'unknown',
+    buildDate: process.env['BUILD_DATE'] || 'unknown',
+    commitHash: process.env['COMMIT_HASH'] || 'unknown',
+    commitDate: process.env['COMMIT_DATE'] || 'unknown',
+    buildBranch: process.env['BUILD_BRANCH'] || 'unknown',
     environment: process.env['ENVIRONMENT'] || 'unknown (local)',
     name: 'ahb-tabellen',
   })
