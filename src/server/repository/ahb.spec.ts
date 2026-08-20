@@ -469,6 +469,21 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
       );
     });
 
+    it('should escape backslash characters in user input', async () => {
+      await repository.searchAhbLines({
+        page: 1,
+        pageSize: 25,
+        sort: [],
+        q: 'foo\\bar*',
+        filters: {},
+      });
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
+        expect.objectContaining({ q0: 'foo\\\\bar%' })
+      );
+    });
+
     it('should handle case-insensitive search with wildcards', async () => {
       await repository.searchAhbLines({
         page: 1,

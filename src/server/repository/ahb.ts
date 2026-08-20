@@ -131,13 +131,18 @@ export default class AHBRepository {
         // User explicitly used wildcard - escape SQL special chars, then convert * to %
         const pattern = input
           .toLowerCase()
+          .replace(/\\/g, '\\\\')
           .replace(/%/g, '\\%')
           .replace(/_/g, '\\_')
           .replace(/\*/g, '%');
         return input.endsWith('*') ? pattern : `${pattern}%`;
       }
       // No wildcard - use implicit substring matching (escape special chars first)
-      const escaped = input.toLowerCase().replace(/%/g, '\\%').replace(/_/g, '\\_');
+      const escaped = input
+        .toLowerCase()
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_');
       return `%${escaped}%`;
     };
 
