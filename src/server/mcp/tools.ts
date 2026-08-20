@@ -37,7 +37,9 @@ const searchFilterCondition = z.object({
   contains: z
     .string()
     .optional()
-    .describe('Case-insensitive substring match; use * as a wildcard (for example, Änderung*TR).'),
+    .describe(
+      'Case-insensitive substring match; * matches text between search segments. Text before the first * must be at the start, and text after the final segment may follow (for example, Änderung*TR).'
+    ),
   startsWith: z.string().optional(),
   endsWith: z.string().optional(),
   in: z.array(z.string()).optional(),
@@ -101,7 +103,7 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
         q: z
           .string()
           .describe(
-            'Full-text query; use * as a wildcard (for example, Änderung*TR), or an empty string to match all lines.'
+            'Full-text query; * matches text between search segments. Text before the first * must be at the start, and text after the final segment may follow (for example, Änderung*TR). Use an empty string to match all lines.'
           ),
         page: z.number().int().min(1).describe('1-based page number.'),
         pageSize: z.number().int().min(1).max(500).describe('Results per page (1–500).'),

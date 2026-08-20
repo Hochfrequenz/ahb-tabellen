@@ -8,7 +8,7 @@
  */
 export interface FilterValue {
   /**
-   * Case-insensitive substring match. Use `*` as a wildcard (for example, `Änderung*TR`).
+   * Case-insensitive substring match. Use `*` to match text between search segments; text before the first `*` must be at the start, while text after the final segment may follow (for example, `Änderung*TR`).
    */
   contains?: string;
   endsWith?: string;

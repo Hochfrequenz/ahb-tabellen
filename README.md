@@ -157,7 +157,7 @@ All tools are read-only:
 | Tool                             | Description                                                          |
 | -------------------------------- | -------------------------------------------------------------------- |
 | `get_ahb`                        | Retrieve a single AHB (JSON) by format version + Prüfidentifikator   |
-| `search_ahb_lines`               | Full-text / filtered, paginated search across AHB lines (`*` wildcard supported) |
+| `search_ahb_lines`               | Full-text / filtered, paginated search; `Änderung*TR` matches a prefix and later text |
 | `get_ahb_diff`                   | Line-level diff of one Prüfidentifikator between two format versions |
 | `get_ahb_diff_summary`           | Per-Prüfidentifikator change counts between two format versions      |
 | `list_format_versions`           | List all EDIFACT format versions (e.g. `FV2410`)                     |

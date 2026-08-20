@@ -14,7 +14,7 @@ export interface SearchQueryRequest {
   pageSize: number;
 
   /**
-   * Global case-insensitive search across the 11 listed fields. Use `*` as a wildcard (for example, `Änderung*TR`).
+   * Global case-insensitive search across the 11 listed fields. Use `*` to match text between search segments; text before the first `*` must be at the start, while text after the final segment may follow (for example, `Änderung*TR`).
    */
   q: string;
   sort: Array<SortRule>;
