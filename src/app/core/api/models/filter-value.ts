@@ -7,6 +7,9 @@
  * One operator should be provided per field. An empty filter object `{}` applies no constraint on that field.
  */
 export interface FilterValue {
+  /**
+   * Case-insensitive substring match. Use `*` as a wildcard (for example, `Änderung*TR`).
+   */
   contains?: string;
   endsWith?: string;
   eq?: string;

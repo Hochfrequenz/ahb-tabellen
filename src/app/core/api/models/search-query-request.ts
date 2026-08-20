@@ -14,7 +14,7 @@ export interface SearchQueryRequest {
   pageSize: number;
 
   /**
-   * Global case-insensitive search across the 11 listed fields
+   * Global case-insensitive search across the 11 listed fields. Use `*` as a wildcard (for example, `Änderung*TR`).
    */
   q: string;
   sort: Array<SortRule>;
