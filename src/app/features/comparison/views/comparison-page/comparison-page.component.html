@@ -66,19 +66,19 @@
           <!-- Divider -->
           <span class="mx-1 h-6 w-px bg-hf-text-color"></span>
 
-          <!-- Column visibility toggle -->
+          <!-- Expand/collapse all condition cells -->
           <button
             type="button"
-            (click)="showConditionsColumn.set(!showConditionsColumn())"
+            (click)="toggleAllConditions()"
             class="px-3 py-1.5 rounded font-medium cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 hover:ring-2"
             [class]="
-              showConditionsColumn()
+              allConditionsExpanded()
                 ? 'bg-hf-dunkel-rose text-white border-hf-dunkel-rose focus:ring-hf-dunkel-rose hover:ring-hf-dunkel-rose'
                 : 'bg-white text-hf-text-color border-gray-300 focus:ring-gray-400 hover:ring-gray-400'
             "
-            [attr.aria-pressed]="showConditionsColumn() ? 'true' : 'false'"
-            aria-label="Bedingungen-Spalte ein-/ausblenden"
-            title="Bedingungen-Spalte ein-/ausblenden">
+            [attr.aria-pressed]="allConditionsExpanded() ? 'true' : 'false'"
+            aria-label="Alle Bedingungen auf- oder zuklappen"
+            title="Alle Bedingungen auf- oder zuklappen">
             Bedingungen
           </button>
         </div>
@@ -124,8 +124,7 @@
           [lines]="filteredLines()"
           [formatVersionOld]="formatVersionOld()"
           [formatVersionNew]="formatVersionNew()"
-          [pruefi]="pruefi()"
-          [showConditionsColumn]="showConditionsColumn()" />
+          [pruefi]="pruefi()" />
       } @else if (stats()) {
         <!-- Has data but all filtered out -->
         <div class="text-center py-12 text-gray-500">

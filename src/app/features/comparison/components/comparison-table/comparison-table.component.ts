@@ -1,20 +1,28 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  Input,
+  ChangeDetectionStrategy,
+  OnChanges,
+  SimpleChanges,
+  signal,
+} from '@angular/core';
 
 import { diffWords, Change } from 'diff';
 import { AhbDiffLine, AhbDiffSide } from '../../../../core/api';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
+import { TruncationObserverDirective } from '../../../../shared/directives/truncation-observer.directive';
 import { environment } from '../../../../environments/environment';
 import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.utils';
 
 @Component({
   selector: 'app-comparison-table',
   standalone: true,
-  imports: [IconLinkComponent],
+  imports: [IconLinkComponent, TruncationObserverDirective],
   templateUrl: './comparison-table.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './comparison-table.component.scss',
 })
-export class ComparisonTableComponent {
+export class ComparisonTableComponent implements OnChanges {
   @Input() lines: AhbDiffLine[] = [];
   @Input() formatVersionOld = '';
   @Input() formatVersionNew = '';
@@ -25,8 +33,41 @@ export class ComparisonTableComponent {
   /** Pruefi shown on the new side (Pruefi-vs-Pruefi comparison). Falls back to `pruefi`. */
   @Input() pruefiNew = '';
 
-  /** Whether to show the conditions/hints/formats column */
-  @Input() showConditionsColumn = false;
+  /** id_paths of rows whose conditions are expanded (clamp removed). Single source of truth. */
+  private readonly expandedRows = signal<ReadonlySet<string>>(new Set());
+
+  /**
+   * Per row+side truncation state, measured while the cell is clamped and latched
+   * here so it survives while the row is expanded (an expanded cell never overflows).
+   */
+  private readonly truncatedSides = signal<ReadonlyMap<string, { old: boolean; new: boolean }>>(
+    new Map()
+  );
+
+  /** Inputs that identify the current comparison; a change to any means "new comparison". */
+  private static readonly IDENTITY_INPUTS = [
+    'pruefi',
+    'pruefiOld',
+    'pruefiNew',
+    'formatVersionOld',
+    'formatVersionNew',
+  ];
+
+  /**
+   * Reset the expand/truncation state only when a genuinely new comparison is
+   * loaded — not when `lines` merely changes because a filter toggled (that would
+   * collapse every row on each filter click).
+   */
+  ngOnChanges(changes: SimpleChanges): void {
+    const isNewComparison = ComparisonTableComponent.IDENTITY_INPUTS.some(key => {
+      const change = changes[key];
+      return !!change && !change.firstChange && change.previousValue !== change.currentValue;
+    });
+    if (isNewComparison) {
+      this.expandedRows.set(new Set());
+      this.truncatedSides.set(new Map());
+    }
+  }
 
   /** True when comparing two different Pruefis (rather than the same Pruefi across format versions). */
   private get isPruefiComparison(): boolean {
@@ -214,6 +255,87 @@ export class ComparisonTableComponent {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  /** Whether the given row's conditions are currently expanded. */
+  isExpanded(line: AhbDiffLine): boolean {
+    return this.expandedRows().has(line.id_path);
+  }
+
+  /** Whether the given side's condition text overflows its clamp (measured while clamped). */
+  isSideTruncated(line: AhbDiffLine, side: 'old' | 'new'): boolean {
+    return this.truncatedSides().get(line.id_path)?.[side] ?? false;
+  }
+
+  /** A row is collapsible when at least one side's condition text is truncated. */
+  isCollapsible(line: AhbDiffLine): boolean {
+    return this.isSideTruncated(line, 'old') || this.isSideTruncated(line, 'new');
+  }
+
+  /** Whether to render an expand/collapse chevron for this side. */
+  hasConditionsToggle(line: AhbDiffLine, side: 'old' | 'new'): boolean {
+    return this.isSideTruncated(line, side);
+  }
+
+  /**
+   * Emphasise the chevron when a change is hidden: the side is still clamped
+   * (collapsed) and its condition actually changed between versions.
+   */
+  isHiddenChange(line: AhbDiffLine, side: 'old' | 'new'): boolean {
+    return (
+      !this.isExpanded(line) &&
+      this.isSideTruncated(line, side) &&
+      this.isColumnChanged(line, 'bedingung')
+    );
+  }
+
+  /** Accessible label for the chevron button, flagging hidden changes for screen readers. */
+  conditionsToggleLabel(line: AhbDiffLine, side: 'old' | 'new'): string {
+    if (this.isExpanded(line)) {
+      return 'Bedingungen einklappen';
+    }
+    return this.isHiddenChange(line, side)
+      ? 'Bedingungen ausklappen – enthält eine Änderung'
+      : 'Bedingungen ausklappen';
+  }
+
+  /** Toggle the expanded state of a single row (both sides expand together). */
+  toggleRow(line: AhbDiffLine): void {
+    const id = line.id_path;
+    this.expandedRows.update(current => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  /** Expand every collapsible row — driven by the "Bedingungen" toggle in the page. */
+  expandAllCollapsible(): void {
+    const ids = this.lines.filter(line => this.isCollapsible(line)).map(line => line.id_path);
+    this.expandedRows.set(new Set(ids));
+  }
+
+  /** Collapse every row — driven by the "Bedingungen" toggle in the page. */
+  collapseAll(): void {
+    this.expandedRows.set(new Set());
+  }
+
+  /** Store the latest (clamped) truncation measurement for a row+side. */
+  onConditionsTruncated(line: AhbDiffLine, side: 'old' | 'new', truncated: boolean): void {
+    const id = line.id_path;
+    this.truncatedSides.update(current => {
+      const existing = current.get(id) ?? { old: false, new: false };
+      if (existing[side] === truncated) {
+        return current;
+      }
+      const next = new Map(current);
+      next.set(id, { ...existing, [side]: truncated });
+      return next;
+    });
   }
 
   generateBedingungsbaumDeepLink(
