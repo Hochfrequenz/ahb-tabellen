@@ -8,7 +8,7 @@
  */
 export interface FilterValue {
   /**
-   * Case-insensitive substring match. Use `*` to match text between search segments; text before the first `*` must be at the start, while text after the final segment may follow (for example, `Änderung*TR`).
+   * Case-insensitive match. Without `*` this is a substring match. A `*` makes the match prefix-anchored — the text before the first `*` must be at the start of the field, `*` matches any text between segments, and text after the final segment may follow (for example, `Änderung*TR` matches values that start with `Änderung` and contain `TR` afterwards). `*` is treated as a literal character by the other operators (eq/neq/startsWith/endsWith/in).
    */
   contains?: string;
   endsWith?: string;

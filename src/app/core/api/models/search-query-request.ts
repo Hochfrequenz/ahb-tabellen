@@ -14,7 +14,7 @@ export interface SearchQueryRequest {
   pageSize: number;
 
   /**
-   * Global case-insensitive search across the 11 listed fields. Use `*` to match text between search segments; text before the first `*` must be at the start, while text after the final segment may follow (for example, `Änderung*TR`).
+   * Global case-insensitive search across the 11 listed fields. Without `*` this is a substring match. A `*` makes the match prefix-anchored — the text before the first `*` must be at the start of the field, `*` matches any text between segments, and text after the final segment may follow (for example, `Änderung*TR` matches values that start with `Änderung` and contain `TR` afterwards).
    */
   q: string;
   sort: Array<SortRule>;
