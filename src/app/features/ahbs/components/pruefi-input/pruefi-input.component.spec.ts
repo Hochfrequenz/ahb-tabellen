@@ -22,13 +22,13 @@ describe('PruefiInputComponent', () => {
       const subscription = component.pruefis$.subscribe(values => suggestions.push(values));
 
       component['allPruefis$'].next([
-        { pruefidentifikator: '11001', name: 'Änderung der Stammdaten TR' },
-        { pruefidentifikator: '11002', name: 'Änderung ohne Treffer' },
+        { pruefidentifikator: '11001', name: 'Änderung der Stammdaten TR Hinweis' },
+        { pruefidentifikator: '11002', name: 'Änderung ohne Ergebnis' },
         { pruefidentifikator: '11003', name: 'Keine Änderung der TR-Stammdaten' },
       ]);
       component.onInputChange({ target: { value: 'änderung*tr' } } as unknown as Event);
 
-      expect(suggestions.at(-1)).toEqual(['11001 - Änderung der Stammdaten TR']);
+      expect(suggestions.at(-1)).toEqual(['11001 - Änderung der Stammdaten TR Hinweis']);
       subscription.unsubscribe();
     });
 

@@ -382,10 +382,10 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
         filters: {},
       });
 
-      // Should use "%foo" pattern (ends with foo)
+      // Should use "%foo%" pattern (contains foo)
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
-        expect.objectContaining({ q0: '%foo' })
+        expect.objectContaining({ q0: '%foo%' })
       );
     });
 
@@ -398,10 +398,10 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
         filters: {},
       });
 
-      // Should use "Konfig%-ID" pattern
+      // Should use "Konfig%-ID%" pattern
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
-        expect.objectContaining({ q0: 'konfig%-id' })
+        expect.objectContaining({ q0: 'konfig%-id%' })
       );
     });
 
@@ -481,7 +481,7 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
       // Should lowercase the pattern
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.'),
-        expect.objectContaining({ q0: 'foo%bar' })
+        expect.objectContaining({ q0: 'foo%bar%' })
       );
     });
   });
@@ -552,10 +552,10 @@ describe('AHBRepository - Sender and Empfaenger Filters', () => {
         },
       });
 
-      // Should use "konfig%-id" pattern
+      // Should use "konfig%-id%" pattern
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         expect.stringContaining('REPLACE(REPLACE(REPLACE(LOWER(al.line_name)'),
-        expect.objectContaining({ f_line_name_contains: 'konfig%-id' })
+        expect.objectContaining({ f_line_name_contains: 'konfig%-id%' })
       );
     });
   });

@@ -31,7 +31,7 @@ const matchesSearchTerm = (value: string, searchTerm: string): boolean => {
     .split('*')
     .map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
     .join('.*');
-  return new RegExp(`^${pattern}$`).test(value);
+  return new RegExp(`^${pattern}`).test(value);
 };
 
 @Component({
