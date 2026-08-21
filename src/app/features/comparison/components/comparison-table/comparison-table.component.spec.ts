@@ -109,7 +109,7 @@ describe('ComparisonTableComponent', () => {
       expect(button.querySelector('i').classList).toContain('mdi-chevron-down');
     });
 
-    it('emphasises the chevron when a change is hidden (truncated + changed)', () => {
+    it('emphasises the chevron by size (not colour) when a change is hidden', () => {
       const line = makeLine({ changed_columns: ['bedingung'] });
       fixture.componentRef.setInput('lines', [line]);
       fixture.detectChanges();
@@ -118,8 +118,9 @@ describe('ComparisonTableComponent', () => {
       fixture.detectChanges();
 
       const icon = fixture.nativeElement.querySelector('button i');
-      expect(icon.classList).toContain('text-hf-dunkel-rose');
       expect(icon.classList).toContain('text-xl');
+      // The chevron inherits the row text colour; no dedicated accent colour.
+      expect(icon.classList).not.toContain('text-hf-dunkel-rose');
       expect(component.conditionsToggleLabel(line, 'old')).toContain('enthält eine Änderung');
     });
 
@@ -133,8 +134,8 @@ describe('ComparisonTableComponent', () => {
 
       const icon = fixture.nativeElement.querySelector('button i');
       expect(icon).toBeTruthy();
-      expect(icon.classList).not.toContain('text-hf-dunkel-rose');
-      expect(icon.classList).toContain('opacity-60');
+      expect(icon.classList).toContain('text-base');
+      expect(icon.classList).not.toContain('text-xl');
     });
 
     it('expands and collapses a row on chevron click', () => {
