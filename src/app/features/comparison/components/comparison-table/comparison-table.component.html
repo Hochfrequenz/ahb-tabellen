@@ -133,9 +133,11 @@
           <td class="px-2 py-1.5 border-b border-hf-grell-rose">
             <div
               class="break-words"
-              [class.line-clamp-4]="!isExpanded(line)"
+              [class.line-clamp-1]="!isExpanded(line)"
               [appTruncationObserver]="!isExpanded(line)"
+              markerSelector="strong"
               (truncated)="onConditionsTruncated(line, 'old', $event)"
+              (markerHidden)="onConditionsChangeHidden(line, 'old', $event)"
               [innerHTML]="getHighlightedBedingung(line, 'old')"></div>
             @if (hasConditionsToggle(line, 'old')) {
               <div class="flex justify-end mt-0.5">
@@ -151,7 +153,8 @@
                     [class.mdi-chevron-up]="isExpanded(line)"
                     [class.mdi-chevron-down]="!isExpanded(line)"
                     [class.text-base]="!isHiddenChange(line, 'old')"
-                    [class.text-xl]="isHiddenChange(line, 'old')"></i>
+                    [class.text-xl]="isHiddenChange(line, 'old')"
+                    [class.arrow-hop]="isHiddenChange(line, 'old')"></i>
                 </button>
               </div>
             }
@@ -224,9 +227,11 @@
           <td class="px-2 py-1.5 border-b border-hf-grell-rose">
             <div
               class="break-words"
-              [class.line-clamp-4]="!isExpanded(line)"
+              [class.line-clamp-1]="!isExpanded(line)"
               [appTruncationObserver]="!isExpanded(line)"
+              markerSelector="strong"
               (truncated)="onConditionsTruncated(line, 'new', $event)"
+              (markerHidden)="onConditionsChangeHidden(line, 'new', $event)"
               [innerHTML]="getHighlightedBedingung(line, 'new')"></div>
             @if (hasConditionsToggle(line, 'new')) {
               <div class="flex justify-end mt-0.5">
@@ -242,7 +247,8 @@
                     [class.mdi-chevron-up]="isExpanded(line)"
                     [class.mdi-chevron-down]="!isExpanded(line)"
                     [class.text-base]="!isHiddenChange(line, 'new')"
-                    [class.text-xl]="isHiddenChange(line, 'new')"></i>
+                    [class.text-xl]="isHiddenChange(line, 'new')"
+                    [class.arrow-hop]="isHiddenChange(line, 'new')"></i>
                 </button>
               </div>
             }

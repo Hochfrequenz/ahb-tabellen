@@ -109,33 +109,37 @@ describe('ComparisonTableComponent', () => {
       expect(button.querySelector('i').classList).toContain('mdi-chevron-down');
     });
 
-    it('emphasises the chevron by size (not colour) when a change is hidden', () => {
+    it('emphasises and hops the chevron when the change is hidden below the clamp', () => {
       const line = makeLine({ changed_columns: ['bedingung'] });
       fixture.componentRef.setInput('lines', [line]);
       fixture.detectChanges();
 
       component.onConditionsTruncated(line, 'old', true);
+      component.onConditionsChangeHidden(line, 'old', true);
       fixture.detectChanges();
 
       const icon = fixture.nativeElement.querySelector('button i');
       expect(icon.classList).toContain('text-xl');
+      expect(icon.classList).toContain('arrow-hop');
       // The chevron inherits the row text colour; no dedicated accent colour.
       expect(icon.classList).not.toContain('text-hf-dunkel-rose');
       expect(component.conditionsToggleLabel(line, 'old')).toContain('enthält eine Änderung');
     });
 
-    it('does not emphasise the chevron when the condition did not change', () => {
-      const line = makeLine({ changed_columns: [], diff_status: 'unchanged' });
+    it('does not emphasise or hop the chevron when the change is still visible', () => {
+      const line = makeLine();
       fixture.componentRef.setInput('lines', [line]);
       fixture.detectChanges();
 
       component.onConditionsTruncated(line, 'old', true);
+      component.onConditionsChangeHidden(line, 'old', false);
       fixture.detectChanges();
 
       const icon = fixture.nativeElement.querySelector('button i');
       expect(icon).toBeTruthy();
       expect(icon.classList).toContain('text-base');
       expect(icon.classList).not.toContain('text-xl');
+      expect(icon.classList).not.toContain('arrow-hop');
     });
 
     it('expands and collapses a row on chevron click', () => {
@@ -145,7 +149,7 @@ describe('ComparisonTableComponent', () => {
 
       component.onConditionsTruncated(line, 'old', true);
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelectorAll('.line-clamp-4').length).toBeGreaterThan(0);
+      expect(fixture.nativeElement.querySelectorAll('.line-clamp-1').length).toBeGreaterThan(0);
 
       const button = fixture.nativeElement.querySelector('button');
       button.click();
@@ -154,7 +158,7 @@ describe('ComparisonTableComponent', () => {
       expect(component.isExpanded(line)).toBe(true);
       expect(button.getAttribute('aria-expanded')).toBe('true');
       expect(button.querySelector('i').classList).toContain('mdi-chevron-up');
-      expect(fixture.nativeElement.querySelectorAll('.line-clamp-4').length).toBe(0);
+      expect(fixture.nativeElement.querySelectorAll('.line-clamp-1').length).toBe(0);
 
       button.click();
       fixture.detectChanges();
