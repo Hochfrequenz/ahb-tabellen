@@ -296,6 +296,14 @@ export class ComparisonTableComponent implements OnChanges {
     return !this.isExpanded(line) && (this.hiddenChangeSides().get(line.id_path)?.[side] ?? false);
   }
 
+  /**
+   * Row-level hidden-change flag: true if either side has a change hidden below the
+   * clamp. Used to hop both arrows of a row together, not just the affected side.
+   */
+  isRowHiddenChange(line: AhbDiffLine): boolean {
+    return this.isHiddenChange(line, 'old') || this.isHiddenChange(line, 'new');
+  }
+
   /** Accessible label for the chevron button, flagging hidden changes for screen readers. */
   conditionsToggleLabel(line: AhbDiffLine, side: 'old' | 'new'): string {
     if (this.isExpanded(line)) {

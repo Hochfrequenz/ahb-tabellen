@@ -154,7 +154,7 @@
                     [class.mdi-chevron-down]="!isExpanded(line)"
                     [class.text-base]="!isHiddenChange(line, 'old')"
                     [class.text-xl]="isHiddenChange(line, 'old')"
-                    [class.arrow-hop]="isHiddenChange(line, 'old')"></i>
+                    [class.arrow-hop]="isRowHiddenChange(line)"></i>
                 </button>
               </div>
             }
@@ -248,7 +248,7 @@
                     [class.mdi-chevron-down]="!isExpanded(line)"
                     [class.text-base]="!isHiddenChange(line, 'new')"
                     [class.text-xl]="isHiddenChange(line, 'new')"
-                    [class.arrow-hop]="isHiddenChange(line, 'new')"></i>
+                    [class.arrow-hop]="isRowHiddenChange(line)"></i>
                 </button>
               </div>
             }

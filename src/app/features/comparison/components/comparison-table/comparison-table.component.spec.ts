@@ -142,6 +142,23 @@ describe('ComparisonTableComponent', () => {
       expect(icon.classList).not.toContain('arrow-hop');
     });
 
+    it('hops both arrows of a row when either side has a hidden change', () => {
+      const line = makeLine({ changed_columns: ['bedingung'] });
+      fixture.componentRef.setInput('lines', [line]);
+      fixture.detectChanges();
+
+      // Both sides truncated (so both chevrons render), but only the new side hides a change.
+      component.onConditionsTruncated(line, 'old', true);
+      component.onConditionsTruncated(line, 'new', true);
+      component.onConditionsChangeHidden(line, 'new', true);
+      fixture.detectChanges();
+
+      const icons = fixture.nativeElement.querySelectorAll('button i');
+      expect(icons.length).toBe(2);
+      expect(icons[0].classList).toContain('arrow-hop');
+      expect(icons[1].classList).toContain('arrow-hop');
+    });
+
     it('expands and collapses a row on chevron click', () => {
       const line = makeLine();
       fixture.componentRef.setInput('lines', [line]);
