@@ -109,7 +109,7 @@ describe('ComparisonTableComponent', () => {
       expect(button.querySelector('i').classList).toContain('mdi-chevron-down');
     });
 
-    it('emphasises and hops the chevron when the change is hidden below the clamp', () => {
+    it('hops the chevron without resizing it when the change is hidden below the clamp', () => {
       const line = makeLine({ changed_columns: ['bedingung'] });
       fixture.componentRef.setInput('lines', [line]);
       fixture.detectChanges();
@@ -119,14 +119,15 @@ describe('ComparisonTableComponent', () => {
       fixture.detectChanges();
 
       const icon = fixture.nativeElement.querySelector('button i');
-      expect(icon.classList).toContain('text-xl');
       expect(icon.classList).toContain('arrow-hop');
-      // The chevron inherits the row text colour; no dedicated accent colour.
+      // The chevron keeps its normal size and text colour; the hop is the only cue.
+      expect(icon.classList).toContain('text-base');
+      expect(icon.classList).not.toContain('text-xl');
       expect(icon.classList).not.toContain('text-hf-dunkel-rose');
       expect(component.conditionsToggleLabel(line, 'old')).toContain('enthält eine Änderung');
     });
 
-    it('does not emphasise or hop the chevron when the change is still visible', () => {
+    it('does not hop the chevron when the change is still visible', () => {
       const line = makeLine();
       fixture.componentRef.setInput('lines', [line]);
       fixture.detectChanges();
@@ -138,7 +139,6 @@ describe('ComparisonTableComponent', () => {
       const icon = fixture.nativeElement.querySelector('button i');
       expect(icon).toBeTruthy();
       expect(icon.classList).toContain('text-base');
-      expect(icon.classList).not.toContain('text-xl');
       expect(icon.classList).not.toContain('arrow-hop');
     });
 

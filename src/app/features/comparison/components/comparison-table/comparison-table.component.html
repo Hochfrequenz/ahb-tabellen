@@ -149,11 +149,9 @@
                   [attr.aria-label]="conditionsToggleLabel(line, 'old')"
                   [title]="conditionsToggleLabel(line, 'old')">
                   <i
-                    class="mdi leading-none"
+                    class="mdi leading-none text-base"
                     [class.mdi-chevron-up]="isExpanded(line)"
                     [class.mdi-chevron-down]="!isExpanded(line)"
-                    [class.text-base]="!isHiddenChange(line, 'old')"
-                    [class.text-xl]="isHiddenChange(line, 'old')"
                     [class.arrow-hop]="isRowHiddenChange(line)"></i>
                 </button>
               </div>
@@ -243,11 +241,9 @@
                   [attr.aria-label]="conditionsToggleLabel(line, 'new')"
                   [title]="conditionsToggleLabel(line, 'new')">
                   <i
-                    class="mdi leading-none"
+                    class="mdi leading-none text-base"
                     [class.mdi-chevron-up]="isExpanded(line)"
                     [class.mdi-chevron-down]="!isExpanded(line)"
-                    [class.text-base]="!isHiddenChange(line, 'new')"
-                    [class.text-xl]="isHiddenChange(line, 'new')"
                     [class.arrow-hop]="isRowHiddenChange(line)"></i>
                 </button>
               </div>
