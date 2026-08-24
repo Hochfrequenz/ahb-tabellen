@@ -54,7 +54,7 @@
     "diff": "^8.0.2",
     "dotenv": "^17.4.2",
     "express": "^5.1.0",
-    "express-oauth2-jwt-bearer": "^1.9.2",
+    "express-oauth2-jwt-bearer": "^1.10.0",
     "prettier": "^3.5.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "~7.8.2",
