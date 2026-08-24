@@ -80,7 +80,7 @@ describe('ComparisonTableComponent', () => {
       const subHeaders = Array.from(
         fixture.nativeElement.querySelectorAll('thead tr:nth-child(2) th')
       ) as HTMLElement[];
-      const conditionHeaders = subHeaders.filter(th => th.textContent?.trim() === 'Beding.');
+      const conditionHeaders = subHeaders.filter(th => th.textContent?.trim() === 'Bedingungen');
       expect(conditionHeaders.length).toBe(2);
 
       const text = fixture.nativeElement.textContent;
