@@ -109,33 +109,54 @@ describe('ComparisonTableComponent', () => {
       expect(button.querySelector('i').classList).toContain('mdi-chevron-down');
     });
 
-    it('emphasises the chevron by size (not colour) when a change is hidden', () => {
+    it('bounces the chevron without resizing it when the change is hidden below the clamp', () => {
       const line = makeLine({ changed_columns: ['bedingung'] });
       fixture.componentRef.setInput('lines', [line]);
       fixture.detectChanges();
 
       component.onConditionsTruncated(line, 'old', true);
+      component.onConditionsChangeHidden(line, 'old', true);
       fixture.detectChanges();
 
       const icon = fixture.nativeElement.querySelector('button i');
-      expect(icon.classList).toContain('text-xl');
-      // The chevron inherits the row text colour; no dedicated accent colour.
+      expect(icon.classList).toContain('animate-bounce');
+      // The chevron keeps its normal size and text colour; the bounce is the only cue.
+      expect(icon.classList).toContain('text-base');
+      expect(icon.classList).not.toContain('text-xl');
       expect(icon.classList).not.toContain('text-hf-dunkel-rose');
       expect(component.conditionsToggleLabel(line, 'old')).toContain('enthält eine Änderung');
     });
 
-    it('does not emphasise the chevron when the condition did not change', () => {
-      const line = makeLine({ changed_columns: [], diff_status: 'unchanged' });
+    it('does not bounce the chevron when the change is still visible', () => {
+      const line = makeLine();
       fixture.componentRef.setInput('lines', [line]);
       fixture.detectChanges();
 
       component.onConditionsTruncated(line, 'old', true);
+      component.onConditionsChangeHidden(line, 'old', false);
       fixture.detectChanges();
 
       const icon = fixture.nativeElement.querySelector('button i');
       expect(icon).toBeTruthy();
       expect(icon.classList).toContain('text-base');
-      expect(icon.classList).not.toContain('text-xl');
+      expect(icon.classList).not.toContain('animate-bounce');
+    });
+
+    it('bounces both arrows of a row when either side has a hidden change', () => {
+      const line = makeLine({ changed_columns: ['bedingung'] });
+      fixture.componentRef.setInput('lines', [line]);
+      fixture.detectChanges();
+
+      // Both sides truncated (so both chevrons render), but only the new side hides a change.
+      component.onConditionsTruncated(line, 'old', true);
+      component.onConditionsTruncated(line, 'new', true);
+      component.onConditionsChangeHidden(line, 'new', true);
+      fixture.detectChanges();
+
+      const icons = fixture.nativeElement.querySelectorAll('button i');
+      expect(icons.length).toBe(2);
+      expect(icons[0].classList).toContain('animate-bounce');
+      expect(icons[1].classList).toContain('animate-bounce');
     });
 
     it('expands and collapses a row on chevron click', () => {
@@ -145,7 +166,7 @@ describe('ComparisonTableComponent', () => {
 
       component.onConditionsTruncated(line, 'old', true);
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelectorAll('.line-clamp-4').length).toBeGreaterThan(0);
+      expect(fixture.nativeElement.querySelectorAll('.line-clamp-1').length).toBeGreaterThan(0);
 
       const button = fixture.nativeElement.querySelector('button');
       button.click();
@@ -154,7 +175,7 @@ describe('ComparisonTableComponent', () => {
       expect(component.isExpanded(line)).toBe(true);
       expect(button.getAttribute('aria-expanded')).toBe('true');
       expect(button.querySelector('i').classList).toContain('mdi-chevron-up');
-      expect(fixture.nativeElement.querySelectorAll('.line-clamp-4').length).toBe(0);
+      expect(fixture.nativeElement.querySelectorAll('.line-clamp-1').length).toBe(0);
 
       button.click();
       fixture.detectChanges();

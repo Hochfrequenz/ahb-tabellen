@@ -44,6 +44,14 @@ export class ComparisonTableComponent implements OnChanges {
     new Map()
   );
 
+  /**
+   * Per row+side "the highlighted change lives entirely in the clipped-away text" state,
+   * measured while clamped and latched here. Drives the size emphasis and the attention hop.
+   */
+  private readonly hiddenChangeSides = signal<ReadonlyMap<string, { old: boolean; new: boolean }>>(
+    new Map()
+  );
+
   /** Inputs that identify the current comparison; a change to any means "new comparison". */
   private static readonly IDENTITY_INPUTS = [
     'pruefi',
@@ -66,6 +74,7 @@ export class ComparisonTableComponent implements OnChanges {
     if (isNewComparison) {
       this.expandedRows.set(new Set());
       this.truncatedSides.set(new Map());
+      this.hiddenChangeSides.set(new Map());
     }
   }
 
@@ -278,15 +287,21 @@ export class ComparisonTableComponent implements OnChanges {
   }
 
   /**
-   * Emphasise the chevron when a change is hidden: the side is still clamped
-   * (collapsed) and its condition actually changed between versions.
+   * Flag the chevron (and bounce it) when a change is genuinely hidden: the row is
+   * collapsed and the highlighted change lives entirely in the clipped-away text.
+   * Measured per side by the truncation observer, so it excludes changes still visible
+   * in the shown line(s).
    */
   isHiddenChange(line: AhbDiffLine, side: 'old' | 'new'): boolean {
-    return (
-      !this.isExpanded(line) &&
-      this.isSideTruncated(line, side) &&
-      this.isColumnChanged(line, 'bedingung')
-    );
+    return !this.isExpanded(line) && (this.hiddenChangeSides().get(line.id_path)?.[side] ?? false);
+  }
+
+  /**
+   * Row-level hidden-change flag: true if either side has a change hidden below the
+   * clamp. Used to bounce both arrows of a row together, not just the affected side.
+   */
+  isRowHiddenChange(line: AhbDiffLine): boolean {
+    return this.isHiddenChange(line, 'old') || this.isHiddenChange(line, 'new');
   }
 
   /** Accessible label for the chevron button, flagging hidden changes for screen readers. */
@@ -334,6 +349,20 @@ export class ComparisonTableComponent implements OnChanges {
       }
       const next = new Map(current);
       next.set(id, { ...existing, [side]: truncated });
+      return next;
+    });
+  }
+
+  /** Store the latest (clamped) "change hidden below the clamp" measurement for a row+side. */
+  onConditionsChangeHidden(line: AhbDiffLine, side: 'old' | 'new', hidden: boolean): void {
+    const id = line.id_path;
+    this.hiddenChangeSides.update(current => {
+      const existing = current.get(id) ?? { old: false, new: false };
+      if (existing[side] === hidden) {
+        return current;
+      }
+      const next = new Map(current);
+      next.set(id, { ...existing, [side]: hidden });
       return next;
     });
   }

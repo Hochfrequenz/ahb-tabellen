@@ -133,9 +133,11 @@
           <td class="px-2 py-1.5 border-b border-hf-grell-rose">
             <div
               class="break-words"
-              [class.line-clamp-4]="!isExpanded(line)"
+              [class.line-clamp-1]="!isExpanded(line)"
               [appTruncationObserver]="!isExpanded(line)"
+              markerSelector="strong"
               (truncated)="onConditionsTruncated(line, 'old', $event)"
+              (markerHidden)="onConditionsChangeHidden(line, 'old', $event)"
               [innerHTML]="getHighlightedBedingung(line, 'old')"></div>
             @if (hasConditionsToggle(line, 'old')) {
               <div class="flex justify-end mt-0.5">
@@ -147,11 +149,10 @@
                   [attr.aria-label]="conditionsToggleLabel(line, 'old')"
                   [title]="conditionsToggleLabel(line, 'old')">
                   <i
-                    class="mdi leading-none"
+                    class="mdi leading-none text-base inline-block motion-reduce:animate-none"
                     [class.mdi-chevron-up]="isExpanded(line)"
                     [class.mdi-chevron-down]="!isExpanded(line)"
-                    [class.text-base]="!isHiddenChange(line, 'old')"
-                    [class.text-xl]="isHiddenChange(line, 'old')"></i>
+                    [class.animate-bounce]="isRowHiddenChange(line)"></i>
                 </button>
               </div>
             }
@@ -224,9 +225,11 @@
           <td class="px-2 py-1.5 border-b border-hf-grell-rose">
             <div
               class="break-words"
-              [class.line-clamp-4]="!isExpanded(line)"
+              [class.line-clamp-1]="!isExpanded(line)"
               [appTruncationObserver]="!isExpanded(line)"
+              markerSelector="strong"
               (truncated)="onConditionsTruncated(line, 'new', $event)"
+              (markerHidden)="onConditionsChangeHidden(line, 'new', $event)"
               [innerHTML]="getHighlightedBedingung(line, 'new')"></div>
             @if (hasConditionsToggle(line, 'new')) {
               <div class="flex justify-end mt-0.5">
@@ -238,11 +241,10 @@
                   [attr.aria-label]="conditionsToggleLabel(line, 'new')"
                   [title]="conditionsToggleLabel(line, 'new')">
                   <i
-                    class="mdi leading-none"
+                    class="mdi leading-none text-base inline-block motion-reduce:animate-none"
                     [class.mdi-chevron-up]="isExpanded(line)"
                     [class.mdi-chevron-down]="!isExpanded(line)"
-                    [class.text-base]="!isHiddenChange(line, 'new')"
-                    [class.text-xl]="isHiddenChange(line, 'new')"></i>
+                    [class.animate-bounce]="isRowHiddenChange(line)"></i>
                 </button>
               </div>
             }

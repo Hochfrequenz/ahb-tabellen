@@ -77,9 +77,8 @@
                 : 'bg-white text-hf-text-color border-gray-300 focus:ring-gray-400 hover:ring-gray-400'
             "
             [attr.aria-pressed]="allConditionsExpanded() ? 'true' : 'false'"
-            aria-label="Alle Bedingungen auf- oder zuklappen"
-            title="Alle Bedingungen auf- oder zuklappen">
-            Bedingungen
+            [title]="allConditionsToggleLabel()">
+            {{ allConditionsToggleLabel() }}
           </button>
         </div>
       </div>
