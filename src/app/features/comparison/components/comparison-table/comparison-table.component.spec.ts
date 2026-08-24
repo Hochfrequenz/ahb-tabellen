@@ -109,7 +109,7 @@ describe('ComparisonTableComponent', () => {
       expect(button.querySelector('i').classList).toContain('mdi-chevron-down');
     });
 
-    it('hops the chevron without resizing it when the change is hidden below the clamp', () => {
+    it('bounces the chevron without resizing it when the change is hidden below the clamp', () => {
       const line = makeLine({ changed_columns: ['bedingung'] });
       fixture.componentRef.setInput('lines', [line]);
       fixture.detectChanges();
@@ -119,15 +119,15 @@ describe('ComparisonTableComponent', () => {
       fixture.detectChanges();
 
       const icon = fixture.nativeElement.querySelector('button i');
-      expect(icon.classList).toContain('arrow-hop');
-      // The chevron keeps its normal size and text colour; the hop is the only cue.
+      expect(icon.classList).toContain('animate-bounce');
+      // The chevron keeps its normal size and text colour; the bounce is the only cue.
       expect(icon.classList).toContain('text-base');
       expect(icon.classList).not.toContain('text-xl');
       expect(icon.classList).not.toContain('text-hf-dunkel-rose');
       expect(component.conditionsToggleLabel(line, 'old')).toContain('enthält eine Änderung');
     });
 
-    it('does not hop the chevron when the change is still visible', () => {
+    it('does not bounce the chevron when the change is still visible', () => {
       const line = makeLine();
       fixture.componentRef.setInput('lines', [line]);
       fixture.detectChanges();
@@ -139,10 +139,10 @@ describe('ComparisonTableComponent', () => {
       const icon = fixture.nativeElement.querySelector('button i');
       expect(icon).toBeTruthy();
       expect(icon.classList).toContain('text-base');
-      expect(icon.classList).not.toContain('arrow-hop');
+      expect(icon.classList).not.toContain('animate-bounce');
     });
 
-    it('hops both arrows of a row when either side has a hidden change', () => {
+    it('bounces both arrows of a row when either side has a hidden change', () => {
       const line = makeLine({ changed_columns: ['bedingung'] });
       fixture.componentRef.setInput('lines', [line]);
       fixture.detectChanges();
@@ -155,8 +155,8 @@ describe('ComparisonTableComponent', () => {
 
       const icons = fixture.nativeElement.querySelectorAll('button i');
       expect(icons.length).toBe(2);
-      expect(icons[0].classList).toContain('arrow-hop');
-      expect(icons[1].classList).toContain('arrow-hop');
+      expect(icons[0].classList).toContain('animate-bounce');
+      expect(icons[1].classList).toContain('animate-bounce');
     });
 
     it('expands and collapses a row on chevron click', () => {

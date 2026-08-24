@@ -149,10 +149,10 @@
                   [attr.aria-label]="conditionsToggleLabel(line, 'old')"
                   [title]="conditionsToggleLabel(line, 'old')">
                   <i
-                    class="mdi leading-none text-base"
+                    class="mdi leading-none text-base inline-block motion-reduce:animate-none"
                     [class.mdi-chevron-up]="isExpanded(line)"
                     [class.mdi-chevron-down]="!isExpanded(line)"
-                    [class.arrow-hop]="isRowHiddenChange(line)"></i>
+                    [class.animate-bounce]="isRowHiddenChange(line)"></i>
                 </button>
               </div>
             }
@@ -241,10 +241,10 @@
                   [attr.aria-label]="conditionsToggleLabel(line, 'new')"
                   [title]="conditionsToggleLabel(line, 'new')">
                   <i
-                    class="mdi leading-none text-base"
+                    class="mdi leading-none text-base inline-block motion-reduce:animate-none"
                     [class.mdi-chevron-up]="isExpanded(line)"
                     [class.mdi-chevron-down]="!isExpanded(line)"
-                    [class.arrow-hop]="isRowHiddenChange(line)"></i>
+                    [class.animate-bounce]="isRowHiddenChange(line)"></i>
                 </button>
               </div>
             }

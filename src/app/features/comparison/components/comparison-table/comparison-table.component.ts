@@ -287,7 +287,7 @@ export class ComparisonTableComponent implements OnChanges {
   }
 
   /**
-   * Emphasise the chevron (and hop it) when a change is genuinely hidden: the row is
+   * Flag the chevron (and bounce it) when a change is genuinely hidden: the row is
    * collapsed and the highlighted change lives entirely in the clipped-away text.
    * Measured per side by the truncation observer, so it excludes changes still visible
    * in the shown line(s).
@@ -298,7 +298,7 @@ export class ComparisonTableComponent implements OnChanges {
 
   /**
    * Row-level hidden-change flag: true if either side has a change hidden below the
-   * clamp. Used to hop both arrows of a row together, not just the affected side.
+   * clamp. Used to bounce both arrows of a row together, not just the affected side.
    */
   isRowHiddenChange(line: AhbDiffLine): boolean {
     return this.isHiddenChange(line, 'old') || this.isHiddenChange(line, 'new');
