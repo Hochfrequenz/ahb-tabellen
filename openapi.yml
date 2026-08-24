@@ -444,6 +444,7 @@ components:
           type: string
         contains:
           type: string
+          description: Case-insensitive match. Without `*` this is a substring match. A `*` makes the match prefix-anchored — the text before the first `*` must be at the start of the field, `*` matches any text between segments, and text after the final segment may follow (for example, `Änderung*TR` matches values that start with `Änderung` and contain `TR` afterwards). `*` is treated as a literal character by the other operators (eq/neq/startsWith/endsWith/in).
         startsWith:
           type: string
         endsWith:
@@ -507,7 +508,7 @@ components:
             $ref: '#/components/schemas/SortRule'
         q:
           type: string
-          description: Global case-insensitive search across the 11 listed fields
+          description: Global case-insensitive search across the 11 listed fields. Without `*` this is a substring match. A `*` makes the match prefix-anchored — the text before the first `*` must be at the start of the field, `*` matches any text between segments, and text after the final segment may follow (for example, `Änderung*TR` matches values that start with `Änderung` and contain `TR` afterwards).
         filters:
           $ref: '#/components/schemas/SearchFilters'
       required:
@@ -640,6 +641,12 @@ components:
         buildBranch:
           type: string
           example: 'main'
+        environment:
+          type: string
+          example: 'production'
+        name:
+          type: string
+          example: 'ahb-tabellen'
     DirectionValues:
       type: object
       properties:
