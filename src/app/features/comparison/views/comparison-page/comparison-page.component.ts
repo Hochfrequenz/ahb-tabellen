@@ -82,6 +82,11 @@ export class ComparisonPageComponent implements OnInit, OnDestroy {
   /** Whether all condition cells are expanded (driven by the "Bedingungen" toggle button). */
   allConditionsExpanded = signal(false);
 
+  /** Action label for the expand/collapse-all button, naming what the next click does. */
+  readonly allConditionsToggleLabel = computed(() =>
+    this.allConditionsExpanded() ? 'Alle Bedingungen zuklappen' : 'Alle Bedingungen aufklappen'
+  );
+
   /** Filter toggle button configurations */
   readonly filterToggles = [
     {
