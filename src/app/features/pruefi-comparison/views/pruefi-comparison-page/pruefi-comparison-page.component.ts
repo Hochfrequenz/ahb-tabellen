@@ -6,6 +6,7 @@ import {
   signal,
   computed,
   inject,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -54,6 +55,8 @@ export class PruefiComparisonPageComponent implements OnInit, OnDestroy {
   private readonly title = inject(Title);
   private readonly breakpointObserver = inject(BreakpointObserver);
 
+  @ViewChild(ComparisonTableComponent) private comparisonTable?: ComparisonTableComponent;
+
   pruefiOld = signal<string>('');
   pruefiNew = signal<string>('');
   formatVersion = signal<string>('');
@@ -67,8 +70,13 @@ export class PruefiComparisonPageComponent implements OnInit, OnDestroy {
   showDeleted = signal(true);
   showModified = signal(true);
 
-  /** Column visibility: conditions/hints/formats column (hidden by default) */
-  showConditionsColumn = signal(false);
+  /** Whether all condition cells are expanded (driven by the "Bedingungen" toggle button). */
+  allConditionsExpanded = signal(false);
+
+  /** Action label for the expand/collapse-all button, naming what the next click does. */
+  readonly allConditionsToggleLabel = computed(() =>
+    this.allConditionsExpanded() ? 'Alle Bedingungen zuklappen' : 'Alle Bedingungen aufklappen'
+  );
 
   /** Filter toggle button configurations */
   readonly filterToggles = [
@@ -250,6 +258,17 @@ export class PruefiComparisonPageComponent implements OnInit, OnDestroy {
     this.navigateToComparison(this.pruefiOld(), pruefiNew, this.formatVersion());
   }
 
+  /** Expand or collapse the condition cells of all collapsible rows at once. */
+  toggleAllConditions(): void {
+    const expand = !this.allConditionsExpanded();
+    this.allConditionsExpanded.set(expand);
+    if (expand) {
+      this.comparisonTable?.expandAllCollapsible();
+    } else {
+      this.comparisonTable?.collapseAll();
+    }
+  }
+
   private navigateToComparison(
     pruefiOld: string,
     pruefiNew: string,
@@ -273,6 +292,8 @@ export class PruefiComparisonPageComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.startMessageRotation();
     this.diffData.set(null);
+    // A new comparison starts collapsed; keep the toggle button in sync.
+    this.allConditionsExpanded.set(false);
     this.updateTitle();
 
     this.ahbService
