@@ -154,17 +154,17 @@ The backend also exposes the same AHB features as a [Model Context Protocol](htt
 
 All tools are read-only:
 
-| Tool                             | Description                                                          |
-| -------------------------------- | -------------------------------------------------------------------- |
-| `get_ahb`                        | Retrieve a single AHB (JSON) by format version + Prüfidentifikator   |
-| `search_ahb_lines`               | Full-text / filtered, paginated search across AHB lines              |
-| `get_ahb_diff`                   | Line-level diff of one Prüfidentifikator between two format versions |
-| `get_ahb_diff_summary`           | Per-Prüfidentifikator change counts between two format versions      |
-| `list_format_versions`           | List all EDIFACT format versions (e.g. `FV2410`)                     |
-| `list_formate`                   | List all EDIFACT formats (e.g. `UTILMD`, `MSCONS`)                   |
-| `list_directions`                | List distinct sender / empfaenger direction values                   |
-| `get_datenstand`                 | Latest publication date (Veröffentlichungsdatum) of the data set     |
-| `list_pruefis_by_format_version` | List all Prüfidentifikatoren in a format version                     |
+| Tool                             | Description                                                                           |
+| -------------------------------- | ------------------------------------------------------------------------------------- |
+| `get_ahb`                        | Retrieve a single AHB (JSON) by format version + Prüfidentifikator                    |
+| `search_ahb_lines`               | Full-text / filtered, paginated search; `Änderung*TR` matches a prefix and later text |
+| `get_ahb_diff`                   | Line-level diff of one Prüfidentifikator between two format versions                  |
+| `get_ahb_diff_summary`           | Per-Prüfidentifikator change counts between two format versions                       |
+| `list_format_versions`           | List all EDIFACT format versions (e.g. `FV2410`)                                      |
+| `list_formate`                   | List all EDIFACT formats (e.g. `UTILMD`, `MSCONS`)                                    |
+| `list_directions`                | List distinct sender / empfaenger direction values                                    |
+| `get_datenstand`                 | Latest publication date (Veröffentlichungsdatum) of the data set                      |
+| `list_pruefis_by_format_version` | List all Prüfidentifikatoren in a format version                                      |
 
 ### Endpoints
 
