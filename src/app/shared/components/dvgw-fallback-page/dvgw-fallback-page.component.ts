@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
+import { getDvgwPruefiInfo } from '../../utils/dvgw-pruefi.utils';
 
 @Component({
   selector: 'app-dvgw-fallback-page',
@@ -8,6 +9,16 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
   templateUrl: './dvgw-fallback-page.component.html',
 })
 export class DvgwFallbackPageComponent {
-  readonly message =
-    'Die Prüfidentifikatoren 70095 und 70096 werden in einem PDF Dokument der DVGW veröffentlicht. Uns stehen zur Zeit nur die Dokumente des BDEW in maschinenlesbarer Form bereit.';
+  /** The DVGW Prüfidentifikator this fallback page is shown for (e.g. '44096'). */
+  readonly pruefi = input.required<string>();
+
+  /** DVGW document info (document URL + link text) for the current Prüfidentifikator. */
+  readonly info = computed(() => getDvgwPruefiInfo(this.pruefi()));
+
+  /** Explanatory message referencing the concrete Prüfidentifikator. */
+  readonly message = computed(
+    () =>
+      `Der Prüfidentifikator ${this.pruefi()} wird von der DVGW ausschließlich als PDF-Dokument veröffentlicht. ` +
+      'Uns stehen zur Zeit nur die Dokumente des BDEW in maschinenlesbarer Form bereit.'
+  );
 }
