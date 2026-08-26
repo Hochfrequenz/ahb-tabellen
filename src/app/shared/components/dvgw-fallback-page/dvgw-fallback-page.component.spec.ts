@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DvgwFallbackPageComponent } from './dvgw-fallback-page.component';
+import { DVGW_ARCHIVE_URL } from '../../utils/dvgw-pruefi.utils';
 
 describe('DvgwFallbackPageComponent', () => {
   let component: DvgwFallbackPageComponent;
@@ -44,21 +45,25 @@ describe('DvgwFallbackPageComponent', () => {
     expect(container).toBeTruthy();
   });
 
-  it('should link a TSIMSG Prüfidentifikator to the TSIMSG document', () => {
+  it('should link to the DVGW archive and name the TSIMSG Nachrichtentyp', () => {
     fixture.componentRef.setInput('pruefi', '44097');
     fixture.detectChanges();
 
-    const link = (fixture.nativeElement as HTMLElement).querySelector('a');
-    expect(link?.getAttribute('href')).toContain('TSIMSG_5.11');
-    expect(link?.textContent).toContain('TSIMSG 5.11');
+    const compiled = fixture.nativeElement as HTMLElement;
+    const link = compiled.querySelector('a');
+    expect(link?.getAttribute('href')).toBe(DVGW_ARCHIVE_URL);
+    expect(link?.textContent).toContain('DVGW-Dokumentenarchiv');
+    expect(compiled.textContent).toContain('TSIMSG');
   });
 
-  it('should link an SSQNOT Prüfidentifikator to the (updated) SSQNOT document', () => {
+  it('should link to the DVGW archive and name the SSQNOT Nachrichtentyp', () => {
     fixture.componentRef.setInput('pruefi', '70095');
     fixture.detectChanges();
 
-    const link = (fixture.nativeElement as HTMLElement).querySelector('a');
-    expect(link?.getAttribute('href')).toContain('SSQNOT_5.7_Stand_2021-10-31');
-    expect(link?.textContent).toContain('SSQNOT 5.7');
+    const compiled = fixture.nativeElement as HTMLElement;
+    const link = compiled.querySelector('a');
+    expect(link?.getAttribute('href')).toBe(DVGW_ARCHIVE_URL);
+    expect(link?.textContent).toContain('DVGW-Dokumentenarchiv');
+    expect(compiled.textContent).toContain('SSQNOT');
   });
 });

@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
-import { getDvgwPruefiInfo } from '../../utils/dvgw-pruefi.utils';
+import { DVGW_ARCHIVE_URL, getDvgwPruefiInfo } from '../../utils/dvgw-pruefi.utils';
 
 @Component({
   selector: 'app-dvgw-fallback-page',
@@ -12,8 +12,11 @@ export class DvgwFallbackPageComponent {
   /** The DVGW Prüfidentifikator this fallback page is shown for (e.g. '44096'). */
   readonly pruefi = input.required<string>();
 
-  /** DVGW document info (document URL + link text) for the current Prüfidentifikator. */
-  readonly info = computed(() => getDvgwPruefiInfo(this.pruefi()));
+  /** Stable link to the DVGW document archive (grouped by Nachrichtentyp, always current). */
+  readonly archiveUrl = DVGW_ARCHIVE_URL;
+
+  /** Nachrichtentyp (e.g. 'TSIMSG', 'SSQNOT') for the current Prüfidentifikator. */
+  readonly nachrichtentyp = computed(() => getDvgwPruefiInfo(this.pruefi())?.nachrichtentyp);
 
   /** Explanatory message referencing the concrete Prüfidentifikator. */
   readonly message = computed(

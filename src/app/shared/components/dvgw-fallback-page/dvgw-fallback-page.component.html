@@ -9,12 +9,12 @@
       {{ message() }}
     </p>
 
-    @if (info(); as info) {
+    @if (nachrichtentyp(); as nachrichtentyp) {
       <div class="bg-white bg-opacity-50 p-4 rounded-lg border-l-4 border-hf-weiches-schwarz">
         <p class="text-sm text-hf-weiches-schwarz">
-          <strong>Hinweis:</strong> Dieser Prüfidentifikator ist im DVGW-Dokument
-          <a [href]="info.dokumentUrl" target="_blank" class="underline">{{ info.linkText }}</a>
-          enthalten.
+          <strong>Hinweis:</strong> Die jeweils aktuelle Fassung des Nachrichtentyps
+          {{ nachrichtentyp }} findest du im
+          <a [href]="archiveUrl" target="_blank" class="underline">DVGW-Dokumentenarchiv</a>.
         </p>
       </div>
     }

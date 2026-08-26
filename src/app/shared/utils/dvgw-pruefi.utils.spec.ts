@@ -1,4 +1,9 @@
-import { DVGW_PRUEFIS, getDvgwPruefiInfo, isDvgwPruefi } from './dvgw-pruefi.utils';
+import {
+  DVGW_ARCHIVE_URL,
+  DVGW_PRUEFIS,
+  getDvgwPruefiInfo,
+  isDvgwPruefi,
+} from './dvgw-pruefi.utils';
 
 describe('dvgw-pruefi.utils', () => {
   describe('isDvgwPruefi', () => {
@@ -30,22 +35,14 @@ describe('dvgw-pruefi.utils', () => {
   });
 
   describe('getDvgwPruefiInfo', () => {
-    it('should map the TSIMSG Prüfis to the TSIMSG document', () => {
-      for (const pruefi of ['44096', '44097']) {
-        const info = getDvgwPruefiInfo(pruefi);
-        expect(info?.nachrichtentyp).toBe('TSIMSG');
-        expect(info?.linkText).toBe('TSIMSG 5.11');
-        expect(info?.dokumentUrl).toContain('TSIMSG_5.11');
-      }
+    it('should map the TSIMSG Prüfis to the TSIMSG Nachrichtentyp', () => {
+      expect(getDvgwPruefiInfo('44096')?.nachrichtentyp).toBe('TSIMSG');
+      expect(getDvgwPruefiInfo('44097')?.nachrichtentyp).toBe('TSIMSG');
     });
 
-    it('should map the SSQNOT Prüfis to the SSQNOT document', () => {
-      for (const pruefi of ['70095', '70096']) {
-        const info = getDvgwPruefiInfo(pruefi);
-        expect(info?.nachrichtentyp).toBe('SSQNOT');
-        expect(info?.linkText).toBe('SSQNOT 5.7');
-        expect(info?.dokumentUrl).toContain('SSQNOT_5.7');
-      }
+    it('should map the SSQNOT Prüfis to the SSQNOT Nachrichtentyp', () => {
+      expect(getDvgwPruefiInfo('70095')?.nachrichtentyp).toBe('SSQNOT');
+      expect(getDvgwPruefiInfo('70096')?.nachrichtentyp).toBe('SSQNOT');
     });
 
     it('should return undefined for a non-DVGW Prüfidentifikator', () => {
@@ -53,10 +50,16 @@ describe('dvgw-pruefi.utils', () => {
     });
   });
 
+  describe('DVGW_ARCHIVE_URL', () => {
+    it('should be the https DVGW document archive URL', () => {
+      expect(DVGW_ARCHIVE_URL).toMatch(/^https:\/\/www\.dvgw-sc\.de\/.+\/dokumentenarchiv$/);
+    });
+  });
+
   describe('DVGW_PRUEFIS registry', () => {
-    it('should point every entry at an https DVGW PDF', () => {
+    it('should only contain known Nachrichtentypen', () => {
       for (const info of Object.values(DVGW_PRUEFIS)) {
-        expect(info.dokumentUrl).toMatch(/^https:\/\/www\.dvgw-sc\.de\/.+\.pdf$/);
+        expect(['TSIMSG', 'SSQNOT']).toContain(info.nachrichtentyp);
       }
     });
   });
