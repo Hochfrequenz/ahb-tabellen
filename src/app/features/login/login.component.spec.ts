@@ -28,21 +28,31 @@ describe('LoginComponent', () => {
     TestBed.resetTestingModule();
   });
 
-  it('signs in with the chosen provider', () => {
+  it('signs in with the chosen provider, forwarding the target', () => {
     const component = setup('/search');
     component.signIn('microsoft');
-    expect(facade.login).toHaveBeenCalledWith('microsoft');
+    expect(facade.login).toHaveBeenCalledWith('microsoft', '/search');
   });
 
-  it('remembers the post-login target so it can be restored after the redirect', () => {
+  it('stores the target for the MSAL callback when signing in with Microsoft', () => {
     const component = setup('/ahb/UTILMD');
-    component.signIn('auth0');
+    component.signIn('microsoft');
     expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBe('/ahb/UTILMD');
   });
 
-  it('does not store a target when none was provided', () => {
-    const component = setup();
+  it('does not leave a stored target for a later MSAL login when signing in with Auth0', () => {
+    sessionStorage.setItem(POST_LOGIN_TARGET_KEY, '/stale');
+    const component = setup('/ahb/UTILMD');
     component.signIn('auth0');
+    // Auth0 restores its target via the SDK's appState (passed through the facade), not the
+    // MSAL-only sessionStorage key — which must be cleared so it can't leak into a later MSAL login.
+    expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBeNull();
+    expect(facade.login).toHaveBeenCalledWith('auth0', '/ahb/UTILMD');
+  });
+
+  it('stores nothing when no target was provided', () => {
+    const component = setup();
+    component.signIn('microsoft');
     expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBeNull();
   });
 });

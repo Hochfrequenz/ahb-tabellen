@@ -1,5 +1,11 @@
 import { Injectable, inject } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  Router,
+  RouterStateSnapshot,
+  UrlTree,
+} from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { AuthFacade } from '../core/auth/auth.facade';
@@ -11,18 +17,20 @@ export class AuthGuard implements CanActivate {
   private facade = inject(AuthFacade);
   private router = inject(Router);
 
-  canActivate(_: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
+  canActivate(
+    _: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean | UrlTree> {
     // The facade unifies Auth0 + Microsoft and already short-circuits to `true` in development.
+    // Return a UrlTree to the provider chooser (keeping `map` pure) rather than navigating as a
+    // side effect; the target is preserved so the user lands where they were headed.
     return this.facade.isAuthenticated$.pipe(
       take(1),
-      map(loggedIn => {
-        if (!loggedIn) {
-          // Send the user to the provider chooser, preserving where they were headed.
-          this.router.navigate(['/login'], { queryParams: { target: state.url } });
-          return false;
-        }
-        return true;
-      })
+      map(loggedIn =>
+        loggedIn
+          ? true
+          : this.router.createUrlTree(['/login'], { queryParams: { target: state.url } })
+      )
     );
   }
 }

@@ -1,14 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { firstValueFrom, of } from 'rxjs';
 import { AuthGuard } from './auth.guard';
 import { AuthFacade } from '../core/auth/auth.facade';
 
 describe('AuthGuard', () => {
-  let router: { navigate: jest.Mock };
+  const LOGIN_URL_TREE = {} as UrlTree;
+  let router: { createUrlTree: jest.Mock };
 
   function setup(isAuthenticated: boolean): AuthGuard {
-    router = { navigate: jest.fn() };
+    router = { createUrlTree: jest.fn().mockReturnValue(LOGIN_URL_TREE) };
     TestBed.configureTestingModule({
       providers: [
         AuthGuard,
@@ -27,13 +28,13 @@ describe('AuthGuard', () => {
   it('allows activation when a session exists', async () => {
     const guard = setup(true);
     await expect(firstValueFrom(guard.canActivate(route, state))).resolves.toBe(true);
-    expect(router.navigate).not.toHaveBeenCalled();
+    expect(router.createUrlTree).not.toHaveBeenCalled();
   });
 
-  it('blocks and redirects to /login (carrying the target url) when unauthenticated', async () => {
+  it('redirects to /login (as a UrlTree carrying the target) when unauthenticated', async () => {
     const guard = setup(false);
-    await expect(firstValueFrom(guard.canActivate(route, state))).resolves.toBe(false);
-    expect(router.navigate).toHaveBeenCalledWith(['/login'], {
+    await expect(firstValueFrom(guard.canActivate(route, state))).resolves.toBe(LOGIN_URL_TREE);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/login'], {
       queryParams: { target: '/ahb/UTILMD' },
     });
   });

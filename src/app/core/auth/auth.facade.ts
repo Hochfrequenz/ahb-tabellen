@@ -64,19 +64,23 @@ export class AuthFacade {
     );
   }
 
-  login(provider: AuthProviderId): void {
+  login(provider: AuthProviderId, target?: string): void {
     localStorage.setItem(ACTIVE_PROVIDER_KEY, provider);
     if (provider === 'auth0') {
-      this.auth0.loginWithRedirect();
+      // Auth0 restores its own target from appState; Microsoft restores it from sessionStorage
+      // in the callback route (MSAL's redirect response carries no app-level state here).
+      this.auth0.loginWithRedirect(target ? { appState: { target } } : undefined);
     } else {
       void this.msal.loginRedirect({ scopes: environment.entraScopes });
     }
   }
 
   logout(): void {
-    const active = localStorage.getItem(ACTIVE_PROVIDER_KEY);
     localStorage.removeItem(ACTIVE_PROVIDER_KEY);
-    if (active === 'microsoft') {
+    // Derive the effective provider from the live MSAL session rather than the persisted hint:
+    // a cached Microsoft account keeps `isAuthenticated$` true, so it must drive logout even when
+    // the key is missing or stale (otherwise the user gets stuck in a "can't log out" loop).
+    if (this.msalAuthenticated$.value) {
       void this.msal.logoutRedirect({ postLogoutRedirectUri: window.location.origin });
     } else {
       this.auth0.logout({ logoutParams: { returnTo: window.location.origin } });
@@ -104,18 +108,20 @@ export class AuthFacade {
       { email?: string | null; name?: string | null; sub?: string | null } | null | undefined,
     msalAuthed: boolean
   ): AuthUser | null {
-    if (localStorage.getItem(ACTIVE_PROVIDER_KEY) === 'microsoft' && msalAuthed) {
-      const account = this.msal.getActiveAccount() ?? this.msal.getAllAccounts()[0];
-      return account
-        ? {
-            email: account.username,
-            name: account.name,
-            sub: account.localAccountId,
-            provider: 'microsoft',
-          }
-        : null;
-    }
-    return auth0User
+    // Resolve from the actual sessions present, not the persisted hint: a live MSAL account must
+    // surface a user even if the active-provider key was cleared or never written.
+    const account = msalAuthed
+      ? (this.msal.getActiveAccount() ?? this.msal.getAllAccounts()[0])
+      : null;
+    const microsoftUser: AuthUser | null = account
+      ? {
+          email: account.username,
+          name: account.name ?? undefined,
+          sub: account.localAccountId,
+          provider: 'microsoft',
+        }
+      : null;
+    const auth0Resolved: AuthUser | null = auth0User
       ? {
           email: auth0User.email ?? undefined,
           name: auth0User.name ?? undefined,
@@ -123,5 +129,11 @@ export class AuthFacade {
           provider: 'auth0',
         }
       : null;
+
+    if (microsoftUser && auth0Resolved) {
+      // Both signed in (unusual): let the persisted hint break the tie, defaulting to Microsoft.
+      return localStorage.getItem(ACTIVE_PROVIDER_KEY) === 'auth0' ? auth0Resolved : microsoftUser;
+    }
+    return microsoftUser ?? auth0Resolved;
   }
 }

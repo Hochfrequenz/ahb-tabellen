@@ -122,6 +122,14 @@ describe('AuthFacade', () => {
       expect(localStorage.getItem('ahb.activeAuthProvider')).toBe('auth0');
     });
 
+    it('passes the target to Auth0 as appState when provided', () => {
+      const { facade, auth0 } = createFacade(false);
+      facade.login('auth0', '/search');
+      expect(auth0.loginWithRedirect).toHaveBeenCalledWith(
+        expect.objectContaining({ appState: { target: '/search' } })
+      );
+    });
+
     it('routes login("microsoft") to MSAL with the configured scopes', () => {
       const { facade, msal } = createFacade(false);
       facade.login('microsoft');
@@ -134,19 +142,47 @@ describe('AuthFacade', () => {
   });
 
   describe('logout', () => {
-    it('logs out via MSAL when Microsoft is the active provider', () => {
-      const { facade, msal, auth0 } = createFacade(false);
-      localStorage.setItem('ahb.activeAuthProvider', 'microsoft');
+    it('logs out via MSAL when an MSAL account exists (independent of the persisted key)', async () => {
+      const msal = makeMsal({
+        getAllAccounts: jest.fn().mockReturnValue([{ username: 'e@hf.de' }]),
+      });
+      const { facade, auth0 } = createFacade(false, makeAuth0(), msal);
+      await facade.initializeMsal();
+      // No ACTIVE_PROVIDER_KEY set on purpose — the live MSAL session must still drive logout.
       facade.logout();
       expect(msal.logoutRedirect).toHaveBeenCalledTimes(1);
       expect(auth0.logout).not.toHaveBeenCalled();
     });
 
-    it('logs out via Auth0 by default', () => {
+    it('logs out via Auth0 when there is no MSAL account', () => {
       const { facade, msal, auth0 } = createFacade(false);
+      localStorage.setItem('ahb.activeAuthProvider', 'microsoft'); // stale key must not mislead
       facade.logout();
       expect(auth0.logout).toHaveBeenCalledTimes(1);
       expect(msal.logoutRedirect).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('user resolution', () => {
+    it('emits the Microsoft user when MSAL has an account, even without the active-provider key', async () => {
+      const account = { username: 'e@hf.de', name: 'E', localAccountId: 'id' };
+      const msal = makeMsal({
+        getAllAccounts: jest.fn().mockReturnValue([account]),
+        getActiveAccount: jest.fn().mockReturnValue(account),
+      });
+      const { facade } = createFacade(false, makeAuth0(), msal);
+      await facade.initializeMsal();
+      const user = await firstValueFrom(facade.user$);
+      expect(user).toMatchObject({ email: 'e@hf.de', provider: 'microsoft' });
+    });
+
+    it('emits the Auth0 user when only Auth0 has a session', async () => {
+      const { facade } = createFacade(
+        false,
+        makeAuth0({ user$: of({ email: 'x@y.de', name: 'X', sub: 'auth0|1' }) })
+      );
+      const user = await firstValueFrom(facade.user$);
+      expect(user).toMatchObject({ email: 'x@y.de', provider: 'auth0' });
     });
   });
 
