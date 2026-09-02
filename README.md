@@ -173,17 +173,23 @@ All tools are read-only:
 
 ### Authentication
 
-The MCP endpoint is protected with **Auth0** (OAuth 2.1) when configured, while the REST API stays open. The server acts as an OAuth **resource server**: MCP clients discover the Auth0 authorization server via the metadata endpoint, run the standard OAuth flow (PKCE, dynamic client registration), and send a `Bearer` access token whose audience is the MCP server.
+The MCP endpoint is a **dual-issuer** OAuth resource server, while the REST API stays open. It accepts `Bearer` access tokens from **Auth0** (OAuth 2.1) and/or **Microsoft Entra ID** — a token is accepted if it is valid for either configured provider. Each request is dispatched to the matching provider by its `iss` claim and then fully validated (signature via JWKS, `iss`, `aud`, `exp`). The RFC 9728 metadata advertises every configured authorization server (Auth0 first, for client back-compat).
 
-Configure via environment variables (see `.example.env`):
+Configure via environment variables (see `.example.env`). Configure either provider, both, or neither; setting exactly one variable of a provider throws (fail-closed):
 
 ```bash
+# Auth0
 MCP_AUTH0_ISSUER_BASE_URL=https://auth.hochfrequenz.de/
 MCP_AUTH0_AUDIENCE=https://ahb-tabellen.hochfrequenz.de/mcp   # the Auth0 API identifier / canonical MCP URL
-# MCP_RESOURCE=...                                            # optional; defaults to MCP_AUTH0_AUDIENCE
+
+# Microsoft Entra ID (enables a Copilot 365 agent — see below)
+MCP_ENTRA_TENANT_ID=<entra-tenant-guid>                       # → issuer https://login.microsoftonline.com/<tenant>/v2.0
+MCP_ENTRA_AUDIENCE=api://ahb-tabellen-mcp                     # the Entra API Application ID URI (token `aud`)
+# MCP_ENTRA_ISSUER=...                                        # optional; overrides the derived v2.0 issuer
+# MCP_RESOURCE=...                                            # RFC 9728 resource (endpoint https URL); defaults to the first http(s) provider audience — REQUIRED for an Entra-only deployment
 ```
 
-If these are not set, the MCP endpoint runs **unauthenticated** (useful for local development).
+If no provider is set, the MCP endpoint runs **unauthenticated** (useful for local development).
 
 ### Connecting a client
 
@@ -237,6 +243,15 @@ Then enable the server in the Copilot Chat **Agent mode** tool picker.
   },
 }
 ```
+
+**Microsoft Copilot 365 agent (Entra ID)** — connect the MCP server as a tool in Copilot Studio so employees can use it with their Microsoft sign-in. Requires the `MCP_ENTRA_*` vars above (the Entra app registrations are provisioned as code with Pulumi — see `infra/`).
+
+1. Two Entra **app registrations** must exist: a **server** app that _Exposes an API_ (`api://…/access_as_user`, manifest `requestedAccessTokenVersion: 2`) and a **client** app that holds that delegated permission plus a client secret.
+2. In Copilot Studio: **Tools → Add a tool → Model Context Protocol**; Server URL `https://ahb-tabellen.hochfrequenz.de/mcp` (Streamable HTTP — SSE is unsupported). Choose auth **OAuth 2.0 → Manual** (Entra does not support open Dynamic Client Registration). Enter the v2.0 authorization endpoint `https://login.microsoftonline.com/<tenant>/oauth2/v2.0/authorize` and token endpoint `https://login.microsoftonline.com/<tenant>/oauth2/v2.0/token`, scope `api://<server-app-id>/access_as_user`, and the client app's ID + secret.
+3. After the tool is created, copy Copilot's generated **callback URL** (`https://global.consent.azure-apim.net/redirect/…`) into the **client app → Authentication → Web → Redirect URIs**, then grant admin consent.
+4. Ensure the agent uses **generative orchestration** and that the connector's **DLP** classification permits the target Power Platform environment.
+
+The MCP server validates Entra tokens against `iss = https://login.microsoftonline.com/<tenant>/v2.0`, `aud = MCP_ENTRA_AUDIENCE`, and the token signature (JWKS at `https://login.microsoftonline.com/<tenant>/discovery/v2.0/keys`).
 
 For local development against a server started with `npm run server:start`, use `http://localhost:3000/mcp`.
 
