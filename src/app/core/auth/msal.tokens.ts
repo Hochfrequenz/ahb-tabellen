@@ -55,6 +55,19 @@ function readRealauthOverride(): boolean {
 }
 
 /**
+ * The live dev-stub decision: dev environment AND no realauth override. Use this everywhere the
+ * app decides whether to stub auth — the `AUTH_IS_DEVELOPMENT` token AND the Auth0 SDK stub in
+ * app.config — so the `?realauth=1` escape hatch is honored consistently.
+ */
+export function computeAuthIsDevelopment(): boolean {
+  return resolveAuthIsDevelopment({
+    isProduction: environment.isProduction,
+    hostname: typeof window !== 'undefined' ? window.location.hostname : '',
+    realauthOverride: readRealauthOverride(),
+  });
+}
+
+/**
  * True when running against the dev stub (no real auth), centralizing the checks previously
  * inlined in AuthGuard/LoginButtonComponent. Overridable in tests. Append `?realauth=1` to the
  * URL to force the real providers on localhost (persisted; `?realauth=0` clears it) — useful for
@@ -62,10 +75,5 @@ function readRealauthOverride(): boolean {
  */
 export const AUTH_IS_DEVELOPMENT = new InjectionToken<boolean>('AUTH_IS_DEVELOPMENT', {
   providedIn: 'root',
-  factory: () =>
-    resolveAuthIsDevelopment({
-      isProduction: environment.isProduction,
-      hostname: typeof window !== 'undefined' ? window.location.hostname : '',
-      realauthOverride: readRealauthOverride(),
-    }),
+  factory: () => computeAuthIsDevelopment(),
 });

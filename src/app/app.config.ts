@@ -14,9 +14,12 @@ import { HttpClientModule } from '@angular/common/http';
 import { environment } from './environments/environment';
 import { provideAuth0 } from '@auth0/auth0-angular';
 import { AuthFacade } from './core/auth/auth.facade';
+import { computeAuthIsDevelopment } from './core/auth/msal.tokens';
 
+// Stub the Auth0 SDK only when the shared dev-stub decision is active, so the `?realauth=1`
+// escape hatch flips BOTH the facade and the Auth0 SDK together (never one mocked, one real).
 function isDevelopmentEnvironment(): boolean {
-  return !environment.isProduction || window.location.hostname === 'localhost';
+  return computeAuthIsDevelopment();
 }
 
 export const appConfig: ApplicationConfig = {
