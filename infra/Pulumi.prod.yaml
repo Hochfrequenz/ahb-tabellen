@@ -13,6 +13,7 @@ config:
   ahb-tabellen:imageName: ghcr.io/hochfrequenz/ahb-tabellen
   ahb-tabellen:imageTag: v1.4.0
   ahb-tabellen:makoProzesseBaseUrl: https://mako-prozesse.hochfrequenz.de
+  ahb-tabellen:dolmetscherBaseUrl: https://dolmetscher.hochfrequenz.de
   ahb-tabellen:mcpAuth0Audience: https://ahb-tabellen.hochfrequenz.de/mcp
   ahb-tabellen:mcpAuth0IssuerBaseUrl: https://auth.hochfrequenz.de/
   ahb-tabellen:ohDearHealthCheckSecret:

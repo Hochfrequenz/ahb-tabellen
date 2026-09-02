@@ -12,6 +12,7 @@ export const environment: EnvironmentInterface = {
   // (see Hochfrequenz/mako_prozesse#65) - every stack points at the intended
   // production URL until the custom domain is live
   makoProzesseBaseUrl: 'https://mako-prozesse.hochfrequenz.de',
+  dolmetscherBaseUrl: 'https://dolmetscher.hochfrequenz.de',
   auth0Domain: 'auth.hochfrequenz.de',
   auth0ClientId: 'Hku0EniRjy4B2krnx1sCwTIOzAiVta1B',
   baseUrl: 'http://localhost:4200',

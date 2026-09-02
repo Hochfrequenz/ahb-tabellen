@@ -10,6 +10,7 @@ export const environment: EnvironmentInterface = {
   // (see Hochfrequenz/mako_prozesse#65), so the pill will not resolve to the app
   // until the custom domain is live
   makoProzesseBaseUrl: 'https://mako-prozesse.hochfrequenz.de',
+  dolmetscherBaseUrl: 'https://dolmetscher.hochfrequenz.de',
   auth0Domain: 'auth.hochfrequenz.de',
   auth0ClientId: 'VSkXGqlTD7Rf5Q4n9a0h00rInEyL2ZQj',
   baseUrl: 'https://ahb-tabellen.hochfrequenz.de',

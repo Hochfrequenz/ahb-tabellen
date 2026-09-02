@@ -16,6 +16,9 @@ config:
   # environment (see Hochfrequenz/mako_prozesse#65); every stack points at the intended
   # production URL until the custom domain is live
   ahb-tabellen:makoProzesseBaseUrl: https://mako-prozesse.hochfrequenz.de
+  # the Dolmetscher's *.stage host exists but serves an invalid TLS cert (2026-08),
+  # so stage uses the production URL; see src/app/environments/environment.stage.ts
+  ahb-tabellen:dolmetscherBaseUrl: https://dolmetscher.hochfrequenz.de
   ahb-tabellen:mcpAuth0Audience: https://ahb-tabellen.stage.hochfrequenz.de/mcp
   ahb-tabellen:mcpAuth0IssuerBaseUrl: https://auth.hochfrequenz.de/
   ahb-tabellen:ohDearHealthCheckSecret:
