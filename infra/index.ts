@@ -135,6 +135,20 @@ if (entraTenantId) {
         throw new Error("appBaseUrl must be set when entraTenantId is configured (used for the SPA redirect URI).");
     }
 
+    // Sanity check: the app registrations are provisioned into whatever tenant the azuread
+    // provider credentials target, while MCP_ENTRA_TENANT_ID drives runtime token validation. If
+    // entraTenantId drifts from the Azure deployment tenant, the registrations and the validator
+    // can end up in different tenants and Entra sign-in fails at runtime. Warn (don't fail — the
+    // azuread creds may legitimately target a different tenant than azure-native).
+    const azureTenantId = azureConfig.get("tenantId");
+    if (azureTenantId && azureTenantId !== entraTenantId) {
+        pulumi.log.warn(
+            `entraTenantId (${entraTenantId}) differs from azure-native:tenantId (${azureTenantId}). ` +
+            `Ensure the azuread provider credentials operate in the entraTenantId tenant, otherwise ` +
+            `the app registrations and MCP_ENTRA_TENANT_ID validation will target different tenants.`,
+        );
+    }
+
     // Stable identifier for the exposed delegated scope — must not change across deploys.
     const ACCESS_AS_USER_SCOPE_ID = "6b3f8f7a-6c1e-4c9a-9b2d-9e0a1f2b3c4d";
 
