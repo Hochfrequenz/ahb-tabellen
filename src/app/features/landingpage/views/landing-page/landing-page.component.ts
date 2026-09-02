@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '@auth0/auth0-angular';
+import { take } from 'rxjs/operators';
+import { AuthFacade } from '../../../../core/auth/auth.facade';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { environment } from '../../../../environments/environment';
 import { Meta, Title } from '@angular/platform-browser';
@@ -13,7 +14,7 @@ import { Meta, Title } from '@angular/platform-browser';
   templateUrl: './landing-page.component.html',
 })
 export class LandingPageComponent implements OnInit {
-  private auth = inject(AuthService);
+  private facade = inject(AuthFacade);
   private router = inject(Router);
   private meta = inject(Meta);
   private readonly title = inject(Title);
@@ -68,18 +69,14 @@ export class LandingPageComponent implements OnInit {
   }
 
   onOpenClick() {
-    if (!environment.isProduction || window.location.hostname === 'localhost') {
-      this.router.navigate(['/features']);
-      return;
-    }
-
-    this.auth.isAuthenticated$.subscribe(isAuthenticated => {
+    // Route through the facade so the dev stub and both providers are handled uniformly. When not
+    // signed in, send the user to the provider chooser (not straight to Auth0), preserving the
+    // intended target.
+    this.facade.isAuthenticated$.pipe(take(1)).subscribe(isAuthenticated => {
       if (isAuthenticated) {
         this.router.navigate(['/features']);
       } else {
-        this.auth.loginWithRedirect({
-          appState: { target: '/features' },
-        });
+        this.router.navigate(['/login'], { queryParams: { target: '/features' } });
       }
     });
   }

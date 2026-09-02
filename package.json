@@ -47,6 +47,7 @@
     "@angular/platform-browser-dynamic": "^22.1.4",
     "@angular/router": "^22.1.4",
     "@auth0/auth0-angular": "^2.2.3",
+    "@azure/msal-browser": "^5.20.0",
     "@hochfrequenz/efoli": "^0.0.9",
     "@mdi/font": "^7.4.47",
     "@modelcontextprotocol/sdk": "^1.30.0",
@@ -80,6 +81,7 @@
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.68.0",
+    "angular-eslint": "^22.1.0",
     "autoprefixer": "^10.4.21",
     "concurrently": "^10.0.4",
     "eslint": "^9.28.0",
@@ -94,7 +96,6 @@
     "npm-watch": "^0.13.0",
     "postcss": "^8.5.26",
     "tailwindcss": "^4.1.18",
-    "angular-eslint": "^22.1.0",
     "tsx": "^4.23.12",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.68.0"
