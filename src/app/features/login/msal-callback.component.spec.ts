@@ -40,4 +40,11 @@ describe('MsalCallbackComponent', () => {
     await component.ngOnInit();
     expect(router.navigateByUrl).toHaveBeenCalledWith('/');
   });
+
+  it('navigates home instead of following an unsafe (tampered) stored target', async () => {
+    sessionStorage.setItem(POST_LOGIN_TARGET_KEY, '//evil.com');
+    const component = create();
+    await component.ngOnInit();
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/');
+  });
 });

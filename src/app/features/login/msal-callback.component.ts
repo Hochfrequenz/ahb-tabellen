@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/cor
 import { Router } from '@angular/router';
 import { AuthFacade } from '../../core/auth/auth.facade';
 import { POST_LOGIN_TARGET_KEY } from './login.component';
+import { safeInternalTarget } from './safe-target';
 
 /**
  * Landing route for the Microsoft (MSAL) redirect. It awaits MSAL initialization — shared and
@@ -23,7 +24,9 @@ export class MsalCallbackComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.facade.initializeMsal();
-    const target = sessionStorage.getItem(POST_LOGIN_TARGET_KEY) ?? '/';
+    // sessionStorage is mutable, so re-validate the target here (not only where it was stored)
+    // before navigating, to avoid an open-redirect/invalid-route navigation.
+    const target = safeInternalTarget(sessionStorage.getItem(POST_LOGIN_TARGET_KEY));
     sessionStorage.removeItem(POST_LOGIN_TARGET_KEY);
     await this.router.navigateByUrl(target);
   }

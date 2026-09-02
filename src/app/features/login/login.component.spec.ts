@@ -55,4 +55,11 @@ describe('LoginComponent', () => {
     component.signIn('microsoft');
     expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBeNull();
   });
+
+  it('drops an unsafe (open-redirect) target instead of storing/forwarding it', async () => {
+    const component = await setup('//evil.com');
+    component.signIn('microsoft');
+    expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBeNull();
+    expect(facade.login).toHaveBeenCalledWith('microsoft', undefined);
+  });
 });
