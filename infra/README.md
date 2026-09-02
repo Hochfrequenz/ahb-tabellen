@@ -113,8 +113,10 @@ pulumi stack output
 the Copilot 365 agent's access to the MCP endpoint (see #951):
 
 1. **MCP resource app** — exposes the delegated `api://<clientId>/access_as_user` scope and issues
-   **v2** access tokens. Its client id is injected into the container as `MCP_ENTRA_AUDIENCE`
-   (the audience the backend validates), alongside `MCP_ENTRA_TENANT_ID`.
+   **v2** access tokens. Its **client id (GUID)** is injected into the container as
+   `MCP_ENTRA_AUDIENCE`, alongside `MCP_ENTRA_TENANT_ID`. Note: for v2 tokens the token `aud` the
+   backend validates is the resource app's client-id GUID, **not** the `api://<clientId>` URI (that
+   URI is only what clients request as the scope).
 2. **SPA app** — for the Angular login; redirect URI `<appBaseUrl>/auth/msal-callback`. Its client
    id is exported (see below) and must be copied into `src/app/environments/environment.<env>.ts`
    as `entraClientId` (with `entraAuthority` = `https://login.microsoftonline.com/<tenantId>`),
@@ -134,7 +136,7 @@ The block is **skipped entirely** until `entraTenantId` is set, so stacks that h
 preview and deploy exactly as before. To enable for a stack:
 
 ```bash
-pulumi config set entraTenantId fb2b0361-fa12-48a5-bade-533bf89760d9   # the Entra/Azure tenant
+pulumi config set entraTenantId <tenant-guid>                           # the Entra/Azure tenant (== azure-native:tenantId)
 pulumi config set appBaseUrl https://ahb-tabellen.stage.hochfrequenz.de # for the SPA redirect URI
 pulumi up   # requires the azuread provider credentials described above
 ```

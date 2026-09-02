@@ -157,10 +157,13 @@ if (entraTenantId) {
         },
     });
 
-    // api://<clientId> identifier URI — a separate resource to avoid a self-cycle on clientId.
+    // Clients REQUEST the scope api://<clientId>/access_as_user, so the app needs that identifier
+    // URI. Added as a separate resource to avoid a self-cycle on the application's clientId. Note
+    // this api:// URI is NOT the token audience the backend validates — see MCP_ENTRA_AUDIENCE below.
+    const mcpIdentifierUri = pulumi.interpolate`api://${mcpApp.clientId}`;
     new azuread.ApplicationIdentifierUri(`ahb-tabellen-mcp-${environment}-uri`, {
         applicationId: mcpApp.id,
-        identifierUri: pulumi.interpolate`api://${mcpApp.clientId}`,
+        identifierUri: mcpIdentifierUri,
     });
 
     new azuread.ServicePrincipal(`ahb-tabellen-mcp-${environment}-sp`, {
@@ -172,14 +175,19 @@ if (entraTenantId) {
         displayName: `ahb-tabellen-spa-${environment}`,
         signInAudience: "AzureADMyOrg",
         singlePageApplication: {
-            redirectUris: [pulumi.interpolate`${appBaseUrl}/auth/msal-callback`],
+            // Trim a trailing slash so a configured "https://host/" can't yield a double-slash
+            // redirect URI that won't match what MSAL sends.
+            redirectUris: [`${appBaseUrl.replace(/\/+$/, "")}/auth/msal-callback`],
         },
     });
     new azuread.ServicePrincipal(`ahb-tabellen-spa-${environment}-sp`, {
         clientId: spaApp.clientId,
     });
 
-    // The backend validates Entra v2 tokens with aud == the MCP resource app's client id.
+    // MCP_ENTRA_AUDIENCE is the token `aud` the backend validates. For v2 access tokens
+    // (requestedAccessTokenVersion: 2) the aud is the resource app's client-id GUID — NOT the
+    // api://<clientId> URI, which is only what clients request as the scope. (See the decoded v2
+    // token example at https://learn.microsoft.com/entra/identity-platform/access-tokens.)
     appSettings.push(
         { name: "MCP_ENTRA_TENANT_ID", value: entraTenantId },
         { name: "MCP_ENTRA_AUDIENCE", value: mcpApp.clientId },
