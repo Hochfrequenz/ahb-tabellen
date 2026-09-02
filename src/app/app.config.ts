@@ -56,7 +56,14 @@ export const appConfig: ApplicationConfig = {
       }),
     }),
     // Initialize MSAL and process any pending Microsoft redirect before the app renders.
-    // No-op under the development stub (AuthFacade.initializeMsal returns early).
-    provideAppInitializer(() => inject(AuthFacade).initializeMsal()),
+    // No-op under the development stub. Non-fatal: Entra is the optional second provider, so a
+    // failure here (e.g. Entra not configured yet) must degrade to Auth0-only rather than block
+    // app bootstrap and take down Auth0 sign-in too.
+    provideAppInitializer(() => {
+      const facade = inject(AuthFacade);
+      return facade.initializeMsal().catch((error: unknown) => {
+        console.error('[auth] MSAL initialization failed; continuing with Auth0 only.', error);
+      });
+    }),
   ],
 };

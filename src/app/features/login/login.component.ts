@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { AuthFacade, AuthProviderId } from '../../core/auth/auth.facade';
 import { safeInternalTarget } from './safe-target';
+import { safeStorageRemove, safeStorageSet } from '../../core/auth/safe-storage';
 
 /** sessionStorage key holding the route the user was heading to before being asked to sign in. */
 export const POST_LOGIN_TARGET_KEY = 'ahb.postLoginTarget';
@@ -27,9 +28,9 @@ export class LoginComponent {
     // a stale target can't leak into a later Microsoft login. Auth0 restores its target via the
     // SDK's appState (passed through the facade).
     if (provider === 'microsoft' && target) {
-      sessionStorage.setItem(POST_LOGIN_TARGET_KEY, target);
+      safeStorageSet(sessionStorage, POST_LOGIN_TARGET_KEY, target);
     } else {
-      sessionStorage.removeItem(POST_LOGIN_TARGET_KEY);
+      safeStorageRemove(sessionStorage, POST_LOGIN_TARGET_KEY);
     }
     this.facade.login(provider, target);
   }

@@ -10,8 +10,8 @@ export const environment: EnvironmentInterface = {
   fristenkalenderBaseUrl: 'https://fristenkalender.stage.hochfrequenz.de',
   auth0Domain: 'auth.hochfrequenz.de',
   auth0ClientId: 'Hku0EniRjy4B2krnx1sCwTIOzAiVta1B',
-  entraClientId: '<entra-spa-client-id>', // provisioned by infra (#951); MSAL is stubbed in dev
-  entraAuthority: 'https://login.microsoftonline.com/<tenant-guid>',
+  entraClientId: '00000000-0000-0000-0000-000000000000', // provisioned by infra (#951); MSAL is stubbed in dev
+  entraAuthority: 'https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000',
   entraScopes: ['openid', 'profile', 'email'],
   baseUrl: 'http://localhost:4200',
   warmupUrl: 'https://ahbicht-stage.azurewebsites.net/api/ResolveConditionText/FV2504/UTILMDS/333',

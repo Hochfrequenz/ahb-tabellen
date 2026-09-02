@@ -1,6 +1,7 @@
 import { InjectionToken } from '@angular/core';
 import { IPublicClientApplication, PublicClientApplication } from '@azure/msal-browser';
 import { environment } from '../../environments/environment';
+import { safeStorageGet, safeStorageRemove, safeStorageSet } from './safe-storage';
 
 /**
  * The shared MSAL browser client (Microsoft Entra ID). We use `@azure/msal-browser` directly
@@ -47,11 +48,11 @@ function readRealauthOverride(): boolean {
   }
   const param = new URLSearchParams(window.location.search).get('realauth');
   if (param === '1') {
-    localStorage.setItem(REALAUTH_FLAG_KEY, '1');
+    safeStorageSet(localStorage, REALAUTH_FLAG_KEY, '1');
   } else if (param === '0') {
-    localStorage.removeItem(REALAUTH_FLAG_KEY);
+    safeStorageRemove(localStorage, REALAUTH_FLAG_KEY);
   }
-  return localStorage.getItem(REALAUTH_FLAG_KEY) === '1';
+  return safeStorageGet(localStorage, REALAUTH_FLAG_KEY) === '1';
 }
 
 /**

@@ -4,6 +4,7 @@ import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AUTH_IS_DEVELOPMENT, MSAL_CLIENT } from './msal.tokens';
+import { safeStorageGet, safeStorageRemove, safeStorageSet } from './safe-storage';
 
 export type AuthProviderId = 'auth0' | 'microsoft';
 
@@ -68,7 +69,7 @@ export class AuthFacade {
   }
 
   login(provider: AuthProviderId, target?: string): void {
-    localStorage.setItem(ACTIVE_PROVIDER_KEY, provider);
+    safeStorageSet(localStorage, ACTIVE_PROVIDER_KEY, provider);
     if (provider === 'auth0') {
       // Auth0 restores its own target from appState; Microsoft restores it from sessionStorage
       // in the callback route (MSAL's redirect response carries no app-level state here).
@@ -79,7 +80,7 @@ export class AuthFacade {
   }
 
   logout(): void {
-    localStorage.removeItem(ACTIVE_PROVIDER_KEY);
+    safeStorageRemove(localStorage, ACTIVE_PROVIDER_KEY);
     // Derive the effective provider from the live MSAL session rather than the persisted hint:
     // a cached Microsoft account keeps `isAuthenticated$` true, so it must drive logout even when
     // the key is missing or stale (otherwise the user gets stuck in a "can't log out" loop).
@@ -147,7 +148,9 @@ export class AuthFacade {
 
     if (microsoftUser && auth0Resolved) {
       // Both signed in (unusual): let the persisted hint break the tie, defaulting to Microsoft.
-      return localStorage.getItem(ACTIVE_PROVIDER_KEY) === 'auth0' ? auth0Resolved : microsoftUser;
+      return safeStorageGet(localStorage, ACTIVE_PROVIDER_KEY) === 'auth0'
+        ? auth0Resolved
+        : microsoftUser;
     }
     return microsoftUser ?? auth0Resolved;
   }
