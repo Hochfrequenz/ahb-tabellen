@@ -1,7 +1,7 @@
 import { LandingPageComponent } from './landing-page.component';
 import { MockBuilder, MockRender, ngMocks } from 'ng-mocks';
 import { Meta } from '@angular/platform-browser';
-import { AuthService } from '@auth0/auth0-angular';
+import { AuthFacade } from '../../../../core/auth/auth.facade';
 import { of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
@@ -17,11 +17,9 @@ describe('LandingPageComponent', () => {
         useValue: mockMeta,
       })
       .provide({
-        // Provided explicitly rather than relying on ng-mocks' auto-mock: as of ng-mocks
-        // 14.15.3, auto-mocking AuthService still triggers its real factory chain (including
-        // the auth0.client InjectionToken) under Angular 22, throwing NG0201.
-        provide: AuthService,
-        useValue: { isAuthenticated$: of(false), loginWithRedirect: jest.fn() },
+        // The component depends on the AuthFacade, not the Auth0 SDK directly.
+        provide: AuthFacade,
+        useValue: { isAuthenticated$: of(false) },
       });
   });
 
