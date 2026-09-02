@@ -1,4 +1,9 @@
-import { ApplicationConfig, importProvidersFrom } from '@angular/core';
+import {
+  ApplicationConfig,
+  importProvidersFrom,
+  inject,
+  provideAppInitializer,
+} from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { Title } from '@angular/platform-browser';
@@ -8,6 +13,7 @@ import { ApiModule } from './core/api';
 import { HttpClientModule } from '@angular/common/http';
 import { environment } from './environments/environment';
 import { provideAuth0 } from '@auth0/auth0-angular';
+import { AuthFacade } from './core/auth/auth.facade';
 
 function isDevelopmentEnvironment(): boolean {
   return !environment.isProduction || window.location.hostname === 'localhost';
@@ -46,5 +52,8 @@ export const appConfig: ApplicationConfig = {
         logout: () => Promise.resolve(),
       }),
     }),
+    // Initialize MSAL and process any pending Microsoft redirect before the app renders.
+    // No-op under the development stub (AuthFacade.initializeMsal returns early).
+    provideAppInitializer(() => inject(AuthFacade).initializeMsal()),
   ],
 };

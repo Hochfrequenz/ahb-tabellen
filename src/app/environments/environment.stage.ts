@@ -8,6 +8,9 @@ export const environment: EnvironmentInterface = {
   fristenkalenderBaseUrl: 'https://fristenkalender.stage.hochfrequenz.de',
   auth0Domain: 'auth.hochfrequenz.de',
   auth0ClientId: 'Hku0EniRjy4B2krnx1sCwTIOzAiVta1B',
+  entraClientId: '<entra-spa-client-id-stage>', // provisioned by infra (#951)
+  entraAuthority: 'https://login.microsoftonline.com/<tenant-guid>',
+  entraScopes: ['openid', 'profile', 'email'],
   baseUrl: 'https://ahb-tabellen.stage.hochfrequenz.de',
   warmupUrl: 'https://ahbicht-stage.azurewebsites.net/api/ResolveConditionText/FV2504/UTILMDS/333',
   allowSearchIndexing: false,

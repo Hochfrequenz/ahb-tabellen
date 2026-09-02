@@ -1,30 +1,27 @@
 import { Injectable, inject } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { AuthService } from '@auth0/auth0-angular';
-import { Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { environment } from '../environments/environment';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { Observable } from 'rxjs';
+import { map, take } from 'rxjs/operators';
+import { AuthFacade } from '../core/auth/auth.facade';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  private auth = inject(AuthService);
-
-  private isDevelopment = !environment.isProduction || window.location.hostname === 'localhost';
+  private facade = inject(AuthFacade);
+  private router = inject(Router);
 
   canActivate(_: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
-    if (this.isDevelopment) {
-      return of(true);
-    }
-
-    return this.auth.isAuthenticated$.pipe(
-      tap(loggedIn => {
+    // The facade unifies Auth0 + Microsoft and already short-circuits to `true` in development.
+    return this.facade.isAuthenticated$.pipe(
+      take(1),
+      map(loggedIn => {
         if (!loggedIn) {
-          this.auth.loginWithRedirect({
-            appState: { target: state.url },
-          });
+          // Send the user to the provider chooser, preserving where they were headed.
+          this.router.navigate(['/login'], { queryParams: { target: state.url } });
+          return false;
         }
+        return true;
       })
     );
   }

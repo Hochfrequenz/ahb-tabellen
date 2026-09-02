@@ -1,0 +1,178 @@
+import { TestBed } from '@angular/core/testing';
+import { AuthService } from '@auth0/auth0-angular';
+import { firstValueFrom, Observable, of } from 'rxjs';
+import { AuthFacade } from './auth.facade';
+import { AUTH_IS_DEVELOPMENT, MSAL_CLIENT } from './msal.tokens';
+
+type MockAuth0 = {
+  isAuthenticated$: Observable<boolean>;
+  isLoading$: Observable<boolean>;
+  user$: Observable<{ email?: string; name?: string; sub?: string } | null>;
+  loginWithRedirect: jest.Mock;
+  logout: jest.Mock;
+};
+
+type MockMsal = {
+  getAllAccounts: jest.Mock;
+  getActiveAccount: jest.Mock;
+  setActiveAccount: jest.Mock;
+  initialize: jest.Mock;
+  handleRedirectPromise: jest.Mock;
+  loginRedirect: jest.Mock;
+  logoutRedirect: jest.Mock;
+};
+
+function makeAuth0(overrides: Partial<MockAuth0> = {}): MockAuth0 {
+  return {
+    isAuthenticated$: of(false),
+    isLoading$: of(false),
+    user$: of(null),
+    loginWithRedirect: jest.fn(),
+    logout: jest.fn(),
+    ...overrides,
+  };
+}
+
+function makeMsal(overrides: Partial<MockMsal> = {}): MockMsal {
+  return {
+    getAllAccounts: jest.fn().mockReturnValue([]),
+    getActiveAccount: jest.fn().mockReturnValue(null),
+    setActiveAccount: jest.fn(),
+    initialize: jest.fn().mockResolvedValue(undefined),
+    handleRedirectPromise: jest.fn().mockResolvedValue(null),
+    loginRedirect: jest.fn().mockResolvedValue(undefined),
+    logoutRedirect: jest.fn().mockResolvedValue(undefined),
+    ...overrides,
+  };
+}
+
+function createFacade(
+  isDevelopment: boolean,
+  auth0: MockAuth0 = makeAuth0(),
+  msal: MockMsal = makeMsal()
+): { facade: AuthFacade; auth0: MockAuth0; msal: MockMsal } {
+  TestBed.configureTestingModule({
+    providers: [
+      AuthFacade,
+      { provide: AuthService, useValue: auth0 },
+      { provide: MSAL_CLIENT, useValue: msal },
+      { provide: AUTH_IS_DEVELOPMENT, useValue: isDevelopment },
+    ],
+  });
+  return { facade: TestBed.inject(AuthFacade), auth0, msal };
+}
+
+describe('AuthFacade', () => {
+  afterEach(() => {
+    localStorage.clear();
+    TestBed.resetTestingModule();
+  });
+
+  describe('development stub', () => {
+    it('reports authenticated without touching either SDK', async () => {
+      const msal = makeMsal();
+      const { facade } = createFacade(true, makeAuth0(), msal);
+
+      await expect(firstValueFrom(facade.isAuthenticated$)).resolves.toBe(true);
+      await expect(firstValueFrom(facade.isLoading$)).resolves.toBe(false);
+      expect(msal.getAllAccounts).not.toHaveBeenCalled();
+    });
+
+    it('emits the local development user', async () => {
+      const { facade } = createFacade(true);
+      const user = await firstValueFrom(facade.user$);
+      expect(user).toMatchObject({ email: 'local@development.com', provider: 'dev' });
+    });
+
+    it('initializeMsal is a no-op in development', async () => {
+      const msal = makeMsal();
+      const { facade } = createFacade(true, makeAuth0(), msal);
+      await facade.initializeMsal();
+      expect(msal.initialize).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('authentication state (production)', () => {
+    it('is false when neither provider has a session', async () => {
+      const { facade } = createFacade(false);
+      await expect(firstValueFrom(facade.isAuthenticated$)).resolves.toBe(false);
+    });
+
+    it('is true when Auth0 reports a session', async () => {
+      const { facade } = createFacade(false, makeAuth0({ isAuthenticated$: of(true) }));
+      await expect(firstValueFrom(facade.isAuthenticated$)).resolves.toBe(true);
+    });
+
+    it('is true when MSAL has an account (even if Auth0 does not), after init', async () => {
+      const msal = makeMsal({
+        getAllAccounts: jest.fn().mockReturnValue([{ username: 'a@b.de' }]),
+      });
+      const { facade } = createFacade(false, makeAuth0({ isAuthenticated$: of(false) }), msal);
+      // MSAL state is only read after initialize(); before init it must not be queried.
+      await facade.initializeMsal();
+      await expect(firstValueFrom(facade.isAuthenticated$)).resolves.toBe(true);
+    });
+  });
+
+  describe('login', () => {
+    it('routes login("auth0") to Auth0 and records the active provider', () => {
+      const { facade, auth0 } = createFacade(false);
+      facade.login('auth0');
+      expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1);
+      expect(localStorage.getItem('ahb.activeAuthProvider')).toBe('auth0');
+    });
+
+    it('routes login("microsoft") to MSAL with the configured scopes', () => {
+      const { facade, msal } = createFacade(false);
+      facade.login('microsoft');
+      expect(msal.loginRedirect).toHaveBeenCalledTimes(1);
+      expect(msal.loginRedirect).toHaveBeenCalledWith(
+        expect.objectContaining({ scopes: ['openid', 'profile', 'email'] })
+      );
+      expect(localStorage.getItem('ahb.activeAuthProvider')).toBe('microsoft');
+    });
+  });
+
+  describe('logout', () => {
+    it('logs out via MSAL when Microsoft is the active provider', () => {
+      const { facade, msal, auth0 } = createFacade(false);
+      localStorage.setItem('ahb.activeAuthProvider', 'microsoft');
+      facade.logout();
+      expect(msal.logoutRedirect).toHaveBeenCalledTimes(1);
+      expect(auth0.logout).not.toHaveBeenCalled();
+    });
+
+    it('logs out via Auth0 by default', () => {
+      const { facade, msal, auth0 } = createFacade(false);
+      facade.logout();
+      expect(auth0.logout).toHaveBeenCalledTimes(1);
+      expect(msal.logoutRedirect).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('initializeMsal (production)', () => {
+    it('initializes MSAL, processes the redirect, and flips the auth state', async () => {
+      const account = {
+        username: 'employee@hochfrequenz.de',
+        name: 'Employee',
+        localAccountId: 'x',
+      };
+      const accounts: unknown[] = [];
+      const msal = makeMsal({
+        handleRedirectPromise: jest.fn().mockResolvedValue({ account }),
+        getAllAccounts: jest.fn(() => accounts),
+      });
+      const { facade } = createFacade(false, makeAuth0(), msal);
+
+      // Simulate MSAL registering the account after a successful redirect.
+      (msal.setActiveAccount as jest.Mock).mockImplementation(() => accounts.push(account));
+
+      await facade.initializeMsal();
+
+      expect(msal.initialize).toHaveBeenCalledTimes(1);
+      expect(msal.handleRedirectPromise).toHaveBeenCalledTimes(1);
+      expect(msal.setActiveAccount).toHaveBeenCalledWith(account);
+      await expect(firstValueFrom(facade.isAuthenticated$)).resolves.toBe(true);
+    });
+  });
+});

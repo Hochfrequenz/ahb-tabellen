@@ -1,11 +1,24 @@
 @if (authState$ | async; as authState) {
-  <button
-    class="rounded-full bg-hf-pastell-rose text-hf-weiches-schwarz text-[16px] py-3 px-5 flex items-center gap-2"
-    (click)="loginOrLogout()"
-    [disabled]="authState.isLoading">
-    <span>{{ buttonText$ | async }}</span>
-    @if (authState.isAuthenticated) {
+  @if (authState.isAuthenticated) {
+    <button
+      class="rounded-full bg-hf-pastell-rose text-hf-weiches-schwarz text-[16px] py-3 px-5 flex items-center gap-2"
+      (click)="logout()"
+      [disabled]="authState.isLoading">
+      <span>Ausloggen</span>
       <img src="assets/companystylesheet/icons/logout.svg" class="w-5 h-5" alt="logout" />
-    }
-  </button>
+    </button>
+  } @else {
+    <button
+      class="rounded-full bg-hf-pastell-rose text-hf-weiches-schwarz text-[16px] py-3 px-5 flex items-center gap-2"
+      (click)="loginWith('auth0')"
+      [disabled]="authState.isLoading">
+      <span>Einloggen</span>
+    </button>
+    <button
+      class="rounded-full bg-hf-weiches-schwarz text-white text-[16px] py-3 px-5 flex items-center gap-2"
+      (click)="loginWith('microsoft')"
+      [disabled]="authState.isLoading">
+      <span>Mit Microsoft anmelden</span>
+    </button>
+  }
 }
