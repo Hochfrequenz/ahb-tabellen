@@ -12,6 +12,7 @@ config:
     secure: AAABAPxqz5l9dn9CRjuSdmBw1dz+WQpoqfXJ1pRz5SzsxAuKHMB8mOo+Ir3nCllS0u8VjraFpDnDqGq1SA5a6RbNeOl49eJ+
   ahb-tabellen:imageName: ghcr.io/hochfrequenz/ahb-tabellen
   ahb-tabellen:imageTag: v1.4.0
+  ahb-tabellen:makoProzesseBaseUrl: https://mako-prozesse.hochfrequenz.de
   ahb-tabellen:mcpAuth0Audience: https://ahb-tabellen.hochfrequenz.de/mcp
   ahb-tabellen:mcpAuth0IssuerBaseUrl: https://auth.hochfrequenz.de/
   ahb-tabellen:ohDearHealthCheckSecret:

@@ -58,6 +58,11 @@
   --pastell-mint: #c6e7d2;
   --grell-mint: #85cb9c;
 
+  /* Lila/Violett, for mako_prozesse (https://github.com/Hochfrequenz/mako_prozesse/issues/65) */
+  --pastell-lila: #d5d1f0;
+  --grell-lila: #aca3e1;
+  --dunkel-lila: #8f84d7;
+
   /* Neutral Colors */
   --neutral-grau: #e7e6e5;
   --off-white: #e7e6e5;
@@ -134,6 +139,10 @@ body {
 
 #solutions a.entscheidungsbaum {
   background-color: var(--grell-blau);
+}
+
+#solutions a.mako {
+  background-color: var(--grell-lila);
 }
 
 /* Essential responsive improvements - minimal changes */
