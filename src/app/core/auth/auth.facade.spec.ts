@@ -90,6 +90,21 @@ describe('AuthFacade', () => {
       await facade.initializeMsal();
       expect(msal.initialize).not.toHaveBeenCalled();
     });
+
+    it('login() does not trigger a real provider redirect', () => {
+      const { facade, auth0, msal } = createFacade(true);
+      facade.login('microsoft');
+      facade.login('auth0');
+      expect(msal.loginRedirect).not.toHaveBeenCalled();
+      expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
+    });
+
+    it('logout() does not trigger a real provider redirect', () => {
+      const { facade, auth0, msal } = createFacade(true);
+      facade.logout();
+      expect(auth0.logout).not.toHaveBeenCalled();
+      expect(msal.logoutRedirect).not.toHaveBeenCalled();
+    });
   });
 
   describe('authentication state (production)', () => {

@@ -69,6 +69,11 @@ export class AuthFacade {
   }
 
   login(provider: AuthProviderId, target?: string): void {
+    // In the dev stub the user is already "signed in"; never fire a real provider redirect
+    // (keeps the "stub unless ?realauth=1" contract even if /login is visited manually).
+    if (this.isDevelopment) {
+      return;
+    }
     safeStorageSet(localStorage, ACTIVE_PROVIDER_KEY, provider);
     if (provider === 'auth0') {
       // Auth0 restores its own target from appState; Microsoft restores it from sessionStorage
@@ -80,6 +85,9 @@ export class AuthFacade {
   }
 
   logout(): void {
+    if (this.isDevelopment) {
+      return;
+    }
     safeStorageRemove(localStorage, ACTIVE_PROVIDER_KEY);
     // Derive the effective provider from the live MSAL session rather than the persisted hint:
     // a cached Microsoft account keeps `isAuthenticated$` true, so it must drive logout even when
