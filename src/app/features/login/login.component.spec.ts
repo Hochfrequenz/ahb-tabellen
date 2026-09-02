@@ -6,9 +6,9 @@ import { AuthFacade } from '../../core/auth/auth.facade';
 describe('LoginComponent', () => {
   let facade: { login: jest.Mock };
 
-  function setup(target?: string): LoginComponent {
+  async function setup(target?: string): Promise<LoginComponent> {
     facade = { login: jest.fn() };
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [LoginComponent],
       providers: [
         { provide: AuthFacade, useValue: facade },
@@ -19,7 +19,7 @@ describe('LoginComponent', () => {
           },
         },
       ],
-    });
+    }).compileComponents();
     return TestBed.createComponent(LoginComponent).componentInstance;
   }
 
@@ -28,21 +28,21 @@ describe('LoginComponent', () => {
     TestBed.resetTestingModule();
   });
 
-  it('signs in with the chosen provider, forwarding the target', () => {
-    const component = setup('/search');
+  it('signs in with the chosen provider, forwarding the target', async () => {
+    const component = await setup('/search');
     component.signIn('microsoft');
     expect(facade.login).toHaveBeenCalledWith('microsoft', '/search');
   });
 
-  it('stores the target for the MSAL callback when signing in with Microsoft', () => {
-    const component = setup('/ahb/UTILMD');
+  it('stores the target for the MSAL callback when signing in with Microsoft', async () => {
+    const component = await setup('/ahb/UTILMD');
     component.signIn('microsoft');
     expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBe('/ahb/UTILMD');
   });
 
-  it('does not leave a stored target for a later MSAL login when signing in with Auth0', () => {
+  it('does not leave a stored target for a later MSAL login when signing in with Auth0', async () => {
     sessionStorage.setItem(POST_LOGIN_TARGET_KEY, '/stale');
-    const component = setup('/ahb/UTILMD');
+    const component = await setup('/ahb/UTILMD');
     component.signIn('auth0');
     // Auth0 restores its target via the SDK's appState (passed through the facade), not the
     // MSAL-only sessionStorage key — which must be cleared so it can't leak into a later MSAL login.
@@ -50,8 +50,8 @@ describe('LoginComponent', () => {
     expect(facade.login).toHaveBeenCalledWith('auth0', '/ahb/UTILMD');
   });
 
-  it('stores nothing when no target was provided', () => {
-    const component = setup();
+  it('stores nothing when no target was provided', async () => {
+    const component = await setup();
     component.signIn('microsoft');
     expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBeNull();
   });

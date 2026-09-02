@@ -38,6 +38,9 @@ export class AuthFacade {
   /** MSAL has no reactive auth state, so we track it ourselves and refresh it on init/login. */
   private readonly msalAuthenticated$ = new BehaviorSubject<boolean>(false);
 
+  /** In-flight MSAL initialization, shared across callers so init/redirect handling runs once. */
+  private initialization?: Promise<void>;
+
   readonly isAuthenticated$: Observable<boolean>;
   readonly isLoading$: Observable<boolean>;
   readonly user$: Observable<AuthUser | null>;
@@ -88,13 +91,25 @@ export class AuthFacade {
   }
 
   /**
-   * Initialize MSAL and process any pending redirect response. Called once at app startup (and
-   * again on the dedicated MSAL callback route). No-op under the development stub.
+   * Initialize MSAL and process any pending redirect response. Both the app initializer and the
+   * MSAL callback route call this on the redirect round-trip, so it is idempotent: the in-flight
+   * promise is cached and reused (and cleared on failure so a later call can retry). No-op under
+   * the development stub.
    */
-  async initializeMsal(): Promise<void> {
+  initializeMsal(): Promise<void> {
     if (this.isDevelopment) {
-      return;
+      return Promise.resolve();
     }
+    if (!this.initialization) {
+      this.initialization = this.doInitializeMsal().catch(error => {
+        this.initialization = undefined;
+        throw error;
+      });
+    }
+    return this.initialization;
+  }
+
+  private async doInitializeMsal(): Promise<void> {
     await this.msal.initialize();
     const result = await this.msal.handleRedirectPromise();
     if (result?.account) {

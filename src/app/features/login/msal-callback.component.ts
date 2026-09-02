@@ -4,9 +4,10 @@ import { AuthFacade } from '../../core/auth/auth.facade';
 import { POST_LOGIN_TARGET_KEY } from './login.component';
 
 /**
- * Landing route for the Microsoft (MSAL) redirect. The app initializer already processes the
- * redirect response before routing; this component just restores the pre-login target. It lives
- * on a dedicated path so it never collides with Auth0's callback (which uses the origin).
+ * Landing route for the Microsoft (MSAL) redirect. It awaits MSAL initialization — shared and
+ * idempotent with the app initializer, so the redirect response is processed exactly once — and
+ * then restores the pre-login target. It lives on a dedicated path so it never collides with
+ * Auth0's callback (which uses the origin).
  */
 @Component({
   selector: 'app-msal-callback',

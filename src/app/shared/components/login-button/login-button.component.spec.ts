@@ -15,17 +15,17 @@ describe('LoginButtonComponent', () => {
   let fixture: ComponentFixture<LoginButtonComponent>;
   let facade: MockFacade;
 
-  function setup(isAuthenticated: boolean): void {
+  async function setup(isAuthenticated: boolean): Promise<void> {
     facade = {
       isAuthenticated$: of(isAuthenticated),
       isLoading$: of(false),
       login: jest.fn(),
       logout: jest.fn(),
     };
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [LoginButtonComponent],
       providers: [{ provide: AuthFacade, useValue: facade }],
-    });
+    }).compileComponents();
     fixture = TestBed.createComponent(LoginButtonComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -33,32 +33,32 @@ describe('LoginButtonComponent', () => {
 
   afterEach(() => TestBed.resetTestingModule());
 
-  it('routes the Auth0 sign-in to the facade', () => {
-    setup(false);
+  it('routes the Auth0 sign-in to the facade', async () => {
+    await setup(false);
     component.loginWith('auth0');
     expect(facade.login).toHaveBeenCalledWith('auth0');
   });
 
-  it('routes the Microsoft sign-in to the facade', () => {
-    setup(false);
+  it('routes the Microsoft sign-in to the facade', async () => {
+    await setup(false);
     component.loginWith('microsoft');
     expect(facade.login).toHaveBeenCalledWith('microsoft');
   });
 
-  it('routes logout to the facade', () => {
-    setup(true);
+  it('routes logout to the facade', async () => {
+    await setup(true);
     component.logout();
     expect(facade.logout).toHaveBeenCalledTimes(1);
   });
 
-  it('shows two sign-in buttons when logged out', () => {
-    setup(false);
+  it('shows two sign-in buttons when logged out', async () => {
+    await setup(false);
     const buttons = fixture.nativeElement.querySelectorAll('button');
     expect(buttons.length).toBe(2);
   });
 
-  it('shows a single logout button when logged in', () => {
-    setup(true);
+  it('shows a single logout button when logged in', async () => {
+    await setup(true);
     const buttons = fixture.nativeElement.querySelectorAll('button');
     expect(buttons.length).toBe(1);
   });

@@ -187,6 +187,15 @@ describe('AuthFacade', () => {
   });
 
   describe('initializeMsal (production)', () => {
+    it('is idempotent: repeated calls initialize MSAL and process the redirect only once', async () => {
+      const msal = makeMsal();
+      const { facade } = createFacade(false, makeAuth0(), msal);
+      await Promise.all([facade.initializeMsal(), facade.initializeMsal()]);
+      await facade.initializeMsal();
+      expect(msal.initialize).toHaveBeenCalledTimes(1);
+      expect(msal.handleRedirectPromise).toHaveBeenCalledTimes(1);
+    });
+
     it('initializes MSAL, processes the redirect, and flips the auth state', async () => {
       const account = {
         username: 'employee@hochfrequenz.de',
