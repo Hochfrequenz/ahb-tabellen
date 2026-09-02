@@ -43,4 +43,13 @@ export const routes: Routes = [
     loadComponent: async () =>
       (await import('./features/mcp-info/mcp-info.component')).McpInfoComponent,
   },
+  {
+    path: 'login',
+    loadComponent: async () => (await import('./features/login/login.component')).LoginComponent,
+  },
+  {
+    path: 'auth/msal-callback',
+    loadComponent: async () =>
+      (await import('./features/login/msal-callback.component')).MsalCallbackComponent,
+  },
 ];
