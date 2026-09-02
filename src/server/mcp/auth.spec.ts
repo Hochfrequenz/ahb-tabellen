@@ -100,9 +100,10 @@ describe('mcp/auth', () => {
         loadMcpAuthConfig({
           MCP_ENTRA_TENANT_ID: 'tenant-guid',
           MCP_ENTRA_AUDIENCE: 'api://ahb-mcp',
+          MCP_RESOURCE: 'https://host/mcp',
         })
       ).toEqual({
-        resource: 'api://ahb-mcp',
+        resource: 'https://host/mcp',
         providers: [
           {
             kind: 'entra',
@@ -114,12 +115,35 @@ describe('mcp/auth', () => {
       });
     });
 
+    it('throws for an Entra-only config without MCP_RESOURCE (api:// audience is not a fetchable resource URL)', () => {
+      expect(() =>
+        loadMcpAuthConfig({
+          MCP_ENTRA_TENANT_ID: 'tenant-guid',
+          MCP_ENTRA_AUDIENCE: 'api://ahb-mcp',
+        })
+      ).toThrow(/MCP_RESOURCE/);
+    });
+
+    it('defaults resource to the first http(s) provider audience (Auth0) in a dual config', () => {
+      // Even without MCP_RESOURCE, the RFC 9728 resource must be a fetchable https URL,
+      // not the Entra api:// audience.
+      expect(
+        loadMcpAuthConfig({
+          MCP_AUTH0_ISSUER_BASE_URL: AUTH0_ISSUER,
+          MCP_AUTH0_AUDIENCE: 'https://host/mcp',
+          MCP_ENTRA_TENANT_ID: 'tenant-guid',
+          MCP_ENTRA_AUDIENCE: 'api://ahb-mcp',
+        })?.resource
+      ).toBe('https://host/mcp');
+    });
+
     it('honors an explicit MCP_ENTRA_ISSUER override instead of deriving from the tenant', () => {
       const custom = 'https://login.microsoftonline.com/other/v2.0';
       const cfg = loadMcpAuthConfig({
         MCP_ENTRA_TENANT_ID: 'tenant-guid',
         MCP_ENTRA_ISSUER: custom,
         MCP_ENTRA_AUDIENCE: 'api://ahb-mcp',
+        MCP_RESOURCE: 'https://host/mcp',
       });
       expect(cfg?.providers[0].issuer).toBe(custom);
       expect(cfg?.providers[0].issuerBaseURL).toBe(custom);

@@ -186,7 +186,7 @@ MCP_AUTH0_AUDIENCE=https://ahb-tabellen.hochfrequenz.de/mcp   # the Auth0 API id
 MCP_ENTRA_TENANT_ID=<entra-tenant-guid>                       # → issuer https://login.microsoftonline.com/<tenant>/v2.0
 MCP_ENTRA_AUDIENCE=api://ahb-tabellen-mcp                     # the Entra API Application ID URI (token `aud`)
 # MCP_ENTRA_ISSUER=...                                        # optional; overrides the derived v2.0 issuer
-# MCP_RESOURCE=...                                            # optional; defaults to the first provider's audience
+# MCP_RESOURCE=...                                            # RFC 9728 resource (endpoint https URL); defaults to the first http(s) provider audience — REQUIRED for an Entra-only deployment
 ```
 
 If no provider is set, the MCP endpoint runs **unauthenticated** (useful for local development).

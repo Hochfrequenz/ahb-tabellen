@@ -91,7 +91,22 @@ export function loadMcpAuthConfig(env: NodeJS.ProcessEnv = process.env): McpAuth
     return undefined;
   }
 
-  return { resource: env['MCP_RESOURCE'] ?? providers[0].audience, providers };
+  // The RFC 9728 `resource` must be the endpoint's canonical http(s) URL (it drives the
+  // `.well-known/oauth-protected-resource` and `WWW-Authenticate` pointers). An Auth0 audience
+  // already is that URL, but an Entra audience is an `api://…` Application ID URI, which is not
+  // fetchable — so default to the first provider whose audience is an http(s) URL, and require
+  // an explicit MCP_RESOURCE when none is (e.g. an Entra-only deployment).
+  const resource =
+    env['MCP_RESOURCE'] ?? providers.find(p => /^https?:\/\//i.test(p.audience))?.audience;
+  if (!resource) {
+    throw new Error(
+      'MCP_RESOURCE must be set to the canonical https URL of the MCP endpoint when no ' +
+        'configured provider audience is an http(s) URL (e.g. an Entra-only deployment whose ' +
+        'audience is an api:// Application ID URI).'
+    );
+  }
+
+  return { resource, providers };
 }
 
 /** RFC 9728 Protected Resource Metadata document. */
