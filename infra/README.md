@@ -106,3 +106,42 @@ pulumi stack select
 ```bash
 pulumi stack output
 ```
+
+## Microsoft Entra ID app registrations (optional)
+
+`index.ts` can provision the two Entra ID app registrations behind Microsoft (Entra) sign-in and
+the Copilot 365 agent's access to the MCP endpoint (see #951):
+
+1. **MCP resource app** — exposes the delegated `api://<clientId>/access_as_user` scope and issues
+   **v2** access tokens. Its client id is injected into the container as `MCP_ENTRA_AUDIENCE`
+   (the audience the backend validates), alongside `MCP_ENTRA_TENANT_ID`.
+2. **SPA app** — for the Angular login; redirect URI `<appBaseUrl>/auth/msal-callback`. Its client
+   id is exported (see below) and must be copied into `src/app/environments/environment.<env>.ts`
+   as `entraClientId` (with `entraAuthority` = `https://login.microsoftonline.com/<tenantId>`),
+   because Angular embeds it at build time.
+
+### Prerequisite: the `azuread` provider must be authenticated
+
+Unlike the `azure-native` resources (deployment service principal), the `azuread` provider needs a
+principal with **Directory-write** permissions (e.g. the Graph app role `Application.ReadWrite.OwnedBy`).
+Authenticate it via `az login` (a user/SP with those permissions) or `ARM_*` / `AZURE_*` env vars.
+**Whoever holds those credentials must run `pulumi up` for this block** — it is intentionally left
+out of the per-PR `pulumi preview` unless enabled.
+
+### Enable it
+
+The block is **skipped entirely** until `entraTenantId` is set, so stacks that haven't opted in
+preview and deploy exactly as before. To enable for a stack:
+
+```bash
+pulumi config set entraTenantId fb2b0361-fa12-48a5-bade-533bf89760d9   # the Entra/Azure tenant
+pulumi config set appBaseUrl https://ahb-tabellen.stage.hochfrequenz.de # for the SPA redirect URI
+pulumi up   # requires the azuread provider credentials described above
+```
+
+Then wire the exported SPA client id into the Angular environment and redeploy:
+
+```bash
+pulumi stack output entraSpaClientIdOutput        # → environment.<env>.ts: entraClientId
+pulumi stack output entraMcpResourceClientIdOutput # informational; already injected as MCP_ENTRA_AUDIENCE
+```

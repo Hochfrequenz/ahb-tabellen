@@ -6,7 +6,8 @@
         "typescript": "^5.9.3"
     },
     "dependencies": {
-        "@pulumi/pulumi": "3.257.0",
-        "@pulumi/azure-native": "2.90.0"
+        "@pulumi/azure-native": "2.90.0",
+        "@pulumi/azuread": "^6.10.0",
+        "@pulumi/pulumi": "3.257.0"
     }
 }
