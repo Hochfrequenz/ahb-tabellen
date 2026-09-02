@@ -14,7 +14,7 @@ import crypto from 'crypto';
 import express from 'express';
 import type { AddressInfo } from 'net';
 import type { Server } from 'http';
-import { RequestHandler } from 'express';
+import type { RequestHandler } from 'express';
 import { auth } from 'express-oauth2-jwt-bearer';
 import { requireBearer, McpAuthConfig } from './auth';
 
