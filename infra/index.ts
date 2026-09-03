@@ -138,8 +138,10 @@ if (entraEnabled) {
 
     // The Entra tenant is the Azure directory the deployment already targets — Azure AD *is*
     // Entra ID, and `azure-native:tenantId` is that directory's id. So there is no separate tenant
-    // to configure: the app registrations are created in it and MCP_ENTRA_TENANT_ID validates
-    // against it, which also rules out any tenant drift between provisioning and validation.
+    // to configure, which removes the redundant config value and any *config-level* drift between
+    // provisioning and validation. (Residual runtime drift is still possible if the azuread
+    // provider credentials authenticate against a different tenant — they aren't in Pulumi config —
+    // so those credentials MUST operate in this same tenant; see infra/README.md.)
     const entraTenantId = azureConfig.get("tenantId");
     if (!entraTenantId) {
         throw new Error("azure-native:tenantId must be set to provision the Entra app registrations.");
