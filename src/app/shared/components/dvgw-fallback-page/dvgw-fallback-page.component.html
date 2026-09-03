@@ -6,19 +6,17 @@
 
   <div class="text-lg leading-relaxed">
     <p class="mb-4">
-      {{ message }}
+      {{ message() }}
     </p>
 
-    <div class="bg-white bg-opacity-50 p-4 rounded-lg border-l-4 border-hf-weiches-schwarz">
-      <p class="text-sm text-hf-weiches-schwarz">
-        <strong>Hinweis:</strong> Für diese Prüfidentifikatoren verwende das
-        <a
-          href="https://www.dvgw-sc.de/medien/Dokumente_Datenaustausch/Nachrichtentypen/SSQNOT_5.7_Stand_2019-04-01.pdf"
-          target="_blank"
-          class="underline"
-          >PDF-Dokument der DVGW</a
-        >.
-      </p>
-    </div>
+    @if (nachrichtentyp(); as nachrichtentyp) {
+      <div class="bg-white bg-opacity-50 p-4 rounded-lg border-l-4 border-hf-weiches-schwarz">
+        <p class="text-sm text-hf-weiches-schwarz">
+          <strong>Hinweis:</strong> Die jeweils aktuelle Fassung des Nachrichtentyps
+          {{ nachrichtentyp }} findest du im
+          <a [href]="archiveUrl" target="_blank" class="underline">DVGW-Dokumentenarchiv</a>.
+        </p>
+      </div>
+    }
   </div>
 </div>
