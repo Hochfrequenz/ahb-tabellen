@@ -2,6 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as resources from "@pulumi/azure-native/resources";
 import * as storage from "@pulumi/azure-native/storage";
 import * as web from "@pulumi/azure-native/web";
+import * as azuread from "@pulumi/azuread";
 
 // Import the program's configuration settings.
 const config = new pulumi.Config();
@@ -114,6 +115,100 @@ if (mcpAuth0IssuerBaseUrl && mcpAuth0Audience) {
     );
 }
 
+// --- Microsoft Entra ID app registrations (optional; gated on config). ---
+// Provisions the two app registrations behind Microsoft (Entra) sign-in and the Copilot 365
+// agent's access to the MCP endpoint:
+//   (1) an MCP *resource* app exposing the delegated `access_as_user` scope (v2 access tokens),
+//       whose client id is the audience the backend validates (MCP_ENTRA_AUDIENCE), and
+//   (2) a *SPA* app whose client id the Angular build embeds (exported here for wiring into
+//       src/app/environments/environment.<env>.ts).
+// The azuread provider must be authenticated with Directory-write permissions (separate from the
+// azure-native service principal — see infra/README.md), operating in the SAME tenant the
+// deployment already targets. Leave `entraEnabled` unset/false to skip the whole block, so
+// `pulumi preview` behaves exactly as before on stacks that haven't opted in.
+let entraSpaClientId: pulumi.Output<string> | undefined;
+let entraMcpResourceClientId: pulumi.Output<string> | undefined;
+
+const entraEnabled = config.getBoolean("entraEnabled");
+if (entraEnabled) {
+    const appBaseUrl = config.get("appBaseUrl");
+    if (!appBaseUrl) {
+        throw new Error("appBaseUrl must be set when entraEnabled is true (used for the SPA redirect URI).");
+    }
+
+    // The Entra tenant is the Azure directory the deployment already targets — Azure AD *is*
+    // Entra ID, and `azure-native:tenantId` is that directory's id. So there is no separate tenant
+    // to configure, which removes the redundant config value and any *config-level* drift between
+    // provisioning and validation. (Residual runtime drift is still possible if the azuread
+    // provider credentials authenticate against a different tenant — they aren't in Pulumi config —
+    // so those credentials MUST operate in this same tenant; see infra/README.md.)
+    const entraTenantId = azureConfig.get("tenantId");
+    if (!entraTenantId) {
+        throw new Error("azure-native:tenantId must be set to provision the Entra app registrations.");
+    }
+
+    // Stable identifier for the exposed delegated scope — must not change across deploys.
+    const ACCESS_AS_USER_SCOPE_ID = "6b3f8f7a-6c1e-4c9a-9b2d-9e0a1f2b3c4d";
+
+    // (1) MCP resource server app: exposes api://<clientId>/access_as_user, issues v2 tokens.
+    const mcpApp = new azuread.Application(`ahb-tabellen-mcp-${environment}`, {
+        displayName: `ahb-tabellen-mcp-${environment}`,
+        signInAudience: "AzureADMyOrg", // single tenant
+        api: {
+            requestedAccessTokenVersion: 2,
+            oauth2PermissionScopes: [{
+                id: ACCESS_AS_USER_SCOPE_ID,
+                value: "access_as_user",
+                type: "User",
+                enabled: true,
+                adminConsentDisplayName: "Access AHB-Tabellen MCP",
+                adminConsentDescription: "Allow the app to access the AHB-Tabellen MCP tools as the signed-in user.",
+                userConsentDisplayName: "Access AHB-Tabellen MCP",
+                userConsentDescription: "Allow the app to access the AHB-Tabellen MCP tools on your behalf.",
+            }],
+        },
+    });
+
+    // Clients REQUEST the scope api://<clientId>/access_as_user, so the app needs that identifier
+    // URI. Added as a separate resource to avoid a self-cycle on the application's clientId. Note
+    // this api:// URI is NOT the token audience the backend validates — see MCP_ENTRA_AUDIENCE below.
+    const mcpIdentifierUri = pulumi.interpolate`api://${mcpApp.clientId}`;
+    new azuread.ApplicationIdentifierUri(`ahb-tabellen-mcp-${environment}-uri`, {
+        applicationId: mcpApp.id,
+        identifierUri: mcpIdentifierUri,
+    });
+
+    new azuread.ServicePrincipal(`ahb-tabellen-mcp-${environment}-sp`, {
+        clientId: mcpApp.clientId,
+    });
+
+    // (2) SPA app registration: gating-only login, so no API permission is required here.
+    const spaApp = new azuread.Application(`ahb-tabellen-spa-${environment}`, {
+        displayName: `ahb-tabellen-spa-${environment}`,
+        signInAudience: "AzureADMyOrg",
+        singlePageApplication: {
+            // Trim a trailing slash so a configured "https://host/" can't yield a double-slash
+            // redirect URI that won't match what MSAL sends.
+            redirectUris: [`${appBaseUrl.replace(/\/+$/, "")}/auth/msal-callback`],
+        },
+    });
+    new azuread.ServicePrincipal(`ahb-tabellen-spa-${environment}-sp`, {
+        clientId: spaApp.clientId,
+    });
+
+    // MCP_ENTRA_AUDIENCE is the token `aud` the backend validates. For v2 access tokens
+    // (requestedAccessTokenVersion: 2) the aud is the resource app's client-id GUID — NOT the
+    // api://<clientId> URI, which is only what clients request as the scope. (See the decoded v2
+    // token example at https://learn.microsoft.com/entra/identity-platform/access-tokens.)
+    appSettings.push(
+        { name: "MCP_ENTRA_TENANT_ID", value: entraTenantId },
+        { name: "MCP_ENTRA_AUDIENCE", value: mcpApp.clientId },
+    );
+
+    entraSpaClientId = spaApp.clientId;
+    entraMcpResourceClientId = mcpApp.clientId;
+}
+
 // Create a Web App
 const webApp = new web.WebApp("ahb-tabellen", {
     resourceGroupName: resourceGroup.name,
@@ -127,3 +222,9 @@ const webApp = new web.WebApp("ahb-tabellen", {
 
 // Export the endpoint of the web app
 export const endpoint = webApp.defaultHostName;
+
+// Entra app-registration outputs (undefined unless `entraTenantId` is configured). The SPA
+// client id must be copied into src/app/environments/environment.<env>.ts (entraClientId); the
+// backend consumes the MCP resource client id as MCP_ENTRA_AUDIENCE automatically (above).
+export const entraSpaClientIdOutput = entraSpaClientId;
+export const entraMcpResourceClientIdOutput = entraMcpResourceClientId;
