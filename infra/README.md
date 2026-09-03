@@ -125,18 +125,20 @@ the Copilot 365 agent's access to the MCP endpoint (see #951):
 ### Prerequisite: the `azuread` provider must be authenticated
 
 Unlike the `azure-native` resources (deployment service principal), the `azuread` provider needs a
-principal with **Directory-write** permissions (e.g. the Graph app role `Application.ReadWrite.OwnedBy`).
-Authenticate it via `az login` (a user/SP with those permissions) or `ARM_*` / `AZURE_*` env vars.
-**Whoever holds those credentials must run `pulumi up` for this block** — it is intentionally left
-out of the per-PR `pulumi preview` unless enabled.
+principal with **Directory-write** permissions (e.g. the Graph app role `Application.ReadWrite.OwnedBy`),
+operating in the **same tenant** as `azure-native:tenantId`. Authenticate it via `az login` (a
+user/SP with those permissions) or `ARM_*` / `AZURE_*` env vars. **Whoever holds those credentials
+must run `pulumi up` for this block** — it is intentionally left out of the per-PR `pulumi preview`
+unless enabled.
 
 ### Enable it
 
-The block is **skipped entirely** until `entraTenantId` is set, so stacks that haven't opted in
-preview and deploy exactly as before. To enable for a stack:
+The block is **skipped entirely** until `entraEnabled` is `true`, so stacks that haven't opted in
+preview and deploy exactly as before. The Entra tenant is taken from `azure-native:tenantId` (Azure
+AD *is* Entra ID — no separate tenant to configure). To enable for a stack:
 
 ```bash
-pulumi config set entraTenantId <tenant-guid>                           # the Entra/Azure tenant (== azure-native:tenantId)
+pulumi config set entraEnabled true                                    # turn the block on
 pulumi config set appBaseUrl https://ahb-tabellen.stage.hochfrequenz.de # for the SPA redirect URI
 pulumi up   # requires the azuread provider credentials described above
 ```
