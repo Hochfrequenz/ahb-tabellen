@@ -231,6 +231,8 @@ describe('AuthFacade', () => {
 
       expect(msal.initialize).toHaveBeenCalledTimes(1);
       expect(msal.handleRedirectPromise).toHaveBeenCalledTimes(1);
+      // Must suppress MSAL's navigate-back so our callback route owns post-login routing.
+      expect(msal.handleRedirectPromise).toHaveBeenCalledWith({ navigateToLoginRequestUrl: false });
       expect(msal.setActiveAccount).toHaveBeenCalledWith(account);
       await expect(firstValueFrom(facade.isAuthenticated$)).resolves.toBe(true);
     });
