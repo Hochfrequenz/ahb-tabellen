@@ -123,30 +123,28 @@ if (mcpAuth0IssuerBaseUrl && mcpAuth0Audience) {
 //   (2) a *SPA* app whose client id the Angular build embeds (exported here for wiring into
 //       src/app/environments/environment.<env>.ts).
 // The azuread provider must be authenticated with Directory-write permissions (separate from the
-// azure-native service principal — see infra/README.md). Leave `entraTenantId` UNSET to skip the
-// whole block, so `pulumi preview` behaves exactly as before on stacks that haven't opted in.
+// azure-native service principal — see infra/README.md), operating in the SAME tenant the
+// deployment already targets. Leave `entraEnabled` unset/false to skip the whole block, so
+// `pulumi preview` behaves exactly as before on stacks that haven't opted in.
 let entraSpaClientId: pulumi.Output<string> | undefined;
 let entraMcpResourceClientId: pulumi.Output<string> | undefined;
 
-const entraTenantId = config.get("entraTenantId");
-if (entraTenantId) {
+const entraEnabled = config.getBoolean("entraEnabled");
+if (entraEnabled) {
     const appBaseUrl = config.get("appBaseUrl");
     if (!appBaseUrl) {
-        throw new Error("appBaseUrl must be set when entraTenantId is configured (used for the SPA redirect URI).");
+        throw new Error("appBaseUrl must be set when entraEnabled is true (used for the SPA redirect URI).");
     }
 
-    // Sanity check: the app registrations are provisioned into whatever tenant the azuread
-    // provider credentials target, while MCP_ENTRA_TENANT_ID drives runtime token validation. If
-    // entraTenantId drifts from the Azure deployment tenant, the registrations and the validator
-    // can end up in different tenants and Entra sign-in fails at runtime. Warn (don't fail — the
-    // azuread creds may legitimately target a different tenant than azure-native).
-    const azureTenantId = azureConfig.get("tenantId");
-    if (azureTenantId && azureTenantId !== entraTenantId) {
-        pulumi.log.warn(
-            `entraTenantId (${entraTenantId}) differs from azure-native:tenantId (${azureTenantId}). ` +
-            `Ensure the azuread provider credentials operate in the entraTenantId tenant, otherwise ` +
-            `the app registrations and MCP_ENTRA_TENANT_ID validation will target different tenants.`,
-        );
+    // The Entra tenant is the Azure directory the deployment already targets — Azure AD *is*
+    // Entra ID, and `azure-native:tenantId` is that directory's id. So there is no separate tenant
+    // to configure, which removes the redundant config value and any *config-level* drift between
+    // provisioning and validation. (Residual runtime drift is still possible if the azuread
+    // provider credentials authenticate against a different tenant — they aren't in Pulumi config —
+    // so those credentials MUST operate in this same tenant; see infra/README.md.)
+    const entraTenantId = azureConfig.get("tenantId");
+    if (!entraTenantId) {
+        throw new Error("azure-native:tenantId must be set to provision the Entra app registrations.");
     }
 
     // Stable identifier for the exposed delegated scope — must not change across deploys.
