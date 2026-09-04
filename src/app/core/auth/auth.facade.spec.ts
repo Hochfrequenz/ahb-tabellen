@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '@auth0/auth0-angular';
-import { firstValueFrom, Observable, of } from 'rxjs';
+import { firstValueFrom, Observable, Subject, of } from 'rxjs';
 import { AuthFacade, POST_LOGIN_TARGET_KEY } from './auth.facade';
 import { AUTH_IS_DEVELOPMENT, MSAL_CLIENT } from './msal.tokens';
 
@@ -127,6 +127,47 @@ describe('AuthFacade', () => {
       // MSAL state is only read after initialize(); before init it must not be queried.
       await facade.initializeMsal();
       await expect(firstValueFrom(facade.isAuthenticated$)).resolves.toBe(true);
+    });
+  });
+
+  describe('recognising a session', () => {
+    it('reports authenticated from MSAL without waiting for Auth0 to answer', async () => {
+      // Auth0's isAuthenticated$ is gated behind its own loading check and emits NOTHING until
+      // that resolves. A cached Microsoft account must not be held hostage to it.
+      const auth0Pending = new Subject<boolean>();
+      const msal = makeMsal({
+        getAllAccounts: jest.fn().mockReturnValue([{ username: 'e@hf.de' }]),
+      });
+      const { facade } = createFacade(
+        false,
+        makeAuth0({ isAuthenticated$: auth0Pending.asObservable() }),
+        msal
+      );
+
+      const seen: boolean[] = [];
+      const sub = facade.isAuthenticated$.subscribe(value => seen.push(value));
+      await facade.initializeMsal();
+
+      expect(seen).toEqual([true]);
+      sub.unsubscribe();
+    });
+
+    it('still reports anonymous only once both providers have answered', async () => {
+      const auth0Pending = new Subject<boolean>();
+      const { facade } = createFacade(
+        false,
+        makeAuth0({ isAuthenticated$: auth0Pending.asObservable() })
+      );
+
+      const seen: boolean[] = [];
+      const sub = facade.isAuthenticated$.subscribe(value => seen.push(value));
+      // Neither has said yes; nothing may be reported yet, or the guard would bounce a user whose
+      // session check simply has not finished.
+      expect(seen).toEqual([]);
+
+      auth0Pending.next(false);
+      expect(seen).toEqual([false]);
+      sub.unsubscribe();
     });
   });
 

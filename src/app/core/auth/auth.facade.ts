@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { AuthService as Auth0Service } from '@auth0/auth0-angular';
-import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, merge, Observable, of } from 'rxjs';
+import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AUTH_IS_DEVELOPMENT, MSAL_CLIENT } from './msal.tokens';
 import { safeStorageGet, safeStorageRemove, safeStorageSet } from './safe-storage';
@@ -60,10 +60,19 @@ export class AuthFacade {
 
     // Do NOT read msal.getAllAccounts() here: MSAL throws if queried before initialize().
     // The state starts false and is set in initializeMsal(), run by the app initializer.
-    this.isAuthenticated$ = combineLatest([
-      this.auth0.isAuthenticated$,
-      this.msalAuthenticated$,
-    ]).pipe(map(([auth0Authed, msalAuthed]) => auth0Authed || msalAuthed));
+    // A definitive "yes" from either provider must not wait on the other. combineLatest alone
+    // emits nothing until BOTH have reported, and Auth0's isAuthenticated$ is gated behind its own
+    // loading check — so a Hochfrequenz employee with a cached Microsoft account would sit behind
+    // Auth0's session round trip before being recognised, penalising exactly the audience the
+    // second provider exists for. "No" still requires both to have answered, so nothing reports
+    // anonymous while a check is still in flight.
+    this.isAuthenticated$ = merge(
+      this.auth0.isAuthenticated$.pipe(filter(authed => authed)),
+      this.msalAuthenticated$.pipe(filter(authed => authed)),
+      combineLatest([this.auth0.isAuthenticated$, this.msalAuthenticated$]).pipe(
+        map(([auth0Authed, msalAuthed]) => auth0Authed || msalAuthed)
+      )
+    ).pipe(distinctUntilChanged());
 
     this.isLoading$ = this.auth0.isLoading$;
 
