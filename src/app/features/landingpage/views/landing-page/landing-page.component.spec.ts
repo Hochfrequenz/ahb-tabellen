@@ -168,6 +168,18 @@ describe('LandingPageComponent', () => {
       expect(router.navigateByUrl).toHaveBeenCalledWith('/features');
     });
 
+    it('attempts the fallback and swallows its failure too', async () => {
+      await setup(true, '/does-not-exist');
+      router.navigateByUrl.mockRejectedValue(new Error('chunk load failed'));
+      const fixture = MockRender(LandingPageComponent);
+      clickButton(fixture, 'Jetzt öffnen');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      // /features is itself a lazy route, so it can fail too. Without a catch on that leg the
+      // failure becomes an unhandled rejection the user can do nothing about.
+      expect(router.navigateByUrl).toHaveBeenNthCalledWith(1, '/does-not-exist');
+      expect(router.navigateByUrl).toHaveBeenNthCalledWith(2, '/features');
+    });
+
     it('falls back to the feature picker when the target matches no route', async () => {
       await setup(true, '/does-not-exist');
       router.navigateByUrl
@@ -184,40 +196,60 @@ describe('LandingPageComponent', () => {
   });
 
   describe('while the session check is still in flight', () => {
-    it('does not offer the provider choice before the answer is known', async () => {
-      // Auth0's isAuthenticated$ emits NOTHING until its session check resolves. Treating that
-      // silence as "signed out" would show a signed-in visitor a chooser they must not see.
+    it('offers no sign-in at all before the answer is known', async () => {
+      // Auth0's isAuthenticated$ emits NOTHING until its session check resolves. Signing in is a
+      // one-way door into one provider, so the CTA must hold rather than guess.
       await setup(NEVER);
       const fixture = MockRender(LandingPageComponent);
       const buttons = buttonsOf(fixture);
       expect(buttons).toHaveLength(1);
-      expect(buttons[0].textContent).toContain('Jetzt öffnen');
+      expect(buttons[0].disabled).toBe(true);
+      expect(buttons[0].getAttribute('aria-busy')).toBe('true');
+      expect(fixture.nativeElement.innerHTML).not.toContain('Mit Microsoft anmelden');
     });
 
-    it('resolves the session at click time rather than assuming signed out', async () => {
-      const authenticated$ = new Subject<boolean>();
-      await setup(authenticated$, '/ahb/FV2504/11042');
-      const fixture = MockRender(LandingPageComponent);
-
-      clickButton(fixture, 'Jetzt öffnen');
-      // Nothing may happen yet — the answer has not arrived.
-      expect(facade.login).not.toHaveBeenCalled();
-      expect(router.navigateByUrl).not.toHaveBeenCalled();
-
-      authenticated$.next(true);
-      // A signed-in Microsoft employee clicking here must NOT be pushed into the Auth0 flow.
-      expect(facade.login).not.toHaveBeenCalled();
-      expect(router.navigateByUrl).toHaveBeenCalledWith('/ahb/FV2504/11042');
-    });
-
-    it('signs in once the answer comes back negative', async () => {
+    it('cannot be made to sign in by clicking during the wait', async () => {
       const authenticated$ = new Subject<boolean>();
       await setup(authenticated$);
       const fixture = MockRender(LandingPageComponent);
 
-      clickButton(fixture, 'Jetzt öffnen');
+      // Clicks here used to queue up and all fire at once when the answer arrived — each one a
+      // separate loginWithRedirect, colliding over auth0-spa-js's single PKCE transaction slot.
+      buttonsOf(fixture).forEach(button => button.click());
+      buttonsOf(fixture).forEach(button => button.click());
       authenticated$.next(false);
-      expect(facade.login).toHaveBeenCalledWith('auth0', '/features');
+
+      expect(facade.login).not.toHaveBeenCalled();
+      expect(router.navigateByUrl).not.toHaveBeenCalled();
+    });
+
+    it('offers the provider choice once the answer comes back signed out', async () => {
+      const authenticated$ = new Subject<boolean>();
+      await setup(authenticated$);
+      const fixture = MockRender(LandingPageComponent);
+
+      authenticated$.next(false);
+      fixture.detectChanges();
+
+      const labels = buttonsOf(fixture).map(button => button.textContent?.trim());
+      expect(labels).toHaveLength(2);
+      expect(labels[1]).toContain('Mit Microsoft anmelden');
+    });
+
+    it('does not act after the component is destroyed', async () => {
+      const authenticated$ = new Subject<boolean>();
+      await setup(authenticated$);
+      const fixture = MockRender(LandingPageComponent);
+
+      // Click first, so any deferred work exists, THEN leave the page before the answer lands.
+      buttonsOf(fixture).forEach(button => button.click());
+      fixture.destroy();
+      authenticated$.next(false);
+
+      // A subscription outliving the component would redirect a user who has already navigated
+      // away (the footer links out to /mcp-integration) into a sign-in they never asked for.
+      expect(facade.login).not.toHaveBeenCalled();
+      expect(router.navigateByUrl).not.toHaveBeenCalled();
     });
   });
 

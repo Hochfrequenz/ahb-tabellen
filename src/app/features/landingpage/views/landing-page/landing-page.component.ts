@@ -1,12 +1,15 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { map, take } from 'rxjs/operators';
-import { AuthFacade } from '../../../../core/auth/auth.facade';
+import { map, startWith } from 'rxjs/operators';
+import { AuthFacade, AuthProviderId } from '../../../../core/auth/auth.facade';
 import { safeInternalTarget } from '../../../../core/auth/safe-target';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { environment } from '../../../../environments/environment';
 import { Meta, Title } from '@angular/platform-browser';
+
+/** What the call-to-action area may safely offer, given what is known about the session so far. */
+export type CtaState = 'pending' | 'authenticated' | 'anonymous';
 
 @Component({
   selector: 'app-landing-page',
@@ -23,12 +26,16 @@ export class LandingPageComponent implements OnInit {
   private readonly title = inject(Title);
 
   /**
-   * Whether to offer the provider choice at all. `isAuthenticated$` emits nothing while Auth0's
-   * session check is still in flight, so this stays silent (and the async pipe yields null) until
-   * the answer is known — "not known yet" must never render as "signed out".
+   * `isAuthenticated$` emits nothing while Auth0's session check is in flight, so 'pending' is an
+   * explicit third state rather than something the template infers from a null async value.
+   *
+   * Sign-in is a one-way door: it commits the user to one identity provider. Offering it before
+   * we know who they are would let a Hochfrequenz employee be sent into Auth0, where they have no
+   * account — the exact outcome the design record rejects. So no CTA acts until this resolves.
    */
-  readonly showProviderChoice$ = this.facade.isAuthenticated$.pipe(
-    map(isAuthenticated => !isAuthenticated)
+  readonly ctaState$ = this.facade.isAuthenticated$.pipe(
+    map((isAuthenticated): CtaState => (isAuthenticated ? 'authenticated' : 'anonymous')),
+    startWith('pending' as CtaState)
   );
 
   ngOnInit() {
@@ -81,31 +88,26 @@ export class LandingPageComponent implements OnInit {
   }
 
   /**
-   * The primary CTA is painted before the session check answers, so resolve the session at click
-   * time instead of trusting what was rendered. Assuming "signed out" here would push an
-   * already-signed-in Microsoft employee into the Auth0 flow, where they have no account.
+   * Only reachable from the 'anonymous' branch, so the session is known and this can act directly —
+   * no deferred subscription to leak, and no queue of clicks to fire at once when it resolves.
    */
-  onPrimaryClick(): void {
-    this.facade.isAuthenticated$.pipe(take(1)).subscribe(isAuthenticated => {
-      if (isAuthenticated) {
-        this.navigateToTarget();
-      } else {
-        this.facade.login('auth0', this.resolveTarget());
-      }
-    });
-  }
-
-  /** Only rendered once the check has answered "signed out", so this can act without re-checking. */
-  signInWithMicrosoft(): void {
-    this.facade.login('microsoft', this.resolveTarget());
+  signIn(provider: AuthProviderId): void {
+    this.facade.login(provider, this.resolveTarget());
   }
 
   /** Already signed in — the CTA is a plain navigation, not a login. */
-  private navigateToTarget(): void {
-    void this.router.navigateByUrl(this.resolveTarget()).catch(() => {
+  open(): void {
+    const target = this.resolveTarget();
+    void this.router.navigateByUrl(target).catch(() => {
       // A target can be rooted and same-origin yet still match no route. Failing silently would
       // leave the page's only call to action doing nothing at all.
-      void this.router.navigateByUrl('/features');
+      if (target === '/features') {
+        return;
+      }
+      void this.router.navigateByUrl('/features').catch(() => {
+        // The fallback is itself a lazy route, so it can fail too (offline, stale chunk). Swallow
+        // it rather than raising an unhandled rejection the user cannot act on.
+      });
     });
   }
 

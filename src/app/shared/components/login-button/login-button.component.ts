@@ -4,6 +4,9 @@ import { Router } from '@angular/router';
 import { combineLatest, map, Observable } from 'rxjs';
 import { AuthFacade, AuthProviderId } from '../../../core/auth/auth.facade';
 
+/** Per-instance counter: the header renders this component twice, so the hint id must differ. */
+let nextHintId = 0;
+
 @Component({
   selector: 'app-login-button',
   standalone: true,
@@ -14,6 +17,9 @@ import { AuthFacade, AuthProviderId } from '../../../core/auth/auth.facade';
 export class LoginButtonComponent {
   private facade = inject(AuthFacade);
   private router = inject(Router);
+
+  /** Unique per instance — a duplicated id makes aria-describedby resolve to the wrong element. */
+  readonly microsoftHintId = `ms-login-hint-${nextHintId++}`;
 
   authState$: Observable<{ isAuthenticated: boolean; isLoading: boolean }> = combineLatest([
     this.facade.isAuthenticated$,

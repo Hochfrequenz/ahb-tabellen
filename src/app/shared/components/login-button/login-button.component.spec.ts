@@ -73,6 +73,16 @@ describe('LoginButtonComponent', () => {
     );
   });
 
+  it('gives each instance a unique hint id', async () => {
+    // The header renders <app-login-button/> twice (desktop + the always-present mobile menu), so
+    // a hardcoded id would appear twice in the document and both buttons would describe the first.
+    await setup(false);
+    const first = fixture.componentInstance.microsoftHintId;
+    TestBed.resetTestingModule();
+    await setup(false);
+    expect(fixture.componentInstance.microsoftHintId).not.toBe(first);
+  });
+
   it('labels the sign-in paths by audience, never by vendor', async () => {
     await setup(false);
     const html = (fixture.nativeElement as HTMLElement).innerHTML;
