@@ -147,8 +147,9 @@ export class AuthFacade {
   private async doInitializeMsal(): Promise<void> {
     await this.msal.initialize();
     // navigateToLoginRequestUrl: false — we own post-login routing (MsalCallbackComponent). Left
-    // at the default (true), MSAL navigates back to the URL where loginRedirect was called from
-    // (the /login chooser), bouncing the just-signed-in user straight back to the login page.
+    // at the default (true), MSAL navigates back to whichever URL loginRedirect was called from
+    // (the landing page, or any page the header button was used on), overriding our own redirect
+    // to the stashed target. Still load-bearing now that the /login chooser is gone.
     const result = await this.msal.handleRedirectPromise({ navigateToLoginRequestUrl: false });
     if (result?.account) {
       this.msal.setActiveAccount(result.account);

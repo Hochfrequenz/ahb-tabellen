@@ -1,7 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthFacade, AuthProviderId } from '../../../../core/auth/auth.facade';
+import { map, take } from 'rxjs/operators';
+import { AuthFacade } from '../../../../core/auth/auth.facade';
 import { safeInternalTarget } from '../../../../core/auth/safe-target';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { environment } from '../../../../environments/environment';
@@ -21,8 +22,14 @@ export class LandingPageComponent implements OnInit {
   private meta = inject(Meta);
   private readonly title = inject(Title);
 
-  /** Drives the CTA: signed-in visitors get a plain "open the app" button, not a provider choice. */
-  readonly isAuthenticated$ = this.facade.isAuthenticated$;
+  /**
+   * Whether to offer the provider choice at all. `isAuthenticated$` emits nothing while Auth0's
+   * session check is still in flight, so this stays silent (and the async pipe yields null) until
+   * the answer is known — "not known yet" must never render as "signed out".
+   */
+  readonly showProviderChoice$ = this.facade.isAuthenticated$.pipe(
+    map(isAuthenticated => !isAuthenticated)
+  );
 
   ngOnInit() {
     const baseUrl = environment.baseUrl;
@@ -74,16 +81,32 @@ export class LandingPageComponent implements OnInit {
   }
 
   /**
-   * Start a sign-in. Both CTAs land here; they differ only in which provider they name, so the
-   * page never has to know anything about Auth0 or MSAL beyond the provider id.
+   * The primary CTA is painted before the session check answers, so resolve the session at click
+   * time instead of trusting what was rendered. Assuming "signed out" here would push an
+   * already-signed-in Microsoft employee into the Auth0 flow, where they have no account.
    */
-  signIn(provider: AuthProviderId): void {
-    this.facade.login(provider, this.resolveTarget());
+  onPrimaryClick(): void {
+    this.facade.isAuthenticated$.pipe(take(1)).subscribe(isAuthenticated => {
+      if (isAuthenticated) {
+        this.navigateToTarget();
+      } else {
+        this.facade.login('auth0', this.resolveTarget());
+      }
+    });
+  }
+
+  /** Only rendered once the check has answered "signed out", so this can act without re-checking. */
+  signInWithMicrosoft(): void {
+    this.facade.login('microsoft', this.resolveTarget());
   }
 
   /** Already signed in — the CTA is a plain navigation, not a login. */
-  open(): void {
-    void this.router.navigateByUrl(this.resolveTarget());
+  private navigateToTarget(): void {
+    void this.router.navigateByUrl(this.resolveTarget()).catch(() => {
+      // A target can be rooted and same-origin yet still match no route. Failing silently would
+      // leave the page's only call to action doing nothing at all.
+      void this.router.navigateByUrl('/features');
+    });
   }
 
   /**

@@ -10,13 +10,13 @@
   } @else {
     <!-- Same primary/recessive split as the landing page, so the two entry points read alike. -->
     <button
-      class="rounded-full bg-hf-weiches-schwarz text-white text-[16px] py-3 px-5 flex items-center gap-2 transition hover:bg-hf-weiches-schwarz/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2"
+      class="rounded-full bg-hf-weiches-schwarz text-white text-[16px] py-3 px-5 flex items-center gap-2 transition hover:bg-hf-weiches-schwarz/90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2"
       (click)="loginWith('auth0')"
       [disabled]="authState.isLoading">
       <span>Anmelden</span>
     </button>
     <button
-      class="rounded-full border border-hf-weiches-schwarz/20 text-hf-weiches-schwarz text-[16px] py-3 px-5 flex items-center gap-2 transition hover:border-hf-weiches-schwarz/40 hover:bg-hf-weiches-schwarz/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2"
+      class="rounded-full border border-hf-weiches-schwarz/20 text-hf-weiches-schwarz text-[16px] py-3 px-5 flex items-center gap-2 transition hover:border-hf-weiches-schwarz/40 hover:bg-hf-weiches-schwarz/5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2"
       (click)="loginWith('microsoft')"
       [disabled]="authState.isLoading"
       title="Für Hochfrequenz-Mitarbeitende"
