@@ -57,6 +57,22 @@ describe('LoginButtonComponent', () => {
     expect(facade.login).toHaveBeenNthCalledWith(2, 'microsoft', '/search');
   });
 
+  it('keeps the audience hint out of the Microsoft button’s accessible name', async () => {
+    await setup(false);
+    const host = fixture.nativeElement as HTMLElement;
+    const microsoft = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find(button =>
+      button.textContent?.includes('Mit Microsoft anmelden')
+    );
+    // An aria-label here would override the visible text and desync voice control from what the
+    // user can read. The hint is described instead, matching the landing page.
+    expect(microsoft?.getAttribute('aria-label')).toBeNull();
+    expect(microsoft?.textContent?.trim()).toBe('Mit Microsoft anmelden');
+    const describedBy = microsoft?.getAttribute('aria-describedby');
+    expect(host.querySelector(`#${describedBy}`)?.textContent).toContain(
+      'Für Hochfrequenz-Mitarbeitende'
+    );
+  });
+
   it('labels the sign-in paths by audience, never by vendor', async () => {
     await setup(false);
     const html = (fixture.nativeElement as HTMLElement).innerHTML;
