@@ -1,8 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { MsalCallbackComponent } from './msal-callback.component';
-import { POST_LOGIN_TARGET_KEY } from './login.component';
-import { AuthFacade } from '../../core/auth/auth.facade';
+import { AuthFacade, POST_LOGIN_TARGET_KEY } from '../../core/auth/auth.facade';
 
 describe('MsalCallbackComponent', () => {
   let facade: { initializeMsal: jest.Mock };

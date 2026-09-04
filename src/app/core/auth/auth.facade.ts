@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AUTH_IS_DEVELOPMENT, MSAL_CLIENT } from './msal.tokens';
 import { safeStorageGet, safeStorageRemove, safeStorageSet } from './safe-storage';
+import { safeInternalTarget } from './safe-target';
 
 export type AuthProviderId = 'auth0' | 'microsoft';
 
@@ -16,6 +17,9 @@ export interface AuthUser {
 }
 
 const ACTIVE_PROVIDER_KEY = 'ahb.activeAuthProvider';
+
+/** sessionStorage key holding the route the user was heading to before being asked to sign in. */
+export const POST_LOGIN_TARGET_KEY = 'ahb.postLoginTarget';
 
 const DEV_USER: AuthUser = {
   email: 'local@development.com',
@@ -68,18 +72,40 @@ export class AuthFacade {
     );
   }
 
+  /**
+   * Start a sign-in with the chosen provider, optionally returning the user to `target` afterwards.
+   *
+   * Every caller passes a user-influenced value here (`?target=…` from the guard, `router.url` from
+   * the header), so the target is sanitized once, in this one place, rather than at each call site
+   * where the checks could drift apart or be forgotten. A hostile target is dropped, but the
+   * sign-in itself still proceeds — the user asked to log in, and only their destination was bad.
+   */
   login(provider: AuthProviderId, target?: string): void {
     // In the dev stub the user is already "signed in"; never fire a real provider redirect
-    // (keeps the "stub unless ?realauth=1" contract even if /login is visited manually).
+    // (keeps the "stub unless ?realauth=1" contract).
     if (this.isDevelopment) {
       return;
     }
     safeStorageSet(localStorage, ACTIVE_PROVIDER_KEY, provider);
+
+    // safeInternalTarget collapses anything unsafe (and anything absent) to '/', which is also
+    // the app root — i.e. "no particular destination", so there is nothing worth carrying.
+    const safe = safeInternalTarget(target);
+    const resolved = safe === '/' ? undefined : safe;
+
     if (provider === 'auth0') {
-      // Auth0 restores its own target from appState; Microsoft restores it from sessionStorage
-      // in the callback route (MSAL's redirect response carries no app-level state here).
-      this.auth0.loginWithRedirect(target ? { appState: { target } } : undefined);
+      // Auth0 restores its own target from appState. Clear the Microsoft key so a target stashed
+      // by an abandoned Microsoft attempt can't leak into this session's callback.
+      safeStorageRemove(sessionStorage, POST_LOGIN_TARGET_KEY);
+      this.auth0.loginWithRedirect(resolved ? { appState: { target: resolved } } : undefined);
     } else {
+      // MSAL's redirect response carries no app-level state, so the target rides in sessionStorage
+      // and is re-validated by the callback route before it navigates.
+      if (resolved) {
+        safeStorageSet(sessionStorage, POST_LOGIN_TARGET_KEY, resolved);
+      } else {
+        safeStorageRemove(sessionStorage, POST_LOGIN_TARGET_KEY);
+      }
       void this.msal.loginRedirect({ scopes: environment.entraScopes });
     }
   }

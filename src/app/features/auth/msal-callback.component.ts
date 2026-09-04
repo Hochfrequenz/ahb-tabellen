@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthFacade } from '../../core/auth/auth.facade';
-import { POST_LOGIN_TARGET_KEY } from './login.component';
-import { safeInternalTarget } from './safe-target';
+import { AuthFacade, POST_LOGIN_TARGET_KEY } from '../../core/auth/auth.facade';
+import { safeInternalTarget } from '../../core/auth/safe-target';
 import { safeStorageGet, safeStorageRemove } from '../../core/auth/safe-storage';
 
 /**

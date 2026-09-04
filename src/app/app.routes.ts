@@ -44,12 +44,16 @@ export const routes: Routes = [
       (await import('./features/mcp-info/mcp-info.component')).McpInfoComponent,
   },
   {
+    // Retired: the provider choice now lives on the landing page. Kept as a redirect so existing
+    // bookmarks still resolve — Angular carries queryParams across a redirect, so ?target= rides
+    // along and the landing CTAs can still honour it.
     path: 'login',
-    loadComponent: async () => (await import('./features/login/login.component')).LoginComponent,
+    redirectTo: '',
+    pathMatch: 'full',
   },
   {
     path: 'auth/msal-callback',
     loadComponent: async () =>
-      (await import('./features/login/msal-callback.component')).MsalCallbackComponent,
+      (await import('./features/auth/msal-callback.component')).MsalCallbackComponent,
   },
 ];

@@ -1,7 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { take } from 'rxjs/operators';
-import { AuthFacade } from '../../../../core/auth/auth.facade';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthFacade, AuthProviderId } from '../../../../core/auth/auth.facade';
+import { safeInternalTarget } from '../../../../core/auth/safe-target';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { environment } from '../../../../environments/environment';
 import { Meta, Title } from '@angular/platform-browser';
@@ -9,15 +10,19 @@ import { Meta, Title } from '@angular/platform-browser';
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [FooterComponent],
+  imports: [CommonModule, FooterComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './landing-page.component.html',
 })
 export class LandingPageComponent implements OnInit {
   private facade = inject(AuthFacade);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private meta = inject(Meta);
   private readonly title = inject(Title);
+
+  /** Drives the CTA: signed-in visitors get a plain "open the app" button, not a provider choice. */
+  readonly isAuthenticated$ = this.facade.isAuthenticated$;
 
   ngOnInit() {
     const baseUrl = environment.baseUrl;
@@ -68,16 +73,26 @@ export class LandingPageComponent implements OnInit {
     ]);
   }
 
-  onOpenClick() {
-    // Route through the facade so the dev stub and both providers are handled uniformly. When not
-    // signed in, send the user to the provider chooser (not straight to Auth0), preserving the
-    // intended target.
-    this.facade.isAuthenticated$.pipe(take(1)).subscribe(isAuthenticated => {
-      if (isAuthenticated) {
-        this.router.navigate(['/features']);
-      } else {
-        this.router.navigate(['/login'], { queryParams: { target: '/features' } });
-      }
-    });
+  /**
+   * Start a sign-in. Both CTAs land here; they differ only in which provider they name, so the
+   * page never has to know anything about Auth0 or MSAL beyond the provider id.
+   */
+  signIn(provider: AuthProviderId): void {
+    this.facade.login(provider, this.resolveTarget());
+  }
+
+  /** Already signed in — the CTA is a plain navigation, not a login. */
+  open(): void {
+    void this.router.navigateByUrl(this.resolveTarget());
+  }
+
+  /**
+   * Where to send the user afterwards: the `?target=` the AuthGuard attached when it bounced them
+   * here from a protected deep link, else the feature picker. Sanitized because the param is
+   * user-supplied; `/` means "nothing specific was asked for".
+   */
+  private resolveTarget(): string {
+    const safe = safeInternalTarget(this.route.snapshot.queryParamMap.get('target'));
+    return safe === '/' ? '/features' : safe;
   }
 }

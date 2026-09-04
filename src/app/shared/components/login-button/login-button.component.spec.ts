@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { LoginButtonComponent } from './login-button.component';
 import { AuthFacade } from '../../../core/auth/auth.facade';
@@ -15,7 +16,7 @@ describe('LoginButtonComponent', () => {
   let fixture: ComponentFixture<LoginButtonComponent>;
   let facade: MockFacade;
 
-  async function setup(isAuthenticated: boolean): Promise<void> {
+  async function setup(isAuthenticated: boolean, url = '/ahb/UTILMD'): Promise<void> {
     facade = {
       isAuthenticated$: of(isAuthenticated),
       isLoading$: of(false),
@@ -24,7 +25,10 @@ describe('LoginButtonComponent', () => {
     };
     await TestBed.configureTestingModule({
       imports: [LoginButtonComponent],
-      providers: [{ provide: AuthFacade, useValue: facade }],
+      providers: [
+        { provide: AuthFacade, useValue: facade },
+        { provide: Router, useValue: { url } },
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(LoginButtonComponent);
     component = fixture.componentInstance;
@@ -33,16 +37,32 @@ describe('LoginButtonComponent', () => {
 
   afterEach(() => TestBed.resetTestingModule());
 
-  it('routes the Auth0 sign-in to the facade', async () => {
+  it('routes the Auth0 sign-in to the facade, keeping the current page as the target', async () => {
     await setup(false);
     component.loginWith('auth0');
-    expect(facade.login).toHaveBeenCalledWith('auth0');
+    expect(facade.login).toHaveBeenCalledWith('auth0', '/ahb/UTILMD');
   });
 
-  it('routes the Microsoft sign-in to the facade', async () => {
+  it('routes the Microsoft sign-in to the facade, keeping the current page as the target', async () => {
     await setup(false);
     component.loginWith('microsoft');
-    expect(facade.login).toHaveBeenCalledWith('microsoft');
+    expect(facade.login).toHaveBeenCalledWith('microsoft', '/ahb/UTILMD');
+  });
+
+  it('signs in from the buttons themselves, not only via the method', async () => {
+    await setup(false, '/search');
+    const host = fixture.nativeElement as HTMLElement;
+    host.querySelectorAll<HTMLButtonElement>('button').forEach(button => button.click());
+    expect(facade.login).toHaveBeenNthCalledWith(1, 'auth0', '/search');
+    expect(facade.login).toHaveBeenNthCalledWith(2, 'microsoft', '/search');
+  });
+
+  it('labels the sign-in paths by audience, never by vendor', async () => {
+    await setup(false);
+    const html = (fixture.nativeElement as HTMLElement).innerHTML;
+    expect(html).toContain('Anmelden');
+    expect(html).toContain('Mit Microsoft anmelden');
+    expect(html).not.toContain('Auth0');
   });
 
   it('routes logout to the facade', async () => {

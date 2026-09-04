@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '@auth0/auth0-angular';
 import { firstValueFrom, Observable, of } from 'rxjs';
-import { AuthFacade } from './auth.facade';
+import { AuthFacade, POST_LOGIN_TARGET_KEY } from './auth.facade';
 import { AUTH_IS_DEVELOPMENT, MSAL_CLIENT } from './msal.tokens';
 
 type MockAuth0 = {
@@ -65,6 +65,7 @@ function createFacade(
 describe('AuthFacade', () => {
   afterEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     TestBed.resetTestingModule();
   });
 
@@ -153,6 +154,49 @@ describe('AuthFacade', () => {
         expect.objectContaining({ scopes: ['openid', 'profile', 'email'] })
       );
       expect(localStorage.getItem('ahb.activeAuthProvider')).toBe('microsoft');
+    });
+
+    it('stashes the target for Microsoft so the callback can restore it', () => {
+      const { facade } = createFacade(false);
+      facade.login('microsoft', '/ahb/UTILMD');
+      expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBe('/ahb/UTILMD');
+    });
+
+    it('clears a stale Microsoft target when signing in with Auth0', () => {
+      sessionStorage.setItem(POST_LOGIN_TARGET_KEY, '/stale');
+      const { facade, auth0 } = createFacade(false);
+      facade.login('auth0', '/search');
+      expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBeNull();
+      expect(auth0.loginWithRedirect).toHaveBeenCalledWith(
+        expect.objectContaining({ appState: { target: '/search' } })
+      );
+    });
+
+    it('clears a stale Microsoft target when no new target is given', () => {
+      sessionStorage.setItem(POST_LOGIN_TARGET_KEY, '/stale');
+      const { facade } = createFacade(false);
+      facade.login('microsoft');
+      expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBeNull();
+    });
+
+    it('refuses an off-site target rather than stashing it for Microsoft', () => {
+      const { facade, msal } = createFacade(false);
+      facade.login('microsoft', 'https://evil.example/phish');
+      expect(sessionStorage.getItem(POST_LOGIN_TARGET_KEY)).toBeNull();
+      // The sign-in still proceeds; only the hostile destination is dropped.
+      expect(msal.loginRedirect).toHaveBeenCalledTimes(1);
+    });
+
+    it('refuses an off-site target rather than handing it to Auth0', () => {
+      const { facade, auth0 } = createFacade(false);
+      facade.login('auth0', '//evil.example');
+      expect(auth0.loginWithRedirect).toHaveBeenCalledWith(undefined);
+    });
+
+    it('treats a bare "/" target as no target at all', () => {
+      const { facade, auth0 } = createFacade(false);
+      facade.login('auth0', '/');
+      expect(auth0.loginWithRedirect).toHaveBeenCalledWith(undefined);
     });
   });
 
