@@ -173,6 +173,28 @@ export function buildValidators(config: McpAuthConfig): Map<string, RequestHandl
 }
 
 /**
+ * TEMP diagnostic (remove after debugging the Copilot/Entra 401): decode a JWT's key claims
+ * WITHOUT verifying, purely to log which `aud`/`iss` a rejected token actually carries.
+ */
+function unverifiedClaims(token: string): Record<string, unknown> {
+  try {
+    const payload = JSON.parse(
+      Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')
+    ) as Record<string, unknown>;
+    return {
+      aud: payload.aud,
+      iss: payload.iss,
+      appid: payload.appid,
+      azp: payload.azp,
+      tid: payload.tid,
+      scp: payload.scp,
+    };
+  } catch {
+    return { decodeError: true };
+  }
+}
+
+/**
  * Bearer-token guard for the MCP endpoint. Missing/malformed `Authorization` headers get an
  * immediate 401 with the RFC 9728 `WWW-Authenticate` pointer. Present tokens are dispatched by
  * their unverified `iss` to the matching provider's validator (signature via JWKS, `iss`,
@@ -189,6 +211,9 @@ export function requireBearer(
   return (req, res, next) => {
     const header = req.headers.authorization;
     if (!header || !/^Bearer\s+\S/i.test(header)) {
+      console.warn('[MCP-AUTH-DEBUG] 401 missing/malformed Authorization header', {
+        hasHeader: Boolean(header),
+      });
       res.setHeader('WWW-Authenticate', wwwAuthenticateHeader(config));
       res.status(401).json({ error: 'unauthorized', message: 'Missing bearer token' });
       return;
@@ -196,12 +221,21 @@ export function requireBearer(
     const token = header.replace(/^Bearer\s+/i, '').trim();
     const validate = validators.get(unverifiedIssuer(token) ?? '');
     if (!validate) {
+      console.warn('[MCP-AUTH-DEBUG] 401 no validator matched token issuer', {
+        unverified: unverifiedClaims(token),
+        knownIssuers: [...validators.keys()],
+      });
       res.setHeader('WWW-Authenticate', wwwAuthenticateHeader(config, 'invalid_token'));
       res.status(401).json({ error: 'invalid_token', message: 'Invalid or expired token' });
       return;
     }
     validate(req, res, (err?: unknown) => {
       if (err) {
+        console.warn('[MCP-AUTH-DEBUG] 401 token failed validation', {
+          error: err instanceof Error ? err.message : String(err),
+          unverified: unverifiedClaims(token),
+          expectedAudiences: config.providers.map(p => p.audience),
+        });
         res.setHeader('WWW-Authenticate', wwwAuthenticateHeader(config, 'invalid_token'));
         res.status(401).json({ error: 'invalid_token', message: 'Invalid or expired token' });
         return;
