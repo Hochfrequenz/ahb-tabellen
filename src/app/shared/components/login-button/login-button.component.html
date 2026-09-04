@@ -8,17 +8,25 @@
       <img src="assets/companystylesheet/icons/logout.svg" class="w-5 h-5" alt="logout" />
     </button>
   } @else {
+    <!-- Same primary/recessive split as the landing page, so the two entry points read alike. -->
     <button
-      class="rounded-full bg-hf-pastell-rose text-hf-weiches-schwarz text-[16px] py-3 px-5 flex items-center gap-2"
+      class="rounded-full bg-hf-weiches-schwarz text-white text-[16px] py-3 px-5 flex items-center gap-2 transition hover:bg-hf-weiches-schwarz/90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2"
       (click)="loginWith('auth0')"
       [disabled]="authState.isLoading">
-      <span>Einloggen</span>
+      <span>Anmelden</span>
     </button>
     <button
-      class="rounded-full bg-hf-weiches-schwarz text-white text-[16px] py-3 px-5 flex items-center gap-2"
+      class="rounded-full border border-hf-weiches-schwarz/20 text-hf-weiches-schwarz text-[16px] py-3 px-5 flex items-center gap-2 transition hover:border-hf-weiches-schwarz/40 hover:bg-hf-weiches-schwarz/5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2"
       (click)="loginWith('microsoft')"
-      [disabled]="authState.isLoading">
+      [disabled]="authState.isLoading"
+      [attr.aria-describedby]="microsoftHintId">
+      <img src="assets/icons/microsoft.svg" alt="" class="w-4 h-4" />
       <span>Mit Microsoft anmelden</span>
     </button>
+    <!--
+      Header space is too tight for a visible hint, but the accessible name must stay the action
+      alone — so the audience note is described, not labelled. Same contract as the landing page.
+    -->
+    <span [id]="microsoftHintId" class="sr-only">Für Hochfrequenz-Mitarbeitende</span>
   }
 }
