@@ -15,7 +15,6 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
 import { ComparisonSearchFormHeaderComponent } from '../../components/comparison-search-form-header/comparison-search-form-header.component';
-import { InputSearchEnhancedComponent } from '../../../../shared/components/input-search-enhanced/input-search-enhanced.component';
 import { PruefiOverviewComponent } from '../../components/pruefi-overview/pruefi-overview.component';
 import { FormatVersionCacheService } from '../../../search/services/format-version-cache.service';
 
@@ -29,7 +28,6 @@ import { FormatVersionCacheService } from '../../../search/services/format-versi
     FooterComponent,
     SolutionsFooterComponent,
     ComparisonSearchFormHeaderComponent,
-    InputSearchEnhancedComponent,
     PruefiOverviewComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
