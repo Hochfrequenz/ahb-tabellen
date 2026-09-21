@@ -1,3 +1,5 @@
+import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { assertDatabaseIsUsable, resolveDbPath, resolveMmapSize } from './database';
 
@@ -39,9 +41,14 @@ describe('resolveMmapSize', () => {
     expect(resolveMmapSize({ AHB_DB_MMAP_SIZE: '536870912' })).toBe(536870912);
   });
 
-  it.each(['512MB', '-1', '1.5', 'lots'])('rejects %p rather than silently defaulting', raw => {
-    expect(() => resolveMmapSize({ AHB_DB_MMAP_SIZE: raw })).toThrow(/AHB_DB_MMAP_SIZE/);
-  });
+  // `Number` accepts every one of these. Whitespace is the dangerous one: it converts to 0, which
+  // is a valid setting, so it would have silently disabled memory mapping.
+  it.each(['512MB', '-1', '1.5', 'lots', '   ', '0x40000000', '1e9', ' 5 ', '+7', '\n512'])(
+    'rejects %p rather than silently accepting a value nobody wrote',
+    raw => {
+      expect(() => resolveMmapSize({ AHB_DB_MMAP_SIZE: raw })).toThrow(/AHB_DB_MMAP_SIZE/);
+    }
+  );
 });
 
 describe('assertDatabaseIsUsable', () => {
@@ -55,5 +62,15 @@ describe('assertDatabaseIsUsable', () => {
 
   it('accepts a real file', () => {
     expect(() => assertDatabaseIsUsable(__filename)).not.toThrow();
+  });
+
+  it('rejects an empty file, which would fail every query with SQLITE_NOTADB', () => {
+    const empty = path.join(os.tmpdir(), `ahb-empty-${process.pid}.db`);
+    fs.writeFileSync(empty, '');
+    try {
+      expect(() => assertDatabaseIsUsable(empty)).toThrow(/is empty/);
+    } finally {
+      fs.unlinkSync(empty);
+    }
   });
 });

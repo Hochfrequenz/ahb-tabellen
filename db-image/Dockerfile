@@ -21,12 +21,15 @@ FROM alpine:3.23
 ARG DB_VERSION
 RUN test -n "${DB_VERSION}" || (echo "DB_VERSION build-arg is required" >&2; exit 1)
 
-COPY ahb.db /db/ahb.db
-COPY seed-ahb-db.sh /usr/local/bin/seed-ahb-db
+# `--chmod` on the COPY, never a later `RUN chmod`: changing a file's mode in a following layer
+# forces an overlayfs copy-up, and Docker tars the WHOLE file into that layer — so the database
+# would ship twice. Measured with a 40 MB stand-in: 88.7 MB with `RUN chmod` against 48.7 MB with
+# `--chmod`. At ~1.1 GB that is a wasted gigabyte in every pull and on every host.
+COPY --chmod=0444 ahb.db /db/ahb.db
+COPY --chmod=0555 seed-ahb-db.sh /usr/local/bin/seed-ahb-db
 
-RUN printf '%s\n' "${DB_VERSION}" > /db/VERSION \
-  && chmod 0444 /db/ahb.db /db/VERSION \
-  && chmod 0555 /usr/local/bin/seed-ahb-db
+# VERSION is created here rather than copied in, so its layer costs only its own few bytes.
+RUN printf '%s\n' "${DB_VERSION}" > /db/VERSION && chmod 0444 /db/VERSION
 
 # Runs as root, deliberately: a freshly created Docker volume is owned by root, and a job that
 # cannot write to it is no use. The exposure is small — no network, no ports, no listening

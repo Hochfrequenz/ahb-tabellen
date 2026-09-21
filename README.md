@@ -340,11 +340,15 @@ no data at all.
    workflow here, giving it that release's tag and a version for the image (e.g. `v2026.08.06.0`).
    It downloads the encrypted archive, decrypts it, and pushes
    `ghcr.io/hochfrequenz/ahb-tabellen-db:<version>`.
-5. The workflow summary prints an `image:` line with the tag and digest. Put it in
+5. The workflow summary prints two lines to change in
    `stacks/ahb-tabellen-stage/compose.yaml` in
-   [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection), merge, and let
-   Dockhand redeploy. The stack's seed job replaces the database in the volume; the application
-   restarts against it.
+   [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection): the seed job's
+   `image:` tag and digest, and `AHB_DB_VERSION` on the application service. **Both, always.**
+   The image re-seeds the volume; `AHB_DB_VERSION` is what changes the application service's
+   definition, which is what makes `docker compose up -d` recreate its container. Without it
+   compose leaves a service whose definition is unchanged alone, and the running process keeps
+   its open file descriptor on the replaced database — the deploy reports success while the app
+   serves the previous dataset. Merge, and let Dockhand redeploy.
 6. Verify on stage, then copy the same `image:` line into `stacks/ahb-tabellen/compose.yaml` to
    promote it to production.
 

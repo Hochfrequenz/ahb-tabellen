@@ -107,6 +107,9 @@ const httpServer = server.listen(port, () => {
 // drop idle keep-alives, close the database, then exit.
 const shutdown = (signal: NodeJS.Signals): void => {
   console.log(`Received ${signal}, shutting down`);
+  // Stop reporting ready first: this instance is about to stop serving, and the probe should say
+  // so for the whole of the drain rather than only once the process is gone.
+  databaseReady = false;
   httpServer.close(() => {
     const closed = AppDataSource.isInitialized ? AppDataSource.destroy() : Promise.resolve();
     void closed.finally(() => process.exit(0));

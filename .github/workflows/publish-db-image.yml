@@ -23,8 +23,10 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}-db
 
-# Two dispatches of the same version would otherwise race to push the same tag, and a compose file
-# pinned to the losing digest would quietly refer to a different build.
+# Serialises two dispatches of the same version so they cannot race to push one tag concurrently.
+# Note this orders them rather than preventing the second: re-running a version still overwrites
+# the tag with a new digest. Compose pins `tag@digest`, so an already-deployed stack keeps
+# resolving the digest it named — but check before reusing a version.
 concurrency:
   group: publish-db-image-${{ inputs.db_version }}
   cancel-in-progress: false
@@ -100,7 +102,10 @@ jobs:
             echo "No ahb_*.db.encrypted.7z asset found on that release" >&2
             exit 1
           fi
-          # -p is read from the environment via the shell, never echoed.
+          # The password reaches 7z as an argument, so it is visible in /proc/<pid>/cmdline to
+          # anything else on the runner for the duration. Acceptable here — an ephemeral,
+          # single-tenant GitHub runner — but it is not hidden, only unlogged. 7z has no option to
+          # read a password from stdin or a file.
           7z x -y -p"$DB_7Z_ARCHIVE_PASSWORD" -odb-build "$archive"
           rm -f "$archive"
           test -f db-build/ahb.db || { echo "Archive did not contain ahb.db" >&2; exit 1; }
@@ -154,11 +159,21 @@ jobs:
           {
             echo "## Database image published"
             echo
+            echo "In \`stacks/ahb-tabellen-stage/compose.yaml\` (Hochfrequenz/hf-apps-collection),"
+            echo "change **both** of these — they always travel together:"
+            echo
             echo '```yaml'
-            echo "image: ${IMAGE}:${DB_VERSION}@${DIGEST}"
+            echo "  ahb-tabellen-db:"
+            echo "    image: ${IMAGE}:${DB_VERSION}@${DIGEST}"
+            echo
+            echo "  ahb-tabellen-stage:"
+            echo "    environment:"
+            echo "      AHB_DB_VERSION: ${DB_VERSION}"
             echo '```'
             echo
-            echo "Put that line in \`stacks/ahb-tabellen-stage/compose.yaml\` in"
-            echo "Hochfrequenz/hf-apps-collection, verify on stage, then copy the same line"
-            echo "into \`stacks/ahb-tabellen/compose.yaml\` to promote it."
+            echo "The image tag re-seeds the volume; \`AHB_DB_VERSION\` is what makes compose"
+            echo "recreate the application container so it opens the new file. Without it the"
+            echo "deploy succeeds and the app keeps serving the previous dataset."
+            echo
+            echo "Verify on stage, then copy both lines into \`stacks/ahb-tabellen/compose.yaml\`."
           } >> "$GITHUB_STEP_SUMMARY"

@@ -16,8 +16,10 @@ version="$(cat "$SRC_DIR/VERSION")"
 # The marker alone is not proof: a volume can lose ahb.db and keep VERSION — an operator
 # clearing space, a partially restored volume, a filesystem error. Trusting the marker on its own
 # would report "nothing to do", satisfy service_completed_successfully, and start the application
-# against a database that is not there.
-if [ -f "$DEST_DIR/ahb.db" ] && [ -f "$DEST_DIR/VERSION" ] &&
+# against a database that is not there. `-s` rather than `-f`, so a zero-byte leftover is treated
+# as absent too: it would otherwise pass every check the application makes and then fail every
+# query with SQLITE_NOTADB.
+if [ -s "$DEST_DIR/ahb.db" ] && [ -f "$DEST_DIR/VERSION" ] &&
   cmp -s "$SRC_DIR/VERSION" "$DEST_DIR/VERSION"; then
   echo "AHB database ${version} is already seeded in ${DEST_DIR}; nothing to do."
   exit 0

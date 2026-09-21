@@ -34,18 +34,22 @@ const MMAP_SIZE_DEFAULT = 2 * 1024 * 1024 * 1024;
  * thing to try when the container is under memory pressure — so it cannot be folded into the
  * default by a truthiness check, and a typo like `512MB` must not silently leave the default in
  * place while the operator believes they lowered it.
+ *
+ * Note that SQLite clamps this at compile time (`SQLITE_MAX_MMAP_SIZE`, 0x7FFF0000): the 2 GiB
+ * default reads back as 2147418112, and raising it further has no effect and reports nothing.
+ * Lowering it is the useful direction.
  */
 export function resolveMmapSize(env: NodeJS.ProcessEnv = process.env): number {
   const raw = env['AHB_DB_MMAP_SIZE'];
   if (raw === undefined || raw === '') return MMAP_SIZE_DEFAULT;
 
-  const parsed = Number(raw);
-  if (!Number.isInteger(parsed) || parsed < 0) {
-    throw new Error(
-      `AHB_DB_MMAP_SIZE must be a non-negative integer number of bytes, got "${raw}"`
-    );
+  // Matched as digits before being converted, because `Number` is far more permissive than it
+  // looks: it reads "   " as 0 — silently disabling mapping — and accepts "0x40000000", "1e9",
+  // " 5 " and "+7". Each of those is a configuration the operator did not write.
+  if (!/^[0-9]+$/.test(raw)) {
+    throw new Error(`AHB_DB_MMAP_SIZE must be a whole number of bytes, got "${raw}"`);
   }
-  return parsed;
+  return Number(raw);
 }
 
 /**
@@ -72,6 +76,19 @@ export function assertDatabaseIsUsable(dbPath: string): void {
       `${dbPath} is not a file. A bind mount whose source does not exist makes Docker create a ` +
         `directory in its place — check the path on the host.`
     );
+  }
+
+  // An empty file passes every other check here and then fails every query with SQLITE_NOTADB.
+  if (stats.size === 0) {
+    throw new Error(`${dbPath} is empty. The seed job did not finish, or the volume was cleared.`);
+  }
+
+  // The container runs as an unprivileged user while the seed job writes as root, so a mode the
+  // job did not intend surfaces here rather than as a bare SQLITE_CANTOPEN.
+  try {
+    fs.accessSync(dbPath, fs.constants.R_OK);
+  } catch {
+    throw new Error(`${dbPath} is not readable by this user (uid ${process.getuid?.() ?? '?'}).`);
   }
 }
 
@@ -132,6 +149,14 @@ function applyPerformancePragmas(dataSource: DataSource): Promise<void> {
     // on a container with a tight `mem_limit`.
     await dataSource.query(`PRAGMA mmap_size = ${resolveMmapSize()}`);
   })();
+
+  // Clear the memo if it fails. Otherwise one bad PRAGMA is cached forever: the underlying
+  // connection is already open by then (`isInitialized` is true), so every later attempt replays
+  // the same rejection even once the cause has been fixed.
+  pragmasPromise = pragmasPromise.catch((error: unknown) => {
+    pragmasPromise = null;
+    throw error;
+  });
 
   return pragmasPromise;
 }
