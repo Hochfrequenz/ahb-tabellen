@@ -45,10 +45,12 @@ jobs:
         env:
           DB_VERSION: ${{ inputs.db_version }}
         run: |
-          # Anchored to the whole value, not just its first character. db_version is
-          # interpolated into the `tags:` and `build-args:` block scalars below, where a value
-          # containing a newline would inject an extra tag or an extra build-arg.
-          if ! printf '%s' "$DB_VERSION" | grep -qE '^v[0-9A-Za-z._-]+$'; then
+          # Matched against the whole value. db_version is interpolated into the `tags:` and
+          # `build-args:` block scalars below, where a newline would inject an extra tag or an
+          # extra build-arg — so a line-oriented check like `grep` is not enough here: it
+          # succeeds as soon as ONE line matches. Bash's `=~` has no multiline mode, so `$`
+          # anchors at the end of the string and any embedded CR or LF fails the match.
+          if [[ ! "$DB_VERSION" =~ ^v[0-9A-Za-z._-]+$ ]]; then
             echo "db_version must look like 'v2026.08.06.0' (got '$DB_VERSION')" >&2
             exit 1
           fi
