@@ -3,6 +3,7 @@ import { AhbMetaInformation } from '../entities/ahb-meta-information.entity';
 import { AhbLine, Anwendungshandbuch } from '../entities/ahb-line.entity';
 import { AhbDiffLine } from '../entities/ahb-diff.entity';
 import * as sqlite3 from 'sqlite3';
+import fs from 'fs';
 import path from 'path';
 
 /**
@@ -21,6 +22,57 @@ const DEFAULT_DB_PATH = path.join('src', 'server', 'data', 'ahb.db');
  */
 export function resolveDbPath(env: NodeJS.ProcessEnv = process.env): string {
   return path.resolve(process.cwd(), env['AHB_DB_PATH'] || DEFAULT_DB_PATH);
+}
+
+/** Maps our ~1.1 GB database in full. Suits a host with memory to spare. */
+const MMAP_SIZE_DEFAULT = 2 * 1024 * 1024 * 1024;
+
+/**
+ * Bytes to memory-map, from `AHB_DB_MMAP_SIZE`.
+ *
+ * Parsed strictly. `0` is a meaningful value — it disables memory mapping, which is the first
+ * thing to try when the container is under memory pressure — so it cannot be folded into the
+ * default by a truthiness check, and a typo like `512MB` must not silently leave the default in
+ * place while the operator believes they lowered it.
+ */
+export function resolveMmapSize(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = env['AHB_DB_MMAP_SIZE'];
+  if (raw === undefined || raw === '') return MMAP_SIZE_DEFAULT;
+
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error(
+      `AHB_DB_MMAP_SIZE must be a non-negative integer number of bytes, got "${raw}"`
+    );
+  }
+  return parsed;
+}
+
+/**
+ * Fail before opening the database rather than after.
+ *
+ * The database is now an external dependency — a volume seeded by a separate job, addressed by
+ * `AHB_DB_PATH` — so it can be absent, mistyped, or (with a bind mount whose source does not
+ * exist) a directory Docker helpfully created. Each of those used to be impossible; each would
+ * otherwise surface as a server that starts happily and fails every single API request.
+ */
+export function assertDatabaseIsUsable(dbPath: string): void {
+  let stats: fs.Stats;
+  try {
+    stats = fs.statSync(dbPath);
+  } catch {
+    throw new Error(
+      `No database at ${dbPath}. Set AHB_DB_PATH to the database file, and check that the ` +
+        `volume it lives on is mounted and has been seeded.`
+    );
+  }
+
+  if (!stats.isFile()) {
+    throw new Error(
+      `${dbPath} is not a file. A bind mount whose source does not exist makes Docker create a ` +
+        `directory in its place — check the path on the host.`
+    );
+  }
 }
 
 /**
@@ -78,9 +130,7 @@ function applyPerformancePragmas(dataSource: DataSource): Promise<void> {
     // (reclaimable, so the effect is eviction pressure rather than an OOM kill). The default
     // maps our ~1.1 GB database in full, which suits a host with memory to spare; lower it
     // on a container with a tight `mem_limit`.
-    const MMAP_SIZE_DEFAULT = 2 * 1024 * 1024 * 1024;
-    const mmapSize = Number(process.env['AHB_DB_MMAP_SIZE']) || MMAP_SIZE_DEFAULT;
-    await dataSource.query(`PRAGMA mmap_size = ${mmapSize}`);
+    await dataSource.query(`PRAGMA mmap_size = ${resolveMmapSize()}`);
   })();
 
   return pragmasPromise;
@@ -89,6 +139,7 @@ function applyPerformancePragmas(dataSource: DataSource): Promise<void> {
 // Wrap the original initialize to apply PRAGMAs after connection
 const originalInitialize = AppDataSource.initialize.bind(AppDataSource);
 AppDataSource.initialize = async function (): Promise<DataSource> {
+  assertDatabaseIsUsable(dataSourceConfig.database);
   const result = await originalInitialize();
   await applyPerformancePragmas(result);
   return result;

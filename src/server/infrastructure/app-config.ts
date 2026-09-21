@@ -16,7 +16,7 @@ export type RuntimeConfig = Partial<Omit<EnvironmentInterface, 'isProduction'>>;
  * Environment variable names, in the `APP_*` convention the sibling apps on the
  * hf-apps-collection platform already use.
  */
-const ENV_VARS = {
+export const ENV_VARS = {
   apiUrl: 'APP_API_URL',
   baseUrl: 'APP_BASE_URL',
   bedingungsbaumBaseUrl: 'APP_BEDINGUNGSBAUM_BASE_URL',
@@ -63,10 +63,14 @@ function readBoolean(env: NodeJS.ProcessEnv, name: string): boolean | undefined 
 function readList(env: NodeJS.ProcessEnv, name: string): string[] | undefined {
   const value = readString(env, name);
   if (value === undefined) return undefined;
-  return value
+  const entries = value
     .split(',')
     .map(entry => entry.trim())
     .filter(entry => entry.length > 0);
+  // A value that is only separators (`,` or `, ,`) means the same as unset. Returning the empty
+  // array instead would override the compiled scopes with none, and MSAL would sign in without
+  // asking for any.
+  return entries.length > 0 ? entries : undefined;
 }
 
 /**

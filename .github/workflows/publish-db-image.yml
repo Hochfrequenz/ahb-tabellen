@@ -23,6 +23,12 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}-db
 
+# Two dispatches of the same version would otherwise race to push the same tag, and a compose file
+# pinned to the losing digest would quietly refer to a different build.
+concurrency:
+  group: publish-db-image-${{ inputs.db_version }}
+  cancel-in-progress: false
+
 jobs:
   publish:
     name: Build and push the database image
@@ -39,10 +45,13 @@ jobs:
         env:
           DB_VERSION: ${{ inputs.db_version }}
         run: |
-          case "$DB_VERSION" in
-            v*) ;;
-            *) echo "db_version must start with 'v' (got '$DB_VERSION')" >&2; exit 1 ;;
-          esac
+          # Anchored to the whole value, not just its first character. db_version is
+          # interpolated into the `tags:` and `build-args:` block scalars below, where a value
+          # containing a newline would inject an extra tag or an extra build-arg.
+          if ! printf '%s' "$DB_VERSION" | grep -qE '^v[0-9A-Za-z._-]+$'; then
+            echo "db_version must look like 'v2026.08.06.0' (got '$DB_VERSION')" >&2
+            exit 1
+          fi
 
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -50,10 +59,17 @@ jobs:
       - name: Install p7zip
         run: sudo apt-get update && sudo apt-get install -y p7zip-full
 
-      # The decrypted database is ~1.1 GB and the image layer roughly the same again, so check
-      # rather than discover it as a confusing failure halfway through the build.
+      # The decrypted database is ~1.1 GB and the image layer roughly the same again, so fail here
+      # with a clear message rather than halfway through a docker build.
       - name: Check available disk space
-        run: df -h /
+        run: |
+          df -h /
+          available_kb="$(df -Pk / | awk 'NR==2 {print $4}')"
+          required_kb=$((6 * 1024 * 1024))   # 6 GiB: archive + decrypted db + image layer + slack
+          if [ "$available_kb" -lt "$required_kb" ]; then
+            echo "Only $((available_kb / 1024)) MiB free on /; need at least $((required_kb / 1024)) MiB" >&2
+            exit 1
+          fi
 
       - name: Download the encrypted database from the upstream release
         env:

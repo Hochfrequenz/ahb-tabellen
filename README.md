@@ -268,6 +268,24 @@ For local development against a server started with `npm run server:start`, use 
 
 ## 🚀 Deployment
 
+> [!CAUTION]
+> **The Azure App Service deployment cannot serve this image.** Pushing a version tag still runs
+> `deploy-stage` / `deploy-production` in `.github/workflows/deploy.yml`, which deploys to Azure
+> via Pulumi — but the image no longer contains the database, and Azure App Service has no volume
+> to seed it into and no `AHB_DB_PATH` set. The container will fail its startup check and exit
+> rather than serve, which is loud by design, but it is still a broken deployment.
+>
+> **Before cutting any tag**, do one of:
+>
+> - migrate to the Compose stacks in
+>   [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection) and retire the Azure
+>   App Service along with the `deploy-stage` / `deploy-production` jobs; or
+> - give the Azure deployment a database — an Azure Files mount plus `AHB_DB_PATH` — accepting
+>   that SQLite over SMB is a poor fit for a 1.1 GB read-only database; or
+> - disable the two `deploy-*` jobs so that tagging only publishes the image.
+>
+> Everything else below still describes the Azure pipeline as it stands today.
+
 The application can be deployed to two environments: Stage and Production.
 The deployment process is fully automated using a combination of GitHub Actions and Pulumi, and is triggered by pushing a git tag, which creates a GitHub release.
 
@@ -337,8 +355,13 @@ the database and the code version independently.
 
 The archive published by xml-migs-and-ahbs stays encrypted (the password is in the Hochfrequenz
 1Password vault and in the GitHub organization-wide secrets, as `SQLITE_AHB_DB_7Z_ARCHIVE_PASSWORD`).
-It is decrypted only inside the publish workflow, so the password never reaches a running
-container — the `DB_7Z_ARCHIVE_PASSWORD` variable the deployments used to need is gone.
+It is decrypted only inside the publish workflow, so the password never reaches a container that
+runs this image.
+
+`infra/` is the exception, and deliberately so: the Pulumi program still declares
+`db_7z_archive_password` and injects `DB_7Z_ARCHIVE_PASSWORD` into the Azure App Service. Leave
+both in place. Removing the Pulumi secret breaks `pulumi up`, and the Azure deployment is retired
+in its own change — see the note below.
 
 The resulting `ahb-tabellen-db` package on GHCR holds the database unencrypted and **must be
 private**, for the same reason the application image is: the underlying XML is paid for.

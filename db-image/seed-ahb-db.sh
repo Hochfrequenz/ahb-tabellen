@@ -13,7 +13,12 @@ DEST_DIR=/data
 
 version="$(cat "$SRC_DIR/VERSION")"
 
-if [ -f "$DEST_DIR/VERSION" ] && cmp -s "$SRC_DIR/VERSION" "$DEST_DIR/VERSION"; then
+# The marker alone is not proof: a volume can lose ahb.db and keep VERSION — an operator
+# clearing space, a partially restored volume, a filesystem error. Trusting the marker on its own
+# would report "nothing to do", satisfy service_completed_successfully, and start the application
+# against a database that is not there.
+if [ -f "$DEST_DIR/ahb.db" ] && [ -f "$DEST_DIR/VERSION" ] &&
+  cmp -s "$SRC_DIR/VERSION" "$DEST_DIR/VERSION"; then
   echo "AHB database ${version} is already seeded in ${DEST_DIR}; nothing to do."
   exit 0
 fi

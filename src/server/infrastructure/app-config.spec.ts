@@ -1,4 +1,4 @@
-import { buildRuntimeConfig, renderConfigScript } from './app-config';
+import { buildRuntimeConfig, ENV_VARS, renderConfigScript } from './app-config';
 
 describe('buildRuntimeConfig', () => {
   it('returns an empty config when nothing is set, so the bundle keeps its compiled values', () => {
@@ -49,12 +49,16 @@ describe('buildRuntimeConfig', () => {
     );
   });
 
-  it('never overrides isProduction, which gates the dummy-user login', () => {
-    const config = buildRuntimeConfig({
-      APP_IS_PRODUCTION: 'false',
-      IS_PRODUCTION: 'false',
-    });
-    expect(config).not.toHaveProperty('isProduction');
+  it('exposes no variable at all for isProduction, which gates the dummy-user login', () => {
+    // Asserting on ENV_VARS rather than on a call: any variable name here becomes settable by a
+    // deployment, so the guarantee is that the map has no entry for it in the first place.
+    expect(Object.keys(ENV_VARS)).not.toContain('isProduction');
+    expect(Object.values(ENV_VARS)).not.toContain('APP_IS_PRODUCTION');
+  });
+
+  it('treats a list of only separators as unset rather than as an empty list', () => {
+    // `[]` would override the compiled scopes with none and MSAL would sign in asking for nothing.
+    expect(buildRuntimeConfig({ APP_ENTRA_SCOPES: ' , , ' })).toEqual({});
   });
 });
 

@@ -1,5 +1,5 @@
 import path from 'path';
-import { resolveDbPath } from './database';
+import { assertDatabaseIsUsable, resolveDbPath, resolveMmapSize } from './database';
 
 describe('resolveDbPath', () => {
   it('falls back to the in-repository location so local development needs no configuration', () => {
@@ -20,5 +20,40 @@ describe('resolveDbPath', () => {
     expect(resolveDbPath({ AHB_DB_PATH: '' })).toBe(
       path.resolve(process.cwd(), 'src/server/data/ahb.db')
     );
+  });
+});
+
+describe('resolveMmapSize', () => {
+  it('defaults to 2 GiB when unset or empty', () => {
+    const twoGiB = 2 * 1024 * 1024 * 1024;
+    expect(resolveMmapSize({})).toBe(twoGiB);
+    expect(resolveMmapSize({ AHB_DB_MMAP_SIZE: '' })).toBe(twoGiB);
+  });
+
+  it('accepts 0, which disables memory mapping under a tight memory limit', () => {
+    // A truthiness check would fold this back into the default and silently ignore the operator.
+    expect(resolveMmapSize({ AHB_DB_MMAP_SIZE: '0' })).toBe(0);
+  });
+
+  it('accepts an explicit byte count', () => {
+    expect(resolveMmapSize({ AHB_DB_MMAP_SIZE: '536870912' })).toBe(536870912);
+  });
+
+  it.each(['512MB', '-1', '1.5', 'lots'])('rejects %p rather than silently defaulting', raw => {
+    expect(() => resolveMmapSize({ AHB_DB_MMAP_SIZE: raw })).toThrow(/AHB_DB_MMAP_SIZE/);
+  });
+});
+
+describe('assertDatabaseIsUsable', () => {
+  it('names AHB_DB_PATH when the database is missing', () => {
+    expect(() => assertDatabaseIsUsable('/nope/ahb.db')).toThrow(/AHB_DB_PATH/);
+  });
+
+  it('calls out a directory, which is what a bind mount to a missing source produces', () => {
+    expect(() => assertDatabaseIsUsable(process.cwd())).toThrow(/is not a file/);
+  });
+
+  it('accepts a real file', () => {
+    expect(() => assertDatabaseIsUsable(__filename)).not.toThrow();
   });
 });

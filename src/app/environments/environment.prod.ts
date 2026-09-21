@@ -13,8 +13,10 @@ import { withRuntimeConfig } from './runtime-config';
  *   server serves the SPA and the API from a single origin in every deployment, so this is always
  *   correct — and it means a stage container that lost its configuration talks to itself rather
  *   than silently to production.
- * - The remaining values still match the Azure production deployment, which runs this image
- *   without any `APP_*` variables set. Changing one changes that deployment's behaviour.
+ * - The remaining values still match the Azure App Service deployment, which sets no `APP_*`
+ *   variables at all. Note that deployment cannot actually serve this image — it has no database
+ *   volume, so the server exits at startup (see the README's "Azure deployment" warning). These
+ *   values are kept aligned with it anyway, so that nothing else changes when it is migrated.
  *
  * Search indexing is the one setting a fallback cannot make safe in both directions: `true` is
  * correct for production and wrong for stage. Stage sets `APP_ALLOW_SEARCH_INDEXING=false` and,

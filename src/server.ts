@@ -38,13 +38,22 @@ const indexHtml = 'index.html';
 // than the first request that happens to need it.
 const configScript = renderConfigScript(buildRuntimeConfig());
 
-// Initialize database connection
+// Initialize database connection.
+//
+// Fatal on failure, deliberately. The database is no longer decrypted from inside the image by a
+// `set -e` shell script that took the container down with it — it is a volume seeded by a separate
+// job, so a wrong AHB_DB_PATH, an unmounted volume or an unseeded one are all now reachable. Every
+// one of them used to be impossible; logging and carrying on would turn each into a container that
+// reports healthy while failing 100% of API requests.
+let databaseReady = false;
 AppDataSource.initialize()
   .then(() => {
+    databaseReady = true;
     console.log('Database connection initialized');
   })
   .catch(error => {
     console.error('Error initializing database connection:', error);
+    process.exit(1);
   });
 
 server.get('/version', (_, res) =>
@@ -58,8 +67,13 @@ server.get('/version', (_, res) =>
     name: 'ahb-tabellen',
   })
 );
+// Liveness: the process is up and serving. Says nothing about the database.
 server.get('/health', (_, res) => res.send());
-server.get('/readiness', (_, res) => res.send());
+// Readiness: the database is open and queryable, so this instance can actually serve the API.
+// This is what the image's HEALTHCHECK and the compose stacks probe.
+server.get('/readiness', (_, res) =>
+  databaseReady ? res.send() : res.status(503).send({ status: 'database not ready' })
+);
 
 server.use('/api', router);
 
