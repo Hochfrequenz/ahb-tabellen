@@ -46,7 +46,11 @@ Thumbs.db
 .nx/workspace-data
 
 
+# The AHB database is no longer distributed through this repository. It is published as a
+# versioned image by .github/workflows/publish-db-image.yml; see "Update the database" in the
+# README. Both files are ignored so a local copy can never be committed again.
 src/server/data/ahb.db
+src/server/data/ahb.db.encrypted.7z
 
 .claude/
 .gstack/

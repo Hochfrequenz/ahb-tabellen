@@ -22,6 +22,7 @@
   "include": [
     "src/server.ts",
     "src/server",
+    "src/app/environments/environment.interface.ts",
     "src/app/core/api/models.ts",
     "src/app/core/api/models"
   ],

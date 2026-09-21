@@ -8,6 +8,11 @@ import router from './server/infrastructure/api.routes';
 import { httpErrorHandler } from './server/infrastructure/errors';
 import { AppDataSource } from './server/infrastructure/database';
 import { mountMcp } from './server/mcp/http';
+import {
+  buildRuntimeConfig,
+  CONFIG_SCRIPT_PATH,
+  renderConfigScript,
+} from './server/infrastructure/app-config';
 import 'reflect-metadata';
 
 const server = express();
@@ -28,6 +33,10 @@ server.use(
 
 const distFolder = join(process.cwd(), 'dist/ahb-tabellen/browser');
 const indexHtml = 'index.html';
+
+// Built once, at startup, so a malformed APP_* variable fails the process immediately rather
+// than the first request that happens to need it.
+const configScript = renderConfigScript(buildRuntimeConfig());
 
 // Initialize database connection
 AppDataSource.initialize()
@@ -61,6 +70,13 @@ mountMcp(server);
 // Apply error handler middleware
 server.use(httpErrorHandler);
 
+// Runtime configuration for the Angular bundle, which loads it from index.html before starting.
+// MUST be registered before the static handler below, whose `*file.*ext` pattern would otherwise
+// match this path and 404 it. Never cached: a configuration change must take effect on restart.
+server.get(CONFIG_SCRIPT_PATH, (_, res) =>
+  res.type('application/javascript').set('Cache-Control', 'no-store').send(configScript)
+);
+
 // Serve static files from /browser
 server.get('*file.*ext', express.static(distFolder, { maxAge: '1y' }));
 
@@ -68,6 +84,22 @@ server.get('*file.*ext', express.static(distFolder, { maxAge: '1y' }));
 server.get('{/*splat}', async (_, res) => res.sendFile(join(distFolder, indexHtml)));
 
 const port = process.env['PORT'] || 3000;
-server.listen(port, () => {
+const httpServer = server.listen(port, () => {
   console.log(`Node Express server listening on http://localhost:${port}`);
 });
+
+// Node as PID 1 gets no default signal handlers, so without this `docker stop` waits out its
+// full grace period and then SIGKILLs the container on every deploy. Stop accepting connections,
+// drop idle keep-alives, close the database, then exit.
+const shutdown = (signal: NodeJS.Signals): void => {
+  console.log(`Received ${signal}, shutting down`);
+  httpServer.close(() => {
+    const closed = AppDataSource.isInitialized ? AppDataSource.destroy() : Promise.resolve();
+    void closed.finally(() => process.exit(0));
+  });
+  httpServer.closeIdleConnections();
+  // Safety net: one long-lived request must not keep the container alive indefinitely.
+  setTimeout(() => process.exit(0), 10_000).unref();
+};
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);

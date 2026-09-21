@@ -1,0 +1,146 @@
+name: Publish AHB database image
+
+# The AHB database is not in this repository and not in the application image. It is generated
+# from paid-for XML in the private Hochfrequenz/xml-migs-and-ahbs repository, and published here
+# as its own versioned image which the hf-apps-collection stacks seed into a volume.
+#
+# Run this after cutting a release in xml-migs-and-ahbs. It prints the tag and digest to put in
+# stacks/ahb-tabellen-stage/compose.yaml; verify on stage, then promote the same pair to prod.
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag in Hochfrequenz/xml-migs-and-ahbs to take the database from'
+        required: true
+        type: string
+      db_version:
+        description: "Version for the published image, e.g. 'v2026.08.06.0'"
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-db
+
+jobs:
+  publish:
+    name: Build and push the database image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      # Inputs are passed through `env` rather than interpolated into the scripts below, so a
+      # value containing shell metacharacters cannot execute anything.
+      - name: Validate inputs
+        env:
+          DB_VERSION: ${{ inputs.db_version }}
+        run: |
+          case "$DB_VERSION" in
+            v*) ;;
+            *) echo "db_version must start with 'v' (got '$DB_VERSION')" >&2; exit 1 ;;
+          esac
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install p7zip
+        run: sudo apt-get update && sudo apt-get install -y p7zip-full
+
+      # The decrypted database is ~1.1 GB and the image layer roughly the same again, so check
+      # rather than discover it as a confusing failure halfway through the build.
+      - name: Check available disk space
+        run: df -h /
+
+      - name: Download the encrypted database from the upstream release
+        env:
+          # Fine-grained PAT with read access to the private Hochfrequenz/xml-migs-and-ahbs repo.
+          GH_TOKEN: ${{ secrets.XML_MIGS_AND_AHBS_TOKEN }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          mkdir -p db-build
+          gh release download "$RELEASE_TAG" \
+            --repo Hochfrequenz/xml-migs-and-ahbs \
+            --pattern 'ahb_*.db.encrypted.7z' \
+            --dir db-build
+          ls -la db-build
+
+      - name: Decrypt the database
+        env:
+          # Organization-wide secret; also in the Hochfrequenz 1Password vault.
+          DB_7Z_ARCHIVE_PASSWORD: ${{ secrets.SQLITE_AHB_DB_7Z_ARCHIVE_PASSWORD }}
+        run: |
+          if [ -z "$DB_7Z_ARCHIVE_PASSWORD" ]; then
+            echo "SQLITE_AHB_DB_7Z_ARCHIVE_PASSWORD is not set" >&2
+            exit 1
+          fi
+          archive="$(find db-build -name 'ahb_*.db.encrypted.7z' | head -n 1)"
+          if [ -z "$archive" ]; then
+            echo "No ahb_*.db.encrypted.7z asset found on that release" >&2
+            exit 1
+          fi
+          # -p is read from the environment via the shell, never echoed.
+          7z x -y -p"$DB_7Z_ARCHIVE_PASSWORD" -odb-build "$archive"
+          rm -f "$archive"
+          test -f db-build/ahb.db || { echo "Archive did not contain ahb.db" >&2; exit 1; }
+          ls -la db-build
+
+      # The Dockerfile lives in docker/, the database in db-build/. Put the seed script beside
+      # the database so the build context holds everything the Dockerfile COPYs.
+      - name: Assemble the build context
+        run: cp docker/seed-ahb-db.sh db-build/
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v4.6.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v6.2.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ inputs.db_version }}
+
+      - name: Build and push the database image
+        id: push
+        uses: docker/build-push-action@v7.3.0
+        with:
+          context: db-build
+          file: docker/db.Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            DB_VERSION=${{ inputs.db_version }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+      - name: Summarise what to do next
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          DB_VERSION: ${{ inputs.db_version }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          {
+            echo "## Database image published"
+            echo
+            echo '```yaml'
+            echo "image: ${IMAGE}:${DB_VERSION}@${DIGEST}"
+            echo '```'
+            echo
+            echo "Put that line in \`stacks/ahb-tabellen-stage/compose.yaml\` in"
+            echo "Hochfrequenz/hf-apps-collection, verify on stage, then copy the same line"
+            echo "into \`stacks/ahb-tabellen/compose.yaml\` to promote it."
+          } >> "$GITHUB_STEP_SUMMARY"

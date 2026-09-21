@@ -78,23 +78,30 @@ $ npm install -g @angular/cli
 > [!NOTE]
 > Be sure to run `$ npm ci` during the initial setup to install all required dependencies.
 
+### Getting the database 🗄️
+
+> [!IMPORTANT]
+> The application needs the SQLite database to do anything useful. It is **not** part of this
+> repository and **not** part of the container image — it is roughly 1.1 GB, and it is built from
+> XML that Hochfrequenz pays for.
+
+Download `ahb_<commithash>.db.7z` from the latest release of the private
+[xml-migs-and-ahbs](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases) repository, unpack
+it, and put it at `src/server/data/ahb.db`. That path is gitignored and is where both `npm run
+start` and the local Docker setup expect it; set `AHB_DB_PATH` to keep it somewhere else.
+
+The release also carries an encrypted `ahb_<commithash>.db.encrypted.7z`; the password is in the
+Hochfrequenz 1Password vault
+([link](https://start.1password.com/open/i?a=F35NURJ4PFGOPBA77PR66C5P4I&v=vjgfwz7dg5wg656rfpvadetrqy&i=grnjb4hn6ipcau4bqe43rkuwnq&h=hochfrequenz.1password.com)).
+For local work the unencrypted archive is simpler. If you have access to neither repository nor
+vault, ask a teammate.
+
 ### Starting the app via Docker 🐋
 
 Create an `.env` file in the root directory and paste the contents of the `.example.env` file.
 
-> [!IMPORTANT]
-> The application requires a SQLite database to function.
-> This database is stored in an encrypted 7z archive at `src/server/data/ahb.db.encrypted.7z`.
-> You will need the password to decrypt this archive, which can be found in the Hochfrequenz 1Password vault at [this link](https://start.1password.com/open/i?a=F35NURJ4PFGOPBA77PR66C5P4I&v=vjgfwz7dg5wg656rfpvadetrqy&i=grnjb4hn6ipcau4bqe43rkuwnq&h=hochfrequenz.1password.com).
->
-> If you don't have access to the 1Password vault, please ask your teammates how to get the password.
->
-> To work locally, you need to decrypt the archive and store the decrypted file in at `src/server/data/ahb.db`.
->
-> If you want to start the application with Docker, you need to set the `DB_7Z_ARCHIVE_PASSWORD` environment variable in the `docker-compose.yaml` file either by setting it directly or by using the `.env` file.
-> We recommend the latter to keep the `docker-compose.yaml` file clean and readable.
-
-While having [Docker Desktop](https://www.docker.com/products/docker-desktop/) up and running, start the docker container using
+While having [Docker Desktop](https://www.docker.com/products/docker-desktop/) up and running,
+start the container using
 
 ```bash
 $ docker compose up -d --build
@@ -102,7 +109,11 @@ $ docker compose up -d --build
 
 and navigate to `http://localhost:4000/`.
 
-If this fails to start because of azure-mock problems, just copy the _unencrypted_ database to `src/server/data/ahb.db` and start the Angular CLI server.
+This builds and runs the same image that is deployed: the Angular bundle and the Express server
+are compiled **into the image**, so the container starts in seconds and serves immediately. Your
+local `src/server/data/ahb.db` is bind-mounted read-only at `/data/ahb.db`; the deployed stacks
+get the same file from a published data image instead (see
+[Update the database](#update-the-database)).
 
 ### Starting the app using Angular CLI
 
@@ -299,17 +310,38 @@ The source XML files must be paid for, so they are not publicly available, which
 
 To update the database with new AHB data:
 
+The database used to be committed to this repository as an 84 MB encrypted archive, which grew
+`.git` by that much on every update and shipped inside the application image. It is now published
+as its own versioned image and seeded into a volume on the host, so the application image contains
+no data at all.
+
 1. Access the private [xml-migs-and-ahbs repository](https://github.com/Hochfrequenz/xml-migs-and-ahbs/)
 2. If necessary, update the XML files by **manually** downloading them from the bdew-mako.de website because their API exists but is PITA. Commit the files to a feature branch and fix all the errors found by the CI before squashing to main.
-3. [create a new release](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases/new) in the xml-migs-and-ahbs repository
-4. after a few minutes, download the `ahb_<commithash>.db.encrypted.7z ` from the release artifacts
-5. copy the encrypted 7z file to [`/src/server/data/ahb.db.encrypted.7z`](/src/server/data/ahb.db.encrypted.7z) (and overwrite the previous file)
+3. [Create a new release](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases/new) in the xml-migs-and-ahbs repository
+4. After a few minutes, run the **[Publish AHB database image](../../actions/workflows/publish-db-image.yml)**
+   workflow here, giving it that release's tag and a version for the image (e.g. `v2026.08.06.0`).
+   It downloads the encrypted archive, decrypts it, and pushes
+   `ghcr.io/hochfrequenz/ahb-tabellen-db:<version>`.
+5. The workflow summary prints an `image:` line with the tag and digest. Put it in
+   `stacks/ahb-tabellen-stage/compose.yaml` in
+   [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection), merge, and let
+   Dockhand redeploy. The stack's seed job replaces the database in the volume; the application
+   restarts against it.
+6. Verify on stage, then copy the same `image:` line into `stacks/ahb-tabellen/compose.yaml` to
+   promote it to production.
+
+Nothing needs to be committed to this repository, and no release of this application is required:
+the database and the code version independently.
 
 ### Security
 
-The database file is stored in an encrypted and compressed format (`ahb.db.encrypted.7z`) to protect sensitive data during storage and transmission.
-The password for decryption can be found in the Hochfrequenz 1Password vault and the GitHub organization wide secrets.
-For local testing it is sufficient to download the unencrypted `ahb_<commithash>.db.7z` fron the release artifacts, un7zip it and place it next to the encrypted db as `ahb.db`.
+The archive published by xml-migs-and-ahbs stays encrypted (the password is in the Hochfrequenz
+1Password vault and in the GitHub organization-wide secrets, as `SQLITE_AHB_DB_7Z_ARCHIVE_PASSWORD`).
+It is decrypted only inside the publish workflow, so the password never reaches a running
+container — the `DB_7Z_ARCHIVE_PASSWORD` variable the deployments used to need is gone.
+
+The resulting `ahb-tabellen-db` package on GHCR holds the database unencrypted and **must be
+private**, for the same reason the application image is: the underlying XML is paid for.
 
 ## 🔗 Links
 

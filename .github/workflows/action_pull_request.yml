@@ -32,15 +32,32 @@ jobs:
       - name: Lint server
         run: npm run server:lint
 
+      # No database is needed: these are jsdom unit tests, and nothing under src/ reads the
+      # archive password. It used to be passed here and was never used.
       - name: Unit tests
         run: npm test
-        env:
-          # secret is set in organization settings
-          # https://github.com/organizations/Hochfrequenz/settings/secrets/actions/SQLITE_AHB_DB_7Z_ARCHIVE_PASSWORD
-          DB_7Z_ARCHIVE_PASSWORD: ${{ secrets.SQLITE_AHB_DB_7Z_ARCHIVE_PASSWORD }}
 
       - name: Build frontend
         run: npm run ng:build
 
       - name: Build server
         run: npm run server:build
+
+  docker:
+    name: Build the container image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      # Build only — nothing is pushed. The image is built from a tag by deploy.yml; this catches
+      # a broken Dockerfile on the pull request instead of during a release.
+      - name: Build image
+        uses: docker/build-push-action@v7.3.0
+        with:
+          context: .
+          push: false
+          build-args: |
+            VERSION=ci
+            COMMIT_HASH=${{ github.sha }}
