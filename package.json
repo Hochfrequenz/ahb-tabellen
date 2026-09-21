@@ -94,7 +94,7 @@
     "ng-mocks": "^14.17.3",
     "ng-openapi-gen": "^1.0.5",
     "npm-watch": "^0.13.0",
-    "postcss": "^8.5.26",
+    "postcss": "^8.5.28",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.23.13",
     "typescript": "~6.0.3",
