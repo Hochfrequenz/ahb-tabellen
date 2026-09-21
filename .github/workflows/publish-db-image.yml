@@ -88,10 +88,10 @@ jobs:
           test -f db-build/ahb.db || { echo "Archive did not contain ahb.db" >&2; exit 1; }
           ls -la db-build
 
-      # The Dockerfile lives in docker/, the database in db-build/. Put the seed script beside
+      # The Dockerfile lives in db-image/, the database in db-build/. Put the seed script beside
       # the database so the build context holds everything the Dockerfile COPYs.
       - name: Assemble the build context
-        run: cp docker/seed-ahb-db.sh db-build/
+        run: cp db-image/seed-ahb-db.sh db-build/
 
       - name: Log in to the Container registry
         uses: docker/login-action@v4.6.0
@@ -113,7 +113,7 @@ jobs:
         uses: docker/build-push-action@v7.3.0
         with:
           context: db-build
-          file: docker/db.Dockerfile
+          file: db-image/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
