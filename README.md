@@ -348,7 +348,7 @@ XML lives; this application only names a version to consume.
 2. If necessary, update the XML files by **manually** downloading them from the bdew-mako.de website because their API exists but is PITA. Commit the files to a feature branch and fix all the errors found by the CI before squashing to main.
 3. [Create a new release](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases/new) in the xml-migs-and-ahbs repository
 4. Wait. That release builds the database and then publishes it automatically as
-   `ghcr.io/hochfrequenz/ahb-db:<release tag>`. No manual step here.
+   `ghcr.io/hochfrequenz/xml-migs-and-ahbs:<release tag>`. No manual step here.
 5. That workflow's summary prints two lines to change in
    `stacks/ahb-tabellen-stage/compose.yaml` in
    [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection): the seed job's
@@ -376,7 +376,7 @@ container that runs this image, and none is needed to deploy it.
 both in place. Removing the Pulumi secret breaks `pulumi up`, and the Azure deployment is retired
 in its own change — see the note below.
 
-The `ahb-db` package on GHCR holds the database unencrypted and **must be private**, for the same
+The `xml-migs-and-ahbs` package on GHCR holds the database unencrypted and **must be private**, for the same
 reason this application's image is: the underlying XML is paid for. The publishing workflow
 asserts it on every run.
 
