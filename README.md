@@ -333,14 +333,16 @@ The database used to be committed to this repository as an 84 MB encrypted archi
 as its own versioned image and seeded into a volume on the host, so the application image contains
 no data at all.
 
+**Nothing in this repository is involved.** The database is built, versioned and published by
+[xml-migs-and-ahbs](https://github.com/Hochfrequenz/xml-migs-and-ahbs), which is where the source
+XML lives; this application only names a version to consume.
+
 1. Access the private [xml-migs-and-ahbs repository](https://github.com/Hochfrequenz/xml-migs-and-ahbs/)
 2. If necessary, update the XML files by **manually** downloading them from the bdew-mako.de website because their API exists but is PITA. Commit the files to a feature branch and fix all the errors found by the CI before squashing to main.
 3. [Create a new release](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases/new) in the xml-migs-and-ahbs repository
-4. After a few minutes, run the **[Publish AHB database image](../../actions/workflows/publish-db-image.yml)**
-   workflow here, giving it that release's tag and a version for the image (e.g. `v2026.08.06.0`).
-   It downloads the encrypted archive, decrypts it, and pushes
-   `ghcr.io/hochfrequenz/ahb-tabellen-db:<version>`.
-5. The workflow summary prints two lines to change in
+4. Wait. That release builds the database and then publishes it automatically as
+   `ghcr.io/hochfrequenz/ahb-db:<release tag>`. No manual step here.
+5. That workflow's summary prints two lines to change in
    `stacks/ahb-tabellen-stage/compose.yaml` in
    [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection): the seed job's
    `image:` tag and digest, and `AHB_DB_VERSION` on the application service. **Both, always.**
@@ -349,26 +351,27 @@ no data at all.
    compose leaves a service whose definition is unchanged alone, and the running process keeps
    its open file descriptor on the replaced database — the deploy reports success while the app
    serves the previous dataset. Merge, and let Dockhand redeploy.
-6. Verify on stage, then copy the same `image:` line into `stacks/ahb-tabellen/compose.yaml` to
-   promote it to production.
+6. Verify on stage, then copy both lines into `stacks/ahb-tabellen/compose.yaml` to promote to
+   production.
 
-Nothing needs to be committed to this repository, and no release of this application is required:
-the database and the code version independently.
+Nothing is committed to this repository and no release of this application is required: the
+database and the code version independently.
 
 ### Security
 
-The archive published by xml-migs-and-ahbs stays encrypted (the password is in the Hochfrequenz
-1Password vault and in the GitHub organization-wide secrets, as `SQLITE_AHB_DB_7Z_ARCHIVE_PASSWORD`).
-It is decrypted only inside the publish workflow, so the password never reaches a container that
-runs this image.
+The archive password (`SQLITE_AHB_DB_7Z_ARCHIVE_PASSWORD`, in the Hochfrequenz 1Password vault
+and the GitHub organization-wide secrets) is not used anywhere in this repository any more. The
+image is built upstream from the _unencrypted_ release artifact, so no password reaches a
+container that runs this image, and none is needed to deploy it.
 
 `infra/` is the exception, and deliberately so: the Pulumi program still declares
 `db_7z_archive_password` and injects `DB_7Z_ARCHIVE_PASSWORD` into the Azure App Service. Leave
 both in place. Removing the Pulumi secret breaks `pulumi up`, and the Azure deployment is retired
 in its own change — see the note below.
 
-The resulting `ahb-tabellen-db` package on GHCR holds the database unencrypted and **must be
-private**, for the same reason the application image is: the underlying XML is paid for.
+The `ahb-db` package on GHCR holds the database unencrypted and **must be private**, for the same
+reason this application's image is: the underlying XML is paid for. The publishing workflow
+asserts it on every run.
 
 ## 🔗 Links
 

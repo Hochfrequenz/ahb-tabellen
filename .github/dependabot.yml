@@ -24,11 +24,7 @@ updates:
     commit-message:
       prefix: 'chore'
   - package-ecosystem: 'docker'
-    # Both Dockerfiles: the application image at the root, and the database image in
-    # db-image/. Dependabot does not recurse, so a new Dockerfile needs a new entry here.
-    directories:
-      - '/'
-      - '/db-image'
+    directory: '/'
     schedule:
       interval: 'weekly'
     commit-message:
