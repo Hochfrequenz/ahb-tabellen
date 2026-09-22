@@ -268,23 +268,30 @@ For local development against a server started with `npm run server:start`, use 
 
 ## 🚀 Deployment
 
-> [!CAUTION]
-> **The Azure App Service deployment cannot serve this image.** Pushing a version tag still runs
-> `deploy-stage` / `deploy-production` in `.github/workflows/deploy.yml`, which deploys to Azure
-> via Pulumi — but the image no longer contains the database, and Azure App Service has no volume
-> to seed it into and no `AHB_DB_PATH` set. The container will fail its startup check and exit
-> rather than serve, which is loud by design, but it is still a broken deployment.
+> [!IMPORTANT]
+> **Tagging no longer deploys to Azure.** The `deploy-stage` and `deploy-production` jobs in
+> `.github/workflows/deploy.yml` are disabled (`if: false`). Pushing a version tag builds and
+> publishes the container image and creates the GitHub release, and stops there.
 >
-> **Before cutting any tag**, do one of:
+> They are off because the Azure App Service cannot run the current image: it carries no database,
+> and App Service has no volume to seed one into and no `AHB_DB_PATH`. A deploy would push a
+> container that fails its startup check and exits.
 >
-> - migrate to the Compose stacks in
->   [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection) and retire the Azure
->   App Service along with the `deploy-stage` / `deploy-production` jobs; or
-> - give the Azure deployment a database — an Azure Files mount plus `AHB_DB_PATH` — accepting
->   that SQLite over SMB is a poor fit for a 1.1 GB read-only database; or
-> - disable the two `deploy-*` jobs so that tagging only publishes the image.
+> The App Service itself is **left running its old image on purpose**, as the rollback target
+> while the Compose stacks in [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection)
+> take over. Deployment now happens there: bump the image tag and digest in the stack, and Dockhand
+> rolls it out.
 >
-> Everything else below still describes the Azure pipeline as it stands today.
+> Retiring Azure for good — deleting those jobs, `infra/` and the Pulumi stacks — is its own change,
+> to be made once the Compose stack has served production traffic. Until then leave the Pulumi
+> config, including `db_7z_archive_password`, in place.
+>
+> Note the `ahb-tabellen/stage - preview deployment` check on pull requests comes from Pulumi
+> Cloud's GitHub app, not from this workflow, so disabling these jobs does not silence it. It
+> currently fails on unrelated `azuread` credentials — see `infra/README.md`.
+
+The sections below describe the Azure pipeline as it was built; the build and release half of it
+still runs.
 
 The application can be deployed to two environments: Stage and Production.
 The deployment process is fully automated using a combination of GitHub Actions and Pulumi, and is triggered by pushing a git tag, which creates a GitHub release.
