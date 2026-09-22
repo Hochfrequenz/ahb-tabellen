@@ -1,3 +1,11 @@
+# Run the production image locally: the Angular bundle and Express server compiled into the
+# image, configured at runtime, reading the database from a read-only mount.
+#
+# The deployed stacks (Hochfrequenz/hf-apps-collection) seed the database into a volume from a
+# published data image. Locally there is no need for that — bind-mount the `ahb.db` you already
+# decrypted for development. See "Setup" in the README.
+#
+#   $ docker compose up -d --build   &&   open http://localhost:4000
 services:
   server:
     build:
@@ -7,12 +15,30 @@ services:
         BUILD_DATE: dummy
         COMMIT_DATE: dummy
         COMMIT_HASH: wip
+        BUILD_BRANCH: local
         VERSION: v0.0.0-local
     ports:
-      - 4000:4000
+      - 4000:3000
+    # Node is PID 1 and handles SIGTERM itself; `init` reaps anything it leaves behind.
+    init: true
+    # The image writes nothing at runtime — no build output, no decrypted database.
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./src/server/data/ahb.db:/data/ahb.db:ro
     environment:
-      - PORT=4000
-      - DB_7Z_ARCHIVE_PASSWORD=${DB_7Z_ARCHIVE_PASSWORD}
-      - ENVIRONMENT=docker
-    depends_on:
-      - upload-documents
+      PORT: 3000
+      ENVIRONMENT: docker
+      AHB_DB_PATH: /data/ahb.db
+      OH_DEAR_HEALTH_CHECK_SECRET: ${OH_DEAR_HEALTH_CHECK_SECRET:-local-health-check-secret}
+      # Runtime configuration for the frontend, served at /config.js. Anything left unset keeps
+      # the value compiled into the bundle (src/app/environments/environment.prod.ts).
+      APP_API_URL: http://localhost:4000
+      APP_BASE_URL: http://localhost:4000
+      APP_AUTH0_CLIENT_ID: Hku0EniRjy4B2krnx1sCwTIOzAiVta1B
+      APP_BEDINGUNGSBAUM_BASE_URL: https://bedingungsbaum.stage.hochfrequenz.de
+      APP_EBD_BASE_URL: https://ebd.stage.hochfrequenz.de
+      APP_FRISTENKALENDER_BASE_URL: https://fristenkalender.stage.hochfrequenz.de
+      APP_ALLOW_SEARCH_INDEXING: 'false'
+      APP_ENABLE_PRUEFI_COMPARISON: 'true'

@@ -78,23 +78,30 @@ $ npm install -g @angular/cli
 > [!NOTE]
 > Be sure to run `$ npm ci` during the initial setup to install all required dependencies.
 
+### Getting the database 🗄️
+
+> [!IMPORTANT]
+> The application needs the SQLite database to do anything useful. It is **not** part of this
+> repository and **not** part of the container image — it is roughly 1.1 GB, and it is built from
+> XML that Hochfrequenz pays for.
+
+Download `ahb_<commithash>.db.7z` from the latest release of the private
+[xml-migs-and-ahbs](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases) repository, unpack
+it, and put it at `src/server/data/ahb.db`. That path is gitignored and is where both `npm run
+start` and the local Docker setup expect it; set `AHB_DB_PATH` to keep it somewhere else.
+
+The release also carries an encrypted `ahb_<commithash>.db.encrypted.7z`; the password is in the
+Hochfrequenz 1Password vault
+([link](https://start.1password.com/open/i?a=F35NURJ4PFGOPBA77PR66C5P4I&v=vjgfwz7dg5wg656rfpvadetrqy&i=grnjb4hn6ipcau4bqe43rkuwnq&h=hochfrequenz.1password.com)).
+For local work the unencrypted archive is simpler. If you have access to neither repository nor
+vault, ask a teammate.
+
 ### Starting the app via Docker 🐋
 
 Create an `.env` file in the root directory and paste the contents of the `.example.env` file.
 
-> [!IMPORTANT]
-> The application requires a SQLite database to function.
-> This database is stored in an encrypted 7z archive at `src/server/data/ahb.db.encrypted.7z`.
-> You will need the password to decrypt this archive, which can be found in the Hochfrequenz 1Password vault at [this link](https://start.1password.com/open/i?a=F35NURJ4PFGOPBA77PR66C5P4I&v=vjgfwz7dg5wg656rfpvadetrqy&i=grnjb4hn6ipcau4bqe43rkuwnq&h=hochfrequenz.1password.com).
->
-> If you don't have access to the 1Password vault, please ask your teammates how to get the password.
->
-> To work locally, you need to decrypt the archive and store the decrypted file in at `src/server/data/ahb.db`.
->
-> If you want to start the application with Docker, you need to set the `DB_7Z_ARCHIVE_PASSWORD` environment variable in the `docker-compose.yaml` file either by setting it directly or by using the `.env` file.
-> We recommend the latter to keep the `docker-compose.yaml` file clean and readable.
-
-While having [Docker Desktop](https://www.docker.com/products/docker-desktop/) up and running, start the docker container using
+While having [Docker Desktop](https://www.docker.com/products/docker-desktop/) up and running,
+start the container using
 
 ```bash
 $ docker compose up -d --build
@@ -102,7 +109,11 @@ $ docker compose up -d --build
 
 and navigate to `http://localhost:4000/`.
 
-If this fails to start because of azure-mock problems, just copy the _unencrypted_ database to `src/server/data/ahb.db` and start the Angular CLI server.
+This builds and runs the same image that is deployed: the Angular bundle and the Express server
+are compiled **into the image**, so the container starts in seconds and serves immediately. Your
+local `src/server/data/ahb.db` is bind-mounted read-only at `/data/ahb.db`; the deployed stacks
+get the same file from a published data image instead (see
+[Update the database](#update-the-database)).
 
 ### Starting the app using Angular CLI
 
@@ -257,6 +268,31 @@ For local development against a server started with `npm run server:start`, use 
 
 ## 🚀 Deployment
 
+> [!IMPORTANT]
+> **Tagging no longer deploys to Azure.** The `deploy-stage` and `deploy-production` jobs in
+> `.github/workflows/deploy.yml` are disabled (`if: false`). Pushing a version tag builds and
+> publishes the container image and creates the GitHub release, and stops there.
+>
+> They are off because the Azure App Service cannot run the current image: it carries no database,
+> and App Service has no volume to seed one into and no `AHB_DB_PATH`. A deploy would push a
+> container that fails its startup check and exits.
+>
+> The App Service itself is **left running its old image on purpose**, as the rollback target
+> while the Compose stacks in [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection)
+> take over. Deployment now happens there: bump the image tag and digest in the stack, and Dockhand
+> rolls it out.
+>
+> Retiring Azure for good — deleting those jobs, `infra/` and the Pulumi stacks — is its own change,
+> to be made once the Compose stack has served production traffic. Until then leave the Pulumi
+> config, including `db_7z_archive_password`, in place.
+>
+> Note the `ahb-tabellen/stage - preview deployment` check on pull requests comes from Pulumi
+> Cloud's GitHub app, not from this workflow, so disabling these jobs does not silence it. It
+> currently fails on unrelated `azuread` credentials — see `infra/README.md`.
+
+The sections below describe the Azure pipeline as it was built; the build and release half of it
+still runs.
+
 The application can be deployed to two environments: Stage and Production.
 The deployment process is fully automated using a combination of GitHub Actions and Pulumi, and is triggered by pushing a git tag, which creates a GitHub release.
 
@@ -299,17 +335,50 @@ The source XML files must be paid for, so they are not publicly available, which
 
 To update the database with new AHB data:
 
+The database used to be committed to this repository as an 84 MB encrypted archive, which grew
+`.git` by that much on every update and shipped inside the application image. It is now published
+as its own versioned image and seeded into a volume on the host, so the application image contains
+no data at all.
+
+**Nothing in this repository is involved.** The database is built, versioned and published by
+[xml-migs-and-ahbs](https://github.com/Hochfrequenz/xml-migs-and-ahbs), which is where the source
+XML lives; this application only names a version to consume.
+
 1. Access the private [xml-migs-and-ahbs repository](https://github.com/Hochfrequenz/xml-migs-and-ahbs/)
 2. If necessary, update the XML files by **manually** downloading them from the bdew-mako.de website because their API exists but is PITA. Commit the files to a feature branch and fix all the errors found by the CI before squashing to main.
-3. [create a new release](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases/new) in the xml-migs-and-ahbs repository
-4. after a few minutes, download the `ahb_<commithash>.db.encrypted.7z ` from the release artifacts
-5. copy the encrypted 7z file to [`/src/server/data/ahb.db.encrypted.7z`](/src/server/data/ahb.db.encrypted.7z) (and overwrite the previous file)
+3. [Create a new release](https://github.com/Hochfrequenz/xml-migs-and-ahbs/releases/new) in the xml-migs-and-ahbs repository
+4. Wait. That release builds the database and then publishes it automatically as
+   `ghcr.io/hochfrequenz/xml-migs-and-ahbs:<release tag>`. No manual step here.
+5. That workflow's summary prints two lines to change in
+   `stacks/ahb-tabellen-stage/compose.yaml` in
+   [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection): the seed job's
+   `image:` tag and digest, and `AHB_DB_VERSION` on the application service. **Both, always.**
+   The image re-seeds the volume; `AHB_DB_VERSION` is what changes the application service's
+   definition, which is what makes `docker compose up -d` recreate its container. Without it
+   compose leaves a service whose definition is unchanged alone, and the running process keeps
+   its open file descriptor on the replaced database — the deploy reports success while the app
+   serves the previous dataset. Merge, and let Dockhand redeploy.
+6. Verify on stage, then copy both lines into `stacks/ahb-tabellen/compose.yaml` to promote to
+   production.
+
+Nothing is committed to this repository and no release of this application is required: the
+database and the code version independently.
 
 ### Security
 
-The database file is stored in an encrypted and compressed format (`ahb.db.encrypted.7z`) to protect sensitive data during storage and transmission.
-The password for decryption can be found in the Hochfrequenz 1Password vault and the GitHub organization wide secrets.
-For local testing it is sufficient to download the unencrypted `ahb_<commithash>.db.7z` fron the release artifacts, un7zip it and place it next to the encrypted db as `ahb.db`.
+The archive password (`SQLITE_AHB_DB_7Z_ARCHIVE_PASSWORD`, in the Hochfrequenz 1Password vault
+and the GitHub organization-wide secrets) is not used anywhere in this repository any more. The
+image is built upstream from the _unencrypted_ release artifact, so no password reaches a
+container that runs this image, and none is needed to deploy it.
+
+`infra/` is the exception, and deliberately so: the Pulumi program still declares
+`db_7z_archive_password` and injects `DB_7Z_ARCHIVE_PASSWORD` into the Azure App Service. Leave
+both in place. Removing the Pulumi secret breaks `pulumi up`, and the Azure deployment is retired
+in its own change — see the note below.
+
+The `xml-migs-and-ahbs` package on GHCR holds the database unencrypted and **must be private**, for the same
+reason this application's image is: the underlying XML is paid for. The publishing workflow
+asserts it on every run.
 
 ## 🔗 Links
 
