@@ -248,10 +248,22 @@ jobs:
           prerelease: false
           draft: false
 
+  # DISABLED — the Azure App Service cannot run the current image.
+  #
+  # Since Hochfrequenz/ahb-tabellen#985 the image carries no database: it is seeded into a volume
+  # by a separate job, and App Service has no volume to seed and no AHB_DB_PATH. A deploy here
+  # would push a container that fails its startup check and exits.
+  #
+  # The App Service is deliberately left RUNNING its old image as the rollback target while the
+  # Compose stacks in Hochfrequenz/hf-apps-collection take over. Only new deployments are stopped.
+  #
+  # Re-enable by removing the `if: false` line (the original condition is preserved below it).
+  # Retiring Azure for good — deleting these jobs, infra/ and the Pulumi stacks — is its own PR,
+  # to be done once the Compose stack has served production traffic.
   deploy-stage:
     name: Deploy to Stage
     needs: [build-stage]
-    if: ${{ contains(github.ref_name, '-rc') }}
+    if: false # && ${{ contains(github.ref_name, '-rc') }}
     permissions:
       contents: read
       id-token: write
@@ -266,10 +278,22 @@ jobs:
       azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
       pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
+  # DISABLED — the Azure App Service cannot run the current image.
+  #
+  # Since Hochfrequenz/ahb-tabellen#985 the image carries no database: it is seeded into a volume
+  # by a separate job, and App Service has no volume to seed and no AHB_DB_PATH. A deploy here
+  # would push a container that fails its startup check and exits.
+  #
+  # The App Service is deliberately left RUNNING its old image as the rollback target while the
+  # Compose stacks in Hochfrequenz/hf-apps-collection take over. Only new deployments are stopped.
+  #
+  # Re-enable by removing the `if: false` line (the original condition is preserved below it).
+  # Retiring Azure for good — deleting these jobs, infra/ and the Pulumi stacks — is its own PR,
+  # to be done once the Compose stack has served production traffic.
   deploy-production:
     name: Deploy to Production
     needs: [build-production]
-    if: ${{ !contains(github.ref_name, '-rc') }}
+    if: false # && ${{ !contains(github.ref_name, '-rc') }}
     permissions:
       contents: read
       id-token: write

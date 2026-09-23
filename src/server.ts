@@ -8,6 +8,11 @@ import router from './server/infrastructure/api.routes';
 import { httpErrorHandler } from './server/infrastructure/errors';
 import { AppDataSource } from './server/infrastructure/database';
 import { mountMcp } from './server/mcp/http';
+import {
+  buildRuntimeConfig,
+  CONFIG_SCRIPT_PATH,
+  renderConfigScript,
+} from './server/infrastructure/app-config';
 import 'reflect-metadata';
 
 const server = express();
@@ -29,13 +34,26 @@ server.use(
 const distFolder = join(process.cwd(), 'dist/ahb-tabellen/browser');
 const indexHtml = 'index.html';
 
-// Initialize database connection
+// Built once, at startup, so a malformed APP_* variable fails the process immediately rather
+// than the first request that happens to need it.
+const configScript = renderConfigScript(buildRuntimeConfig());
+
+// Initialize database connection.
+//
+// Fatal on failure, deliberately. The database is no longer decrypted from inside the image by a
+// `set -e` shell script that took the container down with it — it is a volume seeded by a separate
+// job, so a wrong AHB_DB_PATH, an unmounted volume or an unseeded one are all now reachable. Every
+// one of them used to be impossible; logging and carrying on would turn each into a container that
+// reports healthy while failing 100% of API requests.
+let databaseReady = false;
 AppDataSource.initialize()
   .then(() => {
+    databaseReady = true;
     console.log('Database connection initialized');
   })
   .catch(error => {
     console.error('Error initializing database connection:', error);
+    process.exit(1);
   });
 
 server.get('/version', (_, res) =>
@@ -49,8 +67,13 @@ server.get('/version', (_, res) =>
     name: 'ahb-tabellen',
   })
 );
+// Liveness: the process is up and serving. Says nothing about the database.
 server.get('/health', (_, res) => res.send());
-server.get('/readiness', (_, res) => res.send());
+// Readiness: the database is open and queryable, so this instance can actually serve the API.
+// This is what the image's HEALTHCHECK and the compose stacks probe.
+server.get('/readiness', (_, res) =>
+  databaseReady ? res.send() : res.status(503).send({ status: 'database not ready' })
+);
 
 server.use('/api', router);
 
@@ -61,6 +84,13 @@ mountMcp(server);
 // Apply error handler middleware
 server.use(httpErrorHandler);
 
+// Runtime configuration for the Angular bundle, which loads it from index.html before starting.
+// MUST be registered before the static handler below, whose `*file.*ext` pattern would otherwise
+// match this path and 404 it. Never cached: a configuration change must take effect on restart.
+server.get(CONFIG_SCRIPT_PATH, (_, res) =>
+  res.type('application/javascript').set('Cache-Control', 'no-store').send(configScript)
+);
+
 // Serve static files from /browser
 server.get('*file.*ext', express.static(distFolder, { maxAge: '1y' }));
 
@@ -68,6 +98,25 @@ server.get('*file.*ext', express.static(distFolder, { maxAge: '1y' }));
 server.get('{/*splat}', async (_, res) => res.sendFile(join(distFolder, indexHtml)));
 
 const port = process.env['PORT'] || 3000;
-server.listen(port, () => {
+const httpServer = server.listen(port, () => {
   console.log(`Node Express server listening on http://localhost:${port}`);
 });
+
+// Node as PID 1 gets no default signal handlers, so without this `docker stop` waits out its
+// full grace period and then SIGKILLs the container on every deploy. Stop accepting connections,
+// drop idle keep-alives, close the database, then exit.
+const shutdown = (signal: NodeJS.Signals): void => {
+  console.log(`Received ${signal}, shutting down`);
+  // Stop reporting ready first: this instance is about to stop serving, and the probe should say
+  // so for the whole of the drain rather than only once the process is gone.
+  databaseReady = false;
+  httpServer.close(() => {
+    const closed = AppDataSource.isInitialized ? AppDataSource.destroy() : Promise.resolve();
+    void closed.finally(() => process.exit(0));
+  });
+  httpServer.closeIdleConnections();
+  // Safety net: one long-lived request must not keep the container alive indefinitely.
+  setTimeout(() => process.exit(0), 10_000).unref();
+};
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
