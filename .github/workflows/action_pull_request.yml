@@ -54,7 +54,7 @@ jobs:
       # Build only — nothing is pushed. The image is built from a tag by deploy.yml; this catches
       # a broken Dockerfile on the pull request instead of during a release.
       - name: Build image
-        uses: docker/build-push-action@v7.3.0
+        uses: docker/build-push-action@v7.4.0
         with:
           context: .
           push: false
