@@ -48,7 +48,7 @@
     "@angular/router": "^22.2.0",
     "@auth0/auth0-angular": "^2.12.0",
     "@azure/msal-browser": "^5.23.0",
-    "@hochfrequenz/efoli": "^2.0.0",
+    "@hochfrequenz/efoli": "^2.0.1",
     "@mdi/font": "^7.4.47",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "cors": "^2.8.5",
