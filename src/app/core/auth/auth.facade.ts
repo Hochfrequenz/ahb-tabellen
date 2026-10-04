@@ -19,6 +19,12 @@ export interface AuthUser {
 
 const ACTIVE_PROVIDER_KEY = 'ahb.activeAuthProvider';
 
+/** sessionStorage key holding when we last redirected to Microsoft for re-authentication (ms). */
+const REAUTH_AT_KEY = 'ahb.apiReauthAt';
+
+/** Within this window a second re-auth redirect is refused, to break redirect loops. */
+const REAUTH_LOOP_WINDOW_MS = 60_000;
+
 /** sessionStorage key holding the route the user was heading to before being asked to sign in. */
 export const POST_LOGIN_TARGET_KEY = 'ahb.postLoginTarget';
 
@@ -179,14 +185,16 @@ export class AuthFacade {
 
   private async acquireMsalToken(account: AccountInfo, scope: string): Promise<string> {
     try {
-      return (await this.msal.acquireTokenSilent({ scopes: [scope], account })).accessToken;
+      const result = await this.msal.acquireTokenSilent({ scopes: [scope], account });
+      safeStorageRemove(sessionStorage, REAUTH_AT_KEY);
+      return result.accessToken;
     } catch (error) {
       if (!(error instanceof InteractionRequiredAuthError)) {
         throw error;
       }
       // A page load fires several API calls at once; they must share ONE redirect, or MSAL rejects
       // the later ones with `interaction_in_progress` and those surface as spurious HTTP errors.
-      this.reauthRedirect ??= this.redirectToMicrosoft(account, scope);
+      this.reauthRedirect ??= this.redirectToMicrosoft(account, scope, error);
       return this.reauthRedirect;
     }
   }
@@ -196,15 +204,35 @@ export class AuthFacade {
    * Microsoft sign-in again, returning them to where they were. The page navigates away, so on
    * success the returned promise never settles — resolving or rejecting would fire a spurious API
    * request / error right before the redirect.
+   *
+   * Loop guard: if we already redirected less than a minute ago and the silent path still needs
+   * interaction, redirecting again would loop forever, so the original error is surfaced instead.
    */
-  private redirectToMicrosoft(account: AccountInfo, scope: string): Promise<never> {
+  private redirectToMicrosoft(
+    account: AccountInfo,
+    scope: string,
+    cause: InteractionRequiredAuthError
+  ): Promise<never> {
+    const lastAt = Number(safeStorageGet(sessionStorage, REAUTH_AT_KEY));
+    if (Number.isFinite(lastAt) && lastAt > 0 && Date.now() - lastAt < REAUTH_LOOP_WINDOW_MS) {
+      return Promise.reject(cause).catch((error: unknown) => {
+        this.reauthRedirect = undefined; // do not memoise the refusal
+        throw error;
+      });
+    }
+    safeStorageSet(sessionStorage, REAUTH_AT_KEY, String(Date.now()));
     const target = safeInternalTarget(window.location.pathname + window.location.search);
+    // Mirror login(): never leave a stale target behind when there is nothing to carry.
     if (target !== '/') {
       safeStorageSet(sessionStorage, POST_LOGIN_TARGET_KEY, target);
+    } else {
+      safeStorageRemove(sessionStorage, POST_LOGIN_TARGET_KEY);
     }
     return this.msal.acquireTokenRedirect({ scopes: [scope], account }).then(
       () => new Promise<never>(() => undefined),
       (error: unknown) => {
+        // No redirect happened, so it must not count against the loop guard.
+        safeStorageRemove(sessionStorage, REAUTH_AT_KEY);
         this.reauthRedirect = undefined; // allow a later attempt to retry
         throw error;
       }

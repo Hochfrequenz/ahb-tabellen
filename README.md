@@ -204,7 +204,7 @@ If no provider is set, the MCP endpoint runs **unauthenticated** (useful for loc
 
 ### REST API authentication
 
-`/api/*` requires a `Bearer` access token from Auth0 or Entra, validated against the same `MCP_*` configuration as `/mcp`. Public exceptions are `/api/health` (Oh Dear, has its own shared-secret check) and `/api/datenstand`; requests without a valid token get `401`. `/version`, `/readiness`, `/config.js` and the static files stay public.
+`/api/*` requires a `Bearer` access token from Auth0 or Entra, validated against the same `MCP_*` configuration as `/mcp`. Public exceptions are `/api/health` (Oh Dear, has its own shared-secret check) and `/api/datenstand`; requests without a valid token get `401`. `/health`, `/version`, `/readiness`, `/config.js` and the static files stay public.
 
 The SPA attaches the token automatically. It requests it using two runtime-config values (see `.example.env`): `APP_AUTH0_AUDIENCE` (= `MCP_AUTH0_AUDIENCE`) and `APP_ENTRA_API_SCOPE` (= `api://<MCP_ENTRA_AUDIENCE>/access_as_user`). If the value for the user's provider is unset, or the user is signed out, no token is sent and the API answers `401`.
 

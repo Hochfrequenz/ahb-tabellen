@@ -92,4 +92,49 @@ describe('apiAuthInterceptor', () => {
     expect(req.request.headers.get('Authorization')).toBe('Bearer abc');
     controller.verify();
   });
+
+  describe('public endpoints', () => {
+    it.each([
+      'https://app.example/api/datenstand',
+      'https://app.example/api/datenstand?x=1',
+      'https://app.example/api/datenstand#frag',
+      'https://app.example/api/health',
+      'https://app.example/api/health?probe=1',
+    ])('passes %s through without a token', url => {
+      setup();
+      http.get(url).subscribe();
+      const req = controller.expectOne(url);
+      expect(req.request.headers.has('Authorization')).toBe(false);
+      expect(getAccessToken).not.toHaveBeenCalled();
+      controller.verify();
+    });
+
+    it('does not treat /api/datenstand/extra as public', () => {
+      setup();
+      getAccessToken.mockReturnValue(of('abc'));
+      http.get('https://app.example/api/datenstand/extra').subscribe();
+      const req = controller.expectOne('https://app.example/api/datenstand/extra');
+      expect(req.request.headers.get('Authorization')).toBe('Bearer abc');
+      controller.verify();
+    });
+  });
+
+  it('never attaches the token to a look-alike host', () => {
+    setup();
+    http.get('https://app.example.evil/api/x').subscribe();
+    const req = controller.expectOne('https://app.example.evil/api/x');
+    expect(req.request.headers.has('Authorization')).toBe(false);
+    expect(getAccessToken).not.toHaveBeenCalled();
+    controller.verify();
+  });
+
+  it('attaches the token to relative /api URLs when apiUrl is empty (current behavior)', () => {
+    environment.apiUrl = '';
+    setup();
+    getAccessToken.mockReturnValue(of('abc'));
+    http.get('/api/ahb/x').subscribe();
+    const req = controller.expectOne('/api/ahb/x');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer abc');
+    controller.verify();
+  });
 });

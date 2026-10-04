@@ -11,8 +11,15 @@ import { AuthFacade } from './auth.facade';
 export const apiAuthInterceptor: HttpInterceptorFn = (req, next) => {
   // Trailing slashes on APP_API_URL must not defeat the match (the generated client concatenates
   // `rootUrl + path` verbatim).
-  const apiPrefix = `${environment.apiUrl.replace(/\/+$/, '')}/api/`;
+  const base = environment.apiUrl.replace(/\/+$/, '');
+  const apiPrefix = `${base}/api/`;
   if (!req.url.startsWith(apiPrefix)) {
+    return next(req);
+  }
+  // Public endpoints (see the backend's api-auth.ts) must not depend on a token: exact match on
+  // the URL without query string / fragment.
+  const path = req.url.split(/[?#]/, 1)[0];
+  if (path === `${base}/api/datenstand` || path === `${base}/api/health`) {
     return next(req);
   }
   return inject(AuthFacade)
