@@ -83,14 +83,34 @@ describe('apiAuthInterceptor', () => {
     controller.verify();
   });
 
-  it('still matches when apiUrl has a trailing slash', () => {
-    environment.apiUrl = 'https://app.example/';
-    setup();
-    getAccessToken.mockReturnValue(of('abc'));
-    http.get('https://app.example/api/ahb/FV2510/55001').subscribe();
-    const req = controller.expectOne('https://app.example/api/ahb/FV2510/55001');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer abc');
-    controller.verify();
+  describe('apiUrl with a trailing slash', () => {
+    // The generated client concatenates `rootUrl + '/api/...'` verbatim, so APP_API_URL with a
+    // trailing slash yields a double slash; the normalized single-slash form must match too.
+    it.each([
+      'https://app.example//api/ahb/FV2510/55001',
+      'https://app.example/api/ahb/FV2510/55001',
+    ])('attaches the token to %s', url => {
+      environment.apiUrl = 'https://app.example/';
+      setup();
+      getAccessToken.mockReturnValue(of('abc'));
+      http.get(url).subscribe();
+      const req = controller.expectOne(url);
+      expect(req.request.headers.get('Authorization')).toBe('Bearer abc');
+      controller.verify();
+    });
+
+    it.each(['https://app.example//api/datenstand', 'https://app.example//api/health?probe=1'])(
+      'keeps %s public',
+      url => {
+        environment.apiUrl = 'https://app.example/';
+        setup();
+        http.get(url).subscribe();
+        const req = controller.expectOne(url);
+        expect(req.request.headers.has('Authorization')).toBe(false);
+        expect(getAccessToken).not.toHaveBeenCalled();
+        controller.verify();
+      }
+    );
   });
 
   describe('public endpoints', () => {
