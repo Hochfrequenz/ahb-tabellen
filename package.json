@@ -63,7 +63,7 @@
     "tslib": "^2.8.1",
     "typeorm": "^0.3.24",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-    "zod": "^4.4.3",
+    "zod": "^4.6.7",
     "zone.js": "~0.16.3"
   },
   "devDependencies": {
