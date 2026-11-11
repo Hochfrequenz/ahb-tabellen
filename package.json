@@ -86,7 +86,7 @@
     "concurrently": "^10.0.6",
     "eslint": "^9.28.0",
     "jest": "^30.5.2",
-    "jest-environment-jsdom": "^30.5.1",
+    "jest-environment-jsdom": "^30.5.2",
     "jest-preset-angular": "^17.0.3",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",
