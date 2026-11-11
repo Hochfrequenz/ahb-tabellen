@@ -60,7 +60,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "~7.8.2",
     "sqlite3": "^6.0.1",
-    "tslib": "^2.8.1",
+    "tslib": "^2.9.1",
     "typeorm": "^0.3.24",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "^4.6.7",
