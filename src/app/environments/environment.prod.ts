@@ -28,9 +28,9 @@ const origin = typeof window === 'undefined' ? '' : window.location.origin;
 const defaults: EnvironmentInterface = {
   isProduction: true, // DO NOT CHANGE - disables automatic dummy user login in production environment
   apiUrl: origin,
-  bedingungsbaumBaseUrl: 'https://bedingungsbaum.hochfrequenz.de',
-  ebdBaseUrl: 'https://ebd.hochfrequenz.de',
-  fristenkalenderBaseUrl: 'https://fristenkalender.hochfrequenz.de',
+  bedingungsbaumBaseUrl: 'https://bedingungsbaum.hochfrequenz.app',
+  ebdBaseUrl: 'https://ebd.hochfrequenz.app',
+  fristenkalenderBaseUrl: 'https://fristenkalender.hochfrequenz.app',
   auth0Domain: 'auth.hochfrequenz.de',
   auth0ClientId: 'VSkXGqlTD7Rf5Q4n9a0h00rInEyL2ZQj',
   entraClientId: '00000000-0000-0000-0000-000000000000', // provisioned by infra (#951)

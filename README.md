@@ -4,11 +4,11 @@
 
 ### Production
 
-You can access the **prod** version of the application on [ahb-tabellen.hochfrequenz.de](https://ahb-tabellen.hochfrequenz.de).
+You can access the **prod** version of the application on [ahb-tabellen.hochfrequenz.app](https://ahb-tabellen.hochfrequenz.app).
 
 ### Stage
 
-You can access the **stage** version of the application on [ahb-tabellen.stage.hochfrequenz.de](https://ahb-tabellen.stage.hochfrequenz.de).
+You can access the **stage** version of the application on [ahb-tabellen-stage.hochfrequenz.app](https://ahb-tabellen-stage.hochfrequenz.app).
 
 This is our test environment where we deploy the latest changes to test them before deploying them to production.
 
@@ -311,7 +311,7 @@ To deploy to the stage environment:
 
 1. Set a new git tag in the format `v<major>.<minor>.<patch>-rc<rc>`, e.g. `v1.0.0-rc01`.
 2. Pushing the tag automatically triggers the deployment pipeline and creates a new GitHub pre-release.
-3. The application is deployed to [ahb-tabellen.stage.hochfrequenz.de](https://ahb-tabellen.stage.hochfrequenz.de).
+3. The application is deployed to [ahb-tabellen-stage.hochfrequenz.app](https://ahb-tabellen-stage.hochfrequenz.app).
 
 ### Production Deployment
 
@@ -319,7 +319,7 @@ To deploy to the production environment:
 
 1. Set a new git tag in the format `v<major>.<minor>.<patch>`, e.g. `v1.0.0`.
 2. Pushing the tag automatically triggers the deployment pipeline and creates a new GitHub release.
-3. The application is deployed to [ahb-tabellen.hochfrequenz.de](https://ahb-tabellen.hochfrequenz.de)
+3. The application is deployed to [ahb-tabellen.hochfrequenz.app](https://ahb-tabellen.hochfrequenz.app)
 
 ## Update the database
 

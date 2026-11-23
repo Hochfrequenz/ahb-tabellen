@@ -14,7 +14,7 @@ describe('buildBedingungJumpHint', () => {
   });
 
   it('falls back to the compiled default when the variable is unset', () => {
-    expect(buildBedingungJumpHint({})).toContain('https://bedingungsbaum.hochfrequenz.de');
+    expect(buildBedingungJumpHint({})).toContain('https://bedingungsbaum.hochfrequenz.app');
   });
 
   it('reads the environment when called, not when the module was imported', () => {
@@ -37,7 +37,7 @@ describe('buildBedingungJumpHint', () => {
     // `readString` in app-config.ts gives an empty variable the same meaning as a missing one.
     // The two must agree, or /config.js and this hint would disagree about the same variable.
     expect(buildBedingungJumpHint({ [ENV_VARS.bedingungsbaumBaseUrl]: '' })).toContain(
-      'https://bedingungsbaum.hochfrequenz.de'
+      'https://bedingungsbaum.hochfrequenz.app'
     );
   });
 });
