@@ -117,6 +117,17 @@ describe('BedingungUsageRepository', () => {
     ]);
   });
 
+  it('treats an inherited property name like toString as a plain format filter', async () => {
+    query.mockResolvedValueOnce([]);
+    await repository.findUsages({
+      formatVersion: 'FV2610',
+      conditionKey: '931',
+      format: 'toString',
+      limit: 10,
+    });
+    expect(query.mock.calls[0][1]).toEqual(['FV2610', '931', 'toString']);
+  });
+
   it('returns an empty result when no row survives the detailed-format filter', async () => {
     query.mockResolvedValueOnce([row('11001', 'a')]);
     const result = await repository.findUsages({

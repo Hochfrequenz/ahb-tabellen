@@ -63,7 +63,9 @@ export default class BedingungUsageRepository {
 
     // The view's `format` column is the plain format; a detailed format (UTILMDS/G/W) is
     // narrowed down in TypeScript after the query, by the Prüfidentifikator.
-    const detailedFormat = query.format !== undefined && query.format in DETAILED_FORMAT_TO_PLAIN;
+    const detailedFormat =
+      query.format !== undefined &&
+      Object.prototype.hasOwnProperty.call(DETAILED_FORMAT_TO_PLAIN, query.format);
     if (query.format) {
       where.push('format = ?');
       params.push(detailedFormat ? DETAILED_FORMAT_TO_PLAIN[query.format] : query.format);
