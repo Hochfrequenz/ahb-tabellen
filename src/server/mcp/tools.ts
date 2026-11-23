@@ -3,7 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpServices } from './services';
 import { toToolResult } from './result';
 import { EBD_JUMP_HINT } from './ebd-hint';
-import { BEDINGUNG_JUMP_HINT } from './bedingung-hint';
+import { buildBedingungJumpHint } from './bedingung-hint';
 import { SearchPayload } from '../repository/ahb';
 
 /**
@@ -71,6 +71,10 @@ const searchFilters = z
  * fully typed (e.g. `pruefi: string`), with no stringly-typed access and no casts.
  */
 export function registerAhbTools(server: McpServer, services: McpServices): void {
+  // Resolved here, not at import time, so the Bedingungsbaum URL is read after the process
+  // environment is fully loaded regardless of module system. See `bedingung-hint.ts`.
+  const bedingungJumpHint = buildBedingungJumpHint();
+
   server.registerTool(
     'get_ahb',
     {
@@ -80,7 +84,7 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
         'given format version. ' +
         EBD_JUMP_HINT +
         ' ' +
-        BEDINGUNG_JUMP_HINT,
+        bedingungJumpHint,
       inputSchema: {
         formatVersion: z.string().describe(FORMAT_VERSION_DESC),
         pruefi: z.string().describe(PRUEFI_DESC),
@@ -130,7 +134,7 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
         'deleted / modified / unchanged lines with old and new values). ' +
         EBD_JUMP_HINT +
         ' ' +
-        BEDINGUNG_JUMP_HINT,
+        bedingungJumpHint,
       inputSchema: {
         pruefi: z.string().describe(PRUEFI_DESC),
         formatVersionNew: z.string().describe('Newer ' + FORMAT_VERSION_DESC),
