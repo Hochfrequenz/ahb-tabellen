@@ -61,57 +61,47 @@ export default class BedingungUsageRepository {
     const where: string[] = ['format_version = ?', 'condition_key = ?'];
     const params: unknown[] = [query.formatVersion, query.conditionKey];
 
+    // The view's `format` column is the plain format; a detailed format (UTILMDS/G/W) is
+    // narrowed down in TypeScript after the query, by the Prüfidentifikator.
+    const detailedFormat = query.format !== undefined && query.format in DETAILED_FORMAT_TO_PLAIN;
     if (query.format) {
-      const plain = DETAILED_FORMAT_TO_PLAIN[query.format];
-      if (plain === undefined) {
-        where.push('format = ?');
-        params.push(query.format);
-      } else {
-        // Filter by the Prüfidentifikator list in SQL (not afterwards), so total and limit stay correct.
-        const candidates: { pruefidentifikator: string }[] = await AppDataSource.query(
-          `SELECT DISTINCT pruefidentifikator FROM v_ahbtabellen WHERE format_version = ? AND format = ?`,
-          [query.formatVersion, plain]
-        );
-        const pruefis = candidates
-          .map(c => c.pruefidentifikator)
-          .filter(p => formatOfPruefiOrUndefined(p) === query.format);
-        if (pruefis.length === 0) {
-          return { totalLines: 0, rows: [] };
-        }
-        where.push(`pruefidentifikator IN (${pruefis.map(() => '?').join(', ')})`);
-        params.push(...pruefis);
-      }
+      where.push('format = ?');
+      params.push(detailedFormat ? DETAILED_FORMAT_TO_PLAIN[query.format] : query.format);
     }
     if (query.pruefi) {
       where.push('pruefidentifikator = ?');
       params.push(query.pruefi);
     }
-    const whereSql = where.join(' AND ');
 
-    const countRows: { total: number }[] = await AppDataSource.query(
-      `SELECT COUNT(*) AS total FROM (
-         SELECT DISTINCT pruefidentifikator, sort_path FROM v_ahb_condition_usages WHERE ${whereSql}
-       )`,
-      params
-    );
-    const totalLines = Number(countRows[0]?.total ?? 0);
-
-    // A line can have several view rows (one per `via`), so limit on distinct lines in a subquery.
-    const rows: BedingungUsageRow[] = await AppDataSource.query(
+    // Exactly one query: the view is expensive, so count and limit are applied in TypeScript.
+    let rows: BedingungUsageRow[] = await AppDataSource.query(
       `SELECT pruefidentifikator, description, sort_path, segmentgroup_key, segment_code,
               data_element, qualifier, line_name, line_ahb_status, via
          FROM v_ahb_condition_usages
-        WHERE ${whereSql}
-          AND (pruefidentifikator, sort_path) IN (
-            SELECT DISTINCT pruefidentifikator, sort_path
-              FROM v_ahb_condition_usages
-             WHERE ${whereSql}
-             ORDER BY pruefidentifikator ASC, sort_path ASC
-             LIMIT ?
-          )
-        ORDER BY pruefidentifikator ASC, sort_path ASC`,
-      [...params, ...params, query.limit]
+        WHERE ${where.join(' AND ')}
+        ORDER BY pruefidentifikator, sort_path`,
+      params
     );
-    return { totalLines, rows };
+    if (detailedFormat) {
+      rows = rows.filter(r => formatOfPruefiOrUndefined(r.pruefidentifikator) === query.format);
+    }
+
+    // A line (Prüfidentifikator + sort_path) can have several rows, one per `via`; rows of one
+    // line are adjacent because of the ORDER BY.
+    const lineKey = (r: BedingungUsageRow): string => `${r.pruefidentifikator}\u0000${r.sort_path}`;
+    let totalLines = 0;
+    let lastKey: string | undefined;
+    let keep = 0; // number of leading rows that belong to the first `limit` lines
+    for (const [i, r] of rows.entries()) {
+      const key = lineKey(r);
+      if (key !== lastKey) {
+        totalLines++;
+        lastKey = key;
+      }
+      if (totalLines <= query.limit) {
+        keep = i + 1;
+      }
+    }
+    return { totalLines, rows: rows.slice(0, keep) };
   }
 }

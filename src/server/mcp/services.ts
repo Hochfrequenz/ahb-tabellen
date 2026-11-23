@@ -1,6 +1,6 @@
 import AhbService from '../service/ahb.service';
-import BedingungUsageService from '../service/bedingungUsage.service';
 import AhbDiffService from '../service/ahbDiff.service';
+import BedingungUsageService from '../service/bedingungUsage.service';
 import MetadataService from '../service/metadata.service';
 
 /**

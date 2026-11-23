@@ -135,7 +135,9 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
         'whose status expression uses the condition, e.g. "where is [931] used?". Resolves use ' +
         'through packages ([nnPn]) and UB conditions ([UBn]) transitively: `via` lists the ways ' +
         'a line reaches the condition, null meaning direct use and e.g. "UB1" meaning use through ' +
-        'condition [UB1]. ' +
+        'condition [UB1]. Results can be large: at most `limit` lines are returned (default 200); ' +
+        'if `truncated` is true, `totalLines` tells how many lines match, so narrow the search ' +
+        'with `pruefi` or `format`. ' +
         bedingungJumpHint,
       inputSchema: {
         formatVersion: z.string().describe(FORMAT_VERSION_DESC),

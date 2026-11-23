@@ -148,6 +148,9 @@ describe('MCP server (in-memory integration)', () => {
       const { tools } = await client.listTools();
       const tool = tools.find(t => t.name === 'search_bedingung_usage');
       expect(tool?.description).toContain('via');
+      expect(tool?.description).toContain('default 200');
+      expect(tool?.description).toContain('truncated');
+      expect(tool?.description).toContain('totalLines');
       expect(tool?.description).toContain('ahbicht-functions');
     });
 

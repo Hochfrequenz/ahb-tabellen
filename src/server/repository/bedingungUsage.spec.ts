@@ -1,9 +1,24 @@
-import BedingungUsageRepository from './bedingungUsage';
+import BedingungUsageRepository, { BedingungUsageRow } from './bedingungUsage';
 import { AppDataSource } from '../infrastructure/database';
 
 jest.mock('../infrastructure/database', () => ({
   AppDataSource: { isInitialized: true, initialize: jest.fn(), query: jest.fn() },
 }));
+
+function row(pruefi: string, sortPath: string, via: string | null = null): BedingungUsageRow {
+  return {
+    pruefidentifikator: pruefi,
+    description: 'd',
+    sort_path: sortPath,
+    segmentgroup_key: null,
+    segment_code: null,
+    data_element: null,
+    qualifier: null,
+    line_name: null,
+    line_ahb_status: null,
+    via,
+  };
+}
 
 describe('BedingungUsageRepository', () => {
   const query = AppDataSource.query as jest.Mock;
@@ -14,28 +29,28 @@ describe('BedingungUsageRepository', () => {
     repository = new BedingungUsageRepository();
   });
 
-  it('counts lines and fetches the rows of the first `limit` lines from the view', async () => {
-    query.mockResolvedValueOnce([{ total: 3 }]).mockResolvedValueOnce([{ sort_path: 'a' }]);
+  it('issues exactly one query against the view', async () => {
+    query.mockResolvedValueOnce([row('11001', 'a')]);
 
     const result = await repository.findUsages({
       formatVersion: 'FV2610',
       conditionKey: '931',
-      limit: 2,
+      limit: 10,
     });
 
-    expect(result).toEqual({ totalLines: 3, rows: [{ sort_path: 'a' }] });
-    const [countSql, countParams] = query.mock.calls[0];
-    expect(countSql).toContain('FROM v_ahb_condition_usages');
-    expect(countSql).toContain('COUNT(*)');
-    expect(countParams).toEqual(['FV2610', '931']);
-    const [rowsSql, rowsParams] = query.mock.calls[1];
-    expect(rowsSql).toContain('LIMIT ?');
-    expect(rowsSql).toContain('ORDER BY pruefidentifikator ASC, sort_path ASC');
-    expect(rowsParams).toEqual(['FV2610', '931', 'FV2610', '931', 2]);
+    expect(query).toHaveBeenCalledTimes(1);
+    const [sql, params] = query.mock.calls[0];
+    expect(sql).toContain('FROM v_ahb_condition_usages');
+    expect(sql).toContain('format_version = ?');
+    expect(sql).toContain('condition_key = ?');
+    expect(sql).toContain('ORDER BY pruefidentifikator, sort_path');
+    expect(sql).not.toMatch(/COUNT|LIMIT|IN \(|v_ahbtabellen/);
+    expect(params).toEqual(['FV2610', '931']);
+    expect(result).toEqual({ totalLines: 1, rows: [row('11001', 'a')] });
   });
 
-  it('filters by plain format and pruefi directly in SQL', async () => {
-    query.mockResolvedValue([{ total: 0 }]);
+  it('filters by plain format and pruefi in the same single query', async () => {
+    query.mockResolvedValue([]);
     await repository.findUsages({
       formatVersion: 'FV2610',
       conditionKey: '931',
@@ -43,44 +58,67 @@ describe('BedingungUsageRepository', () => {
       pruefi: '13002',
       limit: 5,
     });
+    expect(query).toHaveBeenCalledTimes(1);
     const [sql, params] = query.mock.calls[0];
-    expect(sql).toContain('format = ?');
-    expect(sql).toContain('pruefidentifikator = ?');
+    expect(sql).toContain('AND format = ?');
+    expect(sql).toContain('AND pruefidentifikator = ?');
     expect(params).toEqual(['FV2610', '931', 'MSCONS', '13002']);
   });
 
-  it('resolves a detailed format to an IN list of pruefis so limit and total stay correct', async () => {
-    query
-      .mockResolvedValueOnce([
-        { pruefidentifikator: '11001' }, // UTILMD (plain)
-        { pruefidentifikator: '55001' }, // UTILMDS? resolved below via efoli
-        { pruefidentifikator: '44001' },
-      ])
-      .mockResolvedValueOnce([{ total: 0 }])
-      .mockResolvedValueOnce([]);
+  it('filters a detailed format by the plain format in SQL and by efoli in TypeScript, before counting and limiting', async () => {
+    // 55001 is UTILMDS and 44001 is UTILMDG according to efoli's getFormatOfPruefidentifikator; 11001 is plain UTILMD
+    query.mockResolvedValueOnce([
+      row('11001', 'a'),
+      row('44001', 'a'),
+      row('55001', 'a', 'UB1'),
+      row('55001', 'a', null),
+      row('55001', 'b'),
+      row('55001', 'c'),
+    ]);
 
-    await repository.findUsages({
+    const result = await repository.findUsages({
       formatVersion: 'FV2610',
       conditionKey: '931',
       format: 'UTILMDS',
-      limit: 10,
+      limit: 2,
     });
 
-    const [pruefiSql, pruefiParams] = query.mock.calls[0];
-    expect(pruefiSql).toContain('SELECT DISTINCT pruefidentifikator');
-    expect(pruefiSql).toContain('FROM v_ahbtabellen');
-    expect(pruefiParams).toEqual(['FV2610', 'UTILMD']);
-    const [countSql, countParams] = query.mock.calls[1];
-    expect(countSql).toMatch(/pruefidentifikator IN \((\?, )*\?\)/);
-    expect(countSql).not.toContain('format = ?');
-    expect(countParams.slice(0, 2)).toEqual(['FV2610', '931']);
-    // only pruefis that efoli maps to UTILMDS are kept
-    const inParams = countParams.slice(2);
-    expect(inParams).toEqual(['55001']);
+    expect(query).toHaveBeenCalledTimes(1);
+    const [sql, params] = query.mock.calls[0];
+    expect(sql).toContain('AND format = ?');
+    expect(params).toEqual(['FV2610', '931', 'UTILMD']);
+    // 3 distinct UTILMDS lines (a, b, c); limit 2 keeps lines a (both rows) and b
+    expect(result.totalLines).toBe(3);
+    expect(result.rows).toEqual([
+      row('55001', 'a', 'UB1'),
+      row('55001', 'a', null),
+      row('55001', 'b'),
+    ]);
   });
 
-  it('returns an empty result without querying the view when no pruefi has the detailed format', async () => {
-    query.mockResolvedValueOnce([{ pruefidentifikator: '11001' }]);
+  it('applies limit on distinct lines (not view rows) and reports the full total', async () => {
+    query.mockResolvedValueOnce([
+      row('11001', 'a', null),
+      row('11001', 'a', 'UB1'),
+      row('11001', 'b'),
+      row('11002', 'a'),
+    ]);
+    const result = await repository.findUsages({
+      formatVersion: 'FV2610',
+      conditionKey: '931',
+      limit: 2,
+    });
+    expect(result.totalLines).toBe(3);
+    expect(result.rows).toHaveLength(3);
+    expect(result.rows.map(r => `${r.pruefidentifikator}/${r.sort_path}`)).toEqual([
+      '11001/a',
+      '11001/a',
+      '11001/b',
+    ]);
+  });
+
+  it('returns an empty result when no row survives the detailed-format filter', async () => {
+    query.mockResolvedValueOnce([row('11001', 'a')]);
     const result = await repository.findUsages({
       formatVersion: 'FV2610',
       conditionKey: '931',
