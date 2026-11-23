@@ -13,6 +13,80 @@ describe('PruefiInputComponent', () => {
   });
 
   describe('onInputChange', () => {
+    it('filters suggestions with * as a case-insensitive wildcard', () => {
+      const fixture = MockRender(PruefiInputComponent, {
+        formatVersion: null,
+      });
+      const component = fixture.point.componentInstance;
+      const suggestions: string[][] = [];
+      const subscription = component.pruefis$.subscribe(values => suggestions.push(values));
+
+      component['allPruefis$'].next([
+        { pruefidentifikator: '11001', name: 'Änderung der Stammdaten TR Hinweis' },
+        { pruefidentifikator: '11002', name: 'Änderung ohne Ergebnis' },
+        { pruefidentifikator: '11003', name: 'Keine Änderung der TR-Stammdaten' },
+      ]);
+      component.onInputChange({ target: { value: 'änderung*tr' } } as unknown as Event);
+
+      expect(suggestions.at(-1)).toEqual(['11001 - Änderung der Stammdaten TR Hinweis']);
+      subscription.unsubscribe();
+    });
+
+    it('treats regex metacharacters in a wildcard term as literals (no injection)', () => {
+      const fixture = MockRender(PruefiInputComponent, {
+        formatVersion: null,
+      });
+      const component = fixture.point.componentInstance;
+      const suggestions: string[][] = [];
+      const subscription = component.pruefis$.subscribe(values => suggestions.push(values));
+
+      component['allPruefis$'].next([
+        { pruefidentifikator: '11001', name: 'A.C item' },
+        { pruefidentifikator: '11002', name: 'AXC item' },
+      ]);
+      // The '.' between the wildcard segments must match a literal dot, not any char.
+      component.onInputChange({ target: { value: 'a.c*item' } } as unknown as Event);
+
+      expect(suggestions.at(-1)).toEqual(['11001 - A.C item']);
+      subscription.unsubscribe();
+    });
+
+    it('matches all suggestions when the term is a lone wildcard', () => {
+      const fixture = MockRender(PruefiInputComponent, {
+        formatVersion: null,
+      });
+      const component = fixture.point.componentInstance;
+      const suggestions: string[][] = [];
+      const subscription = component.pruefis$.subscribe(values => suggestions.push(values));
+
+      component['allPruefis$'].next([
+        { pruefidentifikator: '11001', name: 'Alpha' },
+        { pruefidentifikator: '11002', name: 'Beta' },
+      ]);
+      component.onInputChange({ target: { value: '*' } } as unknown as Event);
+
+      expect(suggestions.at(-1)).toEqual(['11001 - Alpha', '11002 - Beta']);
+      subscription.unsubscribe();
+    });
+
+    it('uses substring matching (not anchored) when no wildcard is present', () => {
+      const fixture = MockRender(PruefiInputComponent, {
+        formatVersion: null,
+      });
+      const component = fixture.point.componentInstance;
+      const suggestions: string[][] = [];
+      const subscription = component.pruefis$.subscribe(values => suggestions.push(values));
+
+      component['allPruefis$'].next([
+        { pruefidentifikator: '11001', name: 'Keine Änderung der TR-Stammdaten' },
+        { pruefidentifikator: '11002', name: 'Nur Ergebnis' },
+      ]);
+      component.onInputChange({ target: { value: 'änderung' } } as unknown as Event);
+
+      expect(suggestions.at(-1)).toEqual(['11001 - Keine Änderung der TR-Stammdaten']);
+      subscription.unsubscribe();
+    });
+
     it('should call onChange with 5-digit input', () => {
       const fixture = MockRender(PruefiInputComponent, {
         formatVersion: null,

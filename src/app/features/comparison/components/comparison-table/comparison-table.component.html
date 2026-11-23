@@ -1,16 +1,32 @@
 <div class="relative bg-hf-pastell-rose">
   <table class="table-fixed w-full text-sm text-hf-text-color">
+    <colgroup>
+      <!-- Old version columns -->
+      <col class="w-[5%]" />
+      <col class="w-[6%]" />
+      <col class="w-[6%]" />
+      <col class="w-[6%]" />
+      <col class="w-[9%]" />
+      <col class="w-[5%]" />
+      <col class="w-[11%]" />
+      <!-- Divider -->
+      <col class="w-4" />
+      <!-- New version columns -->
+      <col class="w-[5%]" />
+      <col class="w-[6%]" />
+      <col class="w-[6%]" />
+      <col class="w-[6%]" />
+      <col class="w-[9%]" />
+      <col class="w-[5%]" />
+      <col class="w-[11%]" />
+    </colgroup>
     <thead class="sticky z-10" style="top: var(--comparison-filter-height)">
       <tr>
-        <th
-          [attr.colspan]="showConditionsColumn ? 7 : 6"
-          class="px-2 py-2 text-center text-base uppercase bg-hf-grell-rose">
+        <th colspan="7" class="px-2 py-2 text-center text-base uppercase bg-hf-grell-rose">
           {{ headerLabelOld }}
         </th>
         <th class="w-4 bg-hf-pastell-rose"></th>
-        <th
-          [attr.colspan]="showConditionsColumn ? 7 : 6"
-          class="px-2 py-2 text-center text-base uppercase bg-hf-grell-rose">
+        <th colspan="7" class="px-2 py-2 text-center text-base uppercase bg-hf-grell-rose">
           {{ headerLabelNew }}
         </th>
       </tr>
@@ -28,11 +44,7 @@
         <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color">Qualifier</th>
         <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color">Name</th>
         <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color">Status</th>
-        @if (showConditionsColumn) {
-          <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color" title="Bedingung">
-            Beding.
-          </th>
-        }
+        <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color">Bedingungen</th>
         <th class="w-4 bg-hf-pastell-rose"></th>
         <!-- New version columns -->
         <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color" title="Segmentgruppe">
@@ -47,11 +59,7 @@
         <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color">Qualifier</th>
         <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color">Name</th>
         <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color">Status</th>
-        @if (showConditionsColumn) {
-          <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color" title="Bedingung">
-            Beding.
-          </th>
-        }
+        <th class="px-2 py-1.5 text-left bg-hf-sub-header-background-color">Bedingungen</th>
       </tr>
     </thead>
     <tbody>
@@ -118,11 +126,33 @@
               {{ getAhbStatus(line, 'old') || '-' }}
             }
           </td>
-          @if (showConditionsColumn) {
-            <td class="px-2 py-1.5 border-b border-hf-grell-rose break-words">
-              <span [innerHTML]="getHighlightedBedingung(line, 'old')"></span>
-            </td>
-          }
+          <td class="px-2 py-1.5 border-b border-hf-grell-rose">
+            <div
+              class="break-words"
+              [class.line-clamp-1]="!isExpanded(line)"
+              [appTruncationObserver]="!isExpanded(line)"
+              markerSelector="strong"
+              (truncated)="onConditionsTruncated(line, 'old', $event)"
+              (markerHidden)="onConditionsChangeHidden(line, 'old', $event)"
+              [innerHTML]="getHighlightedBedingung(line, 'old')"></div>
+            @if (hasConditionsToggle(line, 'old')) {
+              <div class="flex justify-end mt-0.5">
+                <button
+                  type="button"
+                  (click)="toggleRow(line)"
+                  class="cursor-pointer leading-none rounded focus:outline-none focus:ring-2 focus:ring-offset-1 hover:opacity-70"
+                  [attr.aria-expanded]="isExpanded(line)"
+                  [attr.aria-label]="conditionsToggleLabel(line, 'old')"
+                  [title]="conditionsToggleLabel(line, 'old')">
+                  <i
+                    class="mdi leading-none text-base inline-block motion-reduce:animate-none"
+                    [class.mdi-chevron-up]="isExpanded(line)"
+                    [class.mdi-chevron-down]="!isExpanded(line)"
+                    [class.animate-bounce]="isRowHiddenChange(line)"></i>
+                </button>
+              </div>
+            }
+          </td>
 
           <!-- Divider -->
           <td class="bg-hf-pastell-rose w-4"></td>
@@ -188,11 +218,33 @@
               {{ getAhbStatus(line, 'new') || '-' }}
             }
           </td>
-          @if (showConditionsColumn) {
-            <td class="px-2 py-1.5 border-b border-hf-grell-rose break-words">
-              <span [innerHTML]="getHighlightedBedingung(line, 'new')"></span>
-            </td>
-          }
+          <td class="px-2 py-1.5 border-b border-hf-grell-rose">
+            <div
+              class="break-words"
+              [class.line-clamp-1]="!isExpanded(line)"
+              [appTruncationObserver]="!isExpanded(line)"
+              markerSelector="strong"
+              (truncated)="onConditionsTruncated(line, 'new', $event)"
+              (markerHidden)="onConditionsChangeHidden(line, 'new', $event)"
+              [innerHTML]="getHighlightedBedingung(line, 'new')"></div>
+            @if (hasConditionsToggle(line, 'new')) {
+              <div class="flex justify-end mt-0.5">
+                <button
+                  type="button"
+                  (click)="toggleRow(line)"
+                  class="cursor-pointer leading-none rounded focus:outline-none focus:ring-2 focus:ring-offset-1 hover:opacity-70"
+                  [attr.aria-expanded]="isExpanded(line)"
+                  [attr.aria-label]="conditionsToggleLabel(line, 'new')"
+                  [title]="conditionsToggleLabel(line, 'new')">
+                  <i
+                    class="mdi leading-none text-base inline-block motion-reduce:animate-none"
+                    [class.mdi-chevron-up]="isExpanded(line)"
+                    [class.mdi-chevron-down]="!isExpanded(line)"
+                    [class.animate-bounce]="isRowHiddenChange(line)"></i>
+                </button>
+              </div>
+            }
+          </td>
         </tr>
       }
     </tbody>

@@ -19,4 +19,10 @@ describe('FallbackPageComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should guide users to the impressum contact details', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Kontaktdaten im Impressum');
+    expect(compiled.textContent).not.toContain('Kontaktformular im Footer');
+  });
 });

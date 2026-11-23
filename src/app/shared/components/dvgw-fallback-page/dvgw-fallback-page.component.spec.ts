@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DvgwFallbackPageComponent } from './dvgw-fallback-page.component';
+import { DVGW_ARCHIVE_URL } from '../../utils/dvgw-pruefi.utils';
 
 describe('DvgwFallbackPageComponent', () => {
   let component: DvgwFallbackPageComponent;
@@ -12,6 +13,7 @@ describe('DvgwFallbackPageComponent', () => {
 
     fixture = TestBed.createComponent(DvgwFallbackPageComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('pruefi', '44096');
     fixture.detectChanges();
   });
 
@@ -19,15 +21,16 @@ describe('DvgwFallbackPageComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display the correct DVGW message', () => {
-    const expectedMessage =
-      'Die Prüfidentifikatoren 70095 und 70096 werden in einem PDF Dokument der DVGW veröffentlicht. Uns stehen zur Zeit nur die Dokumente des BDEW in maschinenlesbarer Form bereit.';
-    expect(component.message).toBe(expectedMessage);
+  it('should build a message referencing the concrete Prüfidentifikator', () => {
+    expect(component.message()).toBe(
+      'Der Prüfidentifikator 44096 wird von der DVGW ausschließlich als PDF-Dokument veröffentlicht. ' +
+        'Uns stehen zur Zeit nur die Dokumente des BDEW in maschinenlesbarer Form bereit.'
+    );
   });
 
   it('should render the message in the template', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain(component.message);
+    expect(compiled.textContent).toContain(component.message());
   });
 
   it('should have the correct title', () => {
@@ -40,5 +43,27 @@ describe('DvgwFallbackPageComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const container = compiled.querySelector('.bg-hf-grell-rose');
     expect(container).toBeTruthy();
+  });
+
+  it('should link to the DVGW archive and name the TSIMSG Nachrichtentyp', () => {
+    fixture.componentRef.setInput('pruefi', '44097');
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const link = compiled.querySelector('a');
+    expect(link?.getAttribute('href')).toBe(DVGW_ARCHIVE_URL);
+    expect(link?.textContent).toContain('DVGW-Dokumentenarchiv');
+    expect(compiled.textContent).toContain('TSIMSG');
+  });
+
+  it('should link to the DVGW archive and name the SSQNOT Nachrichtentyp', () => {
+    fixture.componentRef.setInput('pruefi', '70095');
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const link = compiled.querySelector('a');
+    expect(link?.getAttribute('href')).toBe(DVGW_ARCHIVE_URL);
+    expect(link?.textContent).toContain('DVGW-Dokumentenarchiv');
+    expect(compiled.textContent).toContain('SSQNOT');
   });
 });

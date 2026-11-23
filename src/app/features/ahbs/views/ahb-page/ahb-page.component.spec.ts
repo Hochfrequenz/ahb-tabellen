@@ -62,6 +62,42 @@ describe('AhbPageComponent', () => {
       });
   });
 
+  // Reconfigures the testing module so the route resolves to the given Prüfidentifikator.
+  const buildWithPruefi = (pruefi: string) =>
+    MockBuilder(AhbPageComponent)
+      .keep(AhbTableComponent)
+      .provide({
+        provide: AhbTableComponent,
+        useValue: {
+          markIndex: signal(0),
+          markElements: computed(() => [] as HTMLElement[]),
+          nextResult: () => {},
+          previousResult: () => {},
+          resetMarkIndex: () => {},
+        },
+      })
+      .provide({
+        provide: AhbService,
+        useValue: mockAhbService,
+      })
+      .provide({
+        provide: ActivatedRoute,
+        useValue: {
+          queryParams: of({}),
+          params: of({ formatVersion: 'FV2504', pruefi }),
+        },
+      })
+      .provide({
+        provide: Router,
+        useValue: mockRouter,
+      })
+      .provide({
+        provide: HttpClient,
+        useValue: {
+          get: jest.fn(() => of('')),
+        },
+      });
+
   it('should render', () => {
     const fixture = MockRender(AhbPageComponent, {
       formatVersion: 'FV123',
@@ -136,5 +172,39 @@ describe('AhbPageComponent', () => {
         expect(component.pruefi()).toBe('55001');
         expect(component.formatVersion()).toMatch(/^FV\d{4}$/);
       });
+  });
+
+  it.each(['44096', '44097'])(
+    'should show the DVGW fallback for TSIMSG Prüfidentifikator %s without fetching AHB data',
+    pruefi => {
+      return buildWithPruefi(pruefi).then(() => {
+        const fixture = MockRender(AhbPageComponent);
+        const component = fixture.point.componentInstance;
+
+        expect(component.isDvgwPruefi()).toBe(true);
+        expect(component.errorOccurred).toBe(true);
+        expect(mockAhbService.getAhb$Json).not.toHaveBeenCalled();
+
+        const html = ngMocks.formatHtml(fixture);
+        expect(html).toContain('app-dvgw-fallback-page');
+      });
+    }
+  );
+
+  it('should render a regular Gas Prüfidentifikator (44001) normally instead of the DVGW fallback', () => {
+    return buildWithPruefi('44001').then(() => {
+      const fixture = MockRender(AhbPageComponent);
+      const component = fixture.point.componentInstance;
+
+      expect(component.isDvgwPruefi()).toBe(false);
+      expect(component.errorOccurred).toBe(false);
+      expect(mockAhbService.getAhb$Json).toHaveBeenCalledWith({
+        'format-version': 'FV2504',
+        pruefi: '44001',
+      });
+
+      const html = ngMocks.formatHtml(fixture);
+      expect(html).not.toContain('app-dvgw-fallback-page');
+    });
   });
 });

@@ -1,22 +1,42 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthService } from '@auth0/auth0-angular';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { map, startWith } from 'rxjs/operators';
+import { AuthFacade, AuthProviderId } from '../../../../core/auth/auth.facade';
+import { safeInternalTarget } from '../../../../core/auth/safe-target';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { environment } from '../../../../environments/environment';
 import { Meta, Title } from '@angular/platform-browser';
 
+/** What the call-to-action area may safely offer, given what is known about the session so far. */
+export type CtaState = 'pending' | 'authenticated' | 'anonymous';
+
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [FooterComponent],
+  imports: [CommonModule, FooterComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './landing-page.component.html',
 })
 export class LandingPageComponent implements OnInit {
-  private auth = inject(AuthService);
+  private facade = inject(AuthFacade);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private meta = inject(Meta);
   private readonly title = inject(Title);
+
+  /**
+   * `isAuthenticated$` emits nothing while Auth0's session check is in flight, so 'pending' is an
+   * explicit third state rather than something the template infers from a null async value.
+   *
+   * Sign-in is a one-way door: it commits the user to one identity provider. Offering it before
+   * we know who they are would let a Hochfrequenz employee be sent into Auth0, where they have no
+   * account — the exact outcome the design record rejects. So no CTA acts until this resolves.
+   */
+  readonly ctaState$ = this.facade.isAuthenticated$.pipe(
+    map((isAuthenticated): CtaState => (isAuthenticated ? 'authenticated' : 'anonymous')),
+    startWith('pending' as CtaState)
+  );
 
   ngOnInit() {
     const baseUrl = environment.baseUrl;
@@ -67,20 +87,37 @@ export class LandingPageComponent implements OnInit {
     ]);
   }
 
-  onOpenClick() {
-    if (!environment.isProduction || window.location.hostname === 'localhost') {
-      this.router.navigate(['/features']);
-      return;
-    }
+  /**
+   * Only reachable from the 'anonymous' branch, so the session is known and this can act directly —
+   * no deferred subscription to leak, and no queue of clicks to fire at once when it resolves.
+   */
+  signIn(provider: AuthProviderId): void {
+    this.facade.login(provider, this.resolveTarget());
+  }
 
-    this.auth.isAuthenticated$.subscribe(isAuthenticated => {
-      if (isAuthenticated) {
-        this.router.navigate(['/features']);
-      } else {
-        this.auth.loginWithRedirect({
-          appState: { target: '/features' },
-        });
+  /** Already signed in — the CTA is a plain navigation, not a login. */
+  open(): void {
+    const target = this.resolveTarget();
+    void this.router.navigateByUrl(target).catch(() => {
+      // A target can be rooted and same-origin yet still match no route. Failing silently would
+      // leave the page's only call to action doing nothing at all.
+      if (target === '/features') {
+        return;
       }
+      void this.router.navigateByUrl('/features').catch(() => {
+        // The fallback is itself a lazy route, so it can fail too (offline, stale chunk). Swallow
+        // it rather than raising an unhandled rejection the user cannot act on.
+      });
     });
+  }
+
+  /**
+   * Where to send the user afterwards: the `?target=` the AuthGuard attached when it bounced them
+   * here from a protected deep link, else the feature picker. Sanitized because the param is
+   * user-supplied; `/` means "nothing specific was asked for".
+   */
+  private resolveTarget(): string {
+    const safe = safeInternalTarget(this.route.snapshot.queryParamMap.get('target'));
+    return safe === '/' ? '/features' : safe;
   }
 }

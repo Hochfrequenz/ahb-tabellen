@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 
 interface VersionInfo {
   version: string;
-  commitId: string;
+  commitHash: string;
   buildDate: string;
 }
 
@@ -20,7 +20,7 @@ interface VersionInfo {
 })
 export class VersionDisplayComponent {
   version: string | null = null;
-  commitId: string | null = null;
+  commitHash: string | null = null;
   buildDate: string | null = null;
   private http = inject(HttpClient);
 
@@ -31,7 +31,7 @@ export class VersionDisplayComponent {
         map((response: string) => {
           try {
             const parsedData: VersionInfo = JSON.parse(response);
-            if (parsedData.version && parsedData.commitId && parsedData.buildDate) {
+            if (parsedData.version && parsedData.commitHash && parsedData.buildDate) {
               return parsedData;
             }
             throw new Error('Invalid JSON structure');
@@ -40,17 +40,17 @@ export class VersionDisplayComponent {
               'Response to /version endpoint is not valid JSON. This happens on localhost',
               error
             );
-            return { version: 'v0.0.0', commitId: '0000000', buildDate: 'Unknown' };
+            return { version: 'v0.0.0', commitHash: '0000000', buildDate: 'Unknown' };
           }
         }),
         catchError(error => {
           console.error('Failed to load version info:', error);
-          return of({ version: 'Error', commitId: 'Unknown', buildDate: 'Unknown' });
+          return of({ version: 'Error', commitHash: 'Unknown', buildDate: 'Unknown' });
         })
       )
       .subscribe(data => {
         this.version = data.version;
-        this.commitId = data.commitId;
+        this.commitHash = data.commitHash;
         this.buildDate = data.buildDate;
       });
   }

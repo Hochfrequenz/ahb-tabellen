@@ -23,16 +23,66 @@
         und vollständig sind – können aber trotzdem nicht ausschließen, dass sich vereinzelt Fehler
         einschleichen.
       </div>
-      <div class="mt-6 md:mt-10 flex justify-center relative z-10">
-        <button
-          (click)="onOpenClick()"
-          class="flex flex-row items-center gap-2 rounded-full bg-hf-grell-rose text-hf-weiches-schwarz text-base md:text-lg px-4 md:px-5 py-2 md:py-3 hover:ring-black/10">
-          <img
-            src="assets/companystylesheet/icons/login.svg"
-            alt="Login Icon"
-            class="w-4 h-4 md:w-5 md:h-5 filter" />
-          <span class="hover:underline">Jetzt öffnen</span>
-        </button>
+      <div class="mt-6 md:mt-10 flex flex-col items-center gap-4 relative z-10">
+        @switch (ctaState$ | async) {
+          @case ('authenticated') {
+            <button
+              (click)="open()"
+              class="flex flex-row items-center gap-2 rounded-full bg-hf-weiches-schwarz text-white text-base md:text-lg px-5 md:px-6 py-2 md:py-3 transition hover:bg-hf-weiches-schwarz/90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2 focus-visible:ring-offset-hf-pastell-rose">
+              <img
+                src="assets/companystylesheet/icons/login.svg"
+                alt=""
+                class="w-4 h-4 md:w-5 md:h-5 invert" />
+              <span>Jetzt öffnen</span>
+            </button>
+          }
+          @case ('anonymous') {
+            <!--
+              One primary way in and one recessive one, rather than two peers: most visitors are
+              external, so making everyone first classify themselves would be the very friction
+              this replaced. Auth0 is deliberately unnamed — it means nothing to an external user.
+            -->
+            <button
+              (click)="signIn('auth0')"
+              class="flex flex-row items-center gap-2 rounded-full bg-hf-weiches-schwarz text-white text-base md:text-lg px-5 md:px-6 py-2 md:py-3 transition hover:bg-hf-weiches-schwarz/90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2 focus-visible:ring-offset-hf-pastell-rose">
+              <img
+                src="assets/companystylesheet/icons/login.svg"
+                alt=""
+                class="w-4 h-4 md:w-5 md:h-5 invert" />
+              <span>Jetzt öffnen</span>
+            </button>
+
+            <div class="flex flex-col items-center gap-1">
+              <button
+                (click)="signIn('microsoft')"
+                aria-describedby="ms-login-hint"
+                class="flex flex-row items-center gap-2 rounded-full border border-hf-weiches-schwarz/20 text-hf-weiches-schwarz text-sm md:text-base px-4 py-2 transition hover:border-hf-weiches-schwarz/40 hover:bg-hf-weiches-schwarz/5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2 focus-visible:ring-offset-hf-pastell-rose">
+                <img src="assets/icons/microsoft.svg" alt="" class="w-4 h-4" />
+                <span>Mit Microsoft anmelden</span>
+              </button>
+              <!-- Outside the button on purpose: keeps the accessible name to the action alone. -->
+              <span id="ms-login-hint" class="text-xs text-hf-weiches-schwarz/60">
+                Für Hochfrequenz-Mitarbeitende
+              </span>
+            </div>
+          }
+          @default {
+            <!--
+              Session check still running. Signing in commits the user to one provider, so the CTA
+              holds rather than guessing — a wrong guess sends a Hochfrequenz employee to Auth0.
+            -->
+            <button
+              disabled
+              aria-busy="true"
+              class="flex flex-row items-center gap-2 rounded-full bg-hf-weiches-schwarz text-white text-base md:text-lg px-5 md:px-6 py-2 md:py-3 transition hover:bg-hf-weiches-schwarz/90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2 focus-visible:ring-offset-hf-pastell-rose opacity-60 cursor-not-allowed">
+              <img
+                src="assets/companystylesheet/icons/login.svg"
+                alt=""
+                class="w-4 h-4 md:w-5 md:h-5 invert" />
+              <span>Jetzt öffnen</span>
+            </button>
+          }
+        }
       </div>
     </div>
   </section>

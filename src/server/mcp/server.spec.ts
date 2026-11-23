@@ -76,6 +76,13 @@ describe('MCP server (in-memory integration)', () => {
         expect(tool.description).toContain('ahbicht-functions');
       }
     });
+
+    it('documents wildcard search for full-text and contains filters', async () => {
+      const { tools } = await client.listTools();
+      const searchTool = tools.find(tool => tool.name === 'search_ahb_lines');
+
+      expect(JSON.stringify(searchTool?.inputSchema)).toContain('Änderung*TR');
+    });
   });
 
   describe('tool calls delegate to the services', () => {

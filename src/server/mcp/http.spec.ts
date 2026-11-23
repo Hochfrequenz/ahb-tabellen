@@ -33,9 +33,15 @@ function fakeApp(): { app: Application; routes: RouteRecord[] } {
 }
 
 const authConfig: McpAuthConfig = {
-  issuerBaseURL: 'https://auth.hochfrequenz.de/',
-  audience: 'https://host/mcp',
   resource: 'https://host/mcp',
+  providers: [
+    {
+      kind: 'auth0',
+      issuer: 'https://auth.hochfrequenz.de/',
+      issuerBaseURL: 'https://auth.hochfrequenz.de/',
+      audience: 'https://host/mcp',
+    },
+  ],
 };
 
 describe('mountMcp', () => {

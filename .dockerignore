@@ -1,26 +1,54 @@
-/pulumi
-docker-compose.yml
+# The build context. Everything the image needs is listed in the Dockerfile's COPY lines, so
+# anything not needed there belongs here — a large context is copied to the daemon on every build.
+
+# Dependencies and build output (rebuilt inside the image)
 node_modules
 /dist
-/.vscode
-/.nx
+/out-tsc
 /.angular
+*.tsbuildinfo
+
+# The database. `ahb.db` is ~1.1 GB and `ahb.db.encrypted.7z` is ~84 MB; neither belongs in the
+# image any more — the database is delivered as a separate data image and mounted from a volume.
+src/server/data/
+
+# Infrastructure (deployed by Pulumi, never built into the image). `infra/venv` alone is ~1 GB.
+/infra
+
+# Local tooling, editors, CI
+.git
+.github
+.gitignore
+.gitmodules
+.gitattributes
 .editorconfig
 .eslintrc.json
-.git
-.gitignore
+eslint.config.mjs
 .nvmrc
 .prettierignore
 .prettierrc
-README.md
-*.tsbuildinfo
-
-
-.DS_Store
-.env
-.example.env
-.github
-.gitmodules
+.vscode
 .idea
 .octopus
-azure-mock
+.claude
+.gstack
+.worktrees
+/.nx
+jest.config.json
+tsconfig.spec.json
+
+# Local compose, env and docs
+docker-compose.yaml
+docker-compose.yml
+.env
+.example.env
+README.md
+CHANGELOG.md
+cliff.toml
+bruno
+docs
+scripts
+CopyToTmp.sh
+
+# OS noise
+.DS_Store

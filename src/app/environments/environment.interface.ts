@@ -5,14 +5,19 @@ export interface EnvironmentInterface {
   ebdBaseUrl: string;
   fristenkalenderBaseUrl: string;
   /**
-   * MaKo-Prozesse is not deployed under this host yet - neither in production nor on a
-   * staging domain (see https://github.com/Hochfrequenz/mako_prozesse/issues/65). Every
-   * environment therefore points at the intended production URL until the custom domain
-   * is live; re-check once it is.
+   * MaKo-Prozesse is planned under https://mako-prozesse.hochfrequenz.app (ADR-0007 in
+   * Hochfrequenz/hf-apps-collection) but not live yet, in any environment (see
+   * https://github.com/Hochfrequenz/mako_prozesse/issues/65). Re-check once it is.
    */
   makoProzesseBaseUrl: string;
   auth0Domain: string;
   auth0ClientId: string;
+  // Microsoft Entra ID (second, independent login provider — see #951). The SPA login is
+  // gating-only, so `entraScopes` are OIDC scopes, not an API audience. The client id / tenant
+  // are provisioned by the Pulumi `azuread` app registration (follow-up).
+  entraClientId: string;
+  entraAuthority: string; // https://login.microsoftonline.com/{tenantId}
+  entraScopes: string[];
   baseUrl: string;
   warmupUrl?: string;
   allowSearchIndexing: boolean;

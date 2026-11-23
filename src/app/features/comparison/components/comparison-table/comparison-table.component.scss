@@ -6,3 +6,11 @@
 .sticky-header {
   top: var(--comparison-filter-height);
 }
+
+/*
+ * Top-align body cells so that when a row is expanded (a tall conditions cell),
+ * the short columns stay anchored at the top instead of floating in the middle.
+ */
+tbody td {
+  vertical-align: top;
+}

@@ -7,5 +7,7 @@ export interface Version {
   buildDate?: string;
   commitDate?: string;
   commitHash?: string;
+  environment?: string;
+  name?: string;
   version?: string;
 }

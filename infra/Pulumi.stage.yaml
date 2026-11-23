@@ -11,11 +11,10 @@ config:
   ahb-tabellen:ghcr_token:
     secure: AAABABkZ6JHu21N1Q6+hgJVXWzz7KkywfdZ84phM1XkWy6aTrm5zvSibf6PIxCcUJsJgeqDU3aexWUGI7ZH3nFOEIGtpoyKa
   ahb-tabellen:imageName: ghcr.io/hochfrequenz/ahb-tabellen
-  ahb-tabellen:imageTag: v1.4.0-rc02
-  # not a *.stage host on purpose: MaKo-Prozesse is not deployed under this host yet in any
-  # environment (see Hochfrequenz/mako_prozesse#65); every stack points at the intended
-  # production URL until the custom domain is live
-  ahb-tabellen:makoProzesseBaseUrl: https://mako-prozesse.hochfrequenz.de
+  ahb-tabellen:imageTag: v1.10.0-rc03
+  # not a *.stage host on purpose: the planned .app host (ADR-0007 in Hochfrequenz/hf-apps-collection)
+  # is not live yet in any environment (see Hochfrequenz/mako_prozesse#65); every stack points at it
+  ahb-tabellen:makoProzesseBaseUrl: https://mako-prozesse.hochfrequenz.app
   ahb-tabellen:mcpAuth0Audience: https://ahb-tabellen.stage.hochfrequenz.de/mcp
   ahb-tabellen:mcpAuth0IssuerBaseUrl: https://auth.hochfrequenz.de/
   ahb-tabellen:ohDearHealthCheckSecret:
@@ -28,3 +27,5 @@ config:
   azure-native:subscriptionId: 2384dcc1-2c97-4c32-932d-44215b137f7a
   azure-native:tenantId: fb2b0361-fa12-48a5-bade-533bf89760d9
   pulumi:template: container-azure-python
+  ahb-tabellen:entraEnabled: "true"
+  ahb-tabellen:appBaseUrl: https://ahb-tabellen.stage.hochfrequenz.de

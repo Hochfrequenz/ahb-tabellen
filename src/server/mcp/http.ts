@@ -33,8 +33,9 @@ export function mountMcp(app: Application, options: MountMcpOptions = {}): void 
 
   if (!authConfig) {
     console.warn(
-      '[mcp] Auth is DISABLED — /mcp is publicly accessible. Set MCP_AUTH0_ISSUER_BASE_URL ' +
-        'and MCP_AUTH0_AUDIENCE to protect it with Auth0.'
+      '[mcp] Auth is DISABLED — /mcp is publicly accessible. Set MCP_AUTH0_ISSUER_BASE_URL and ' +
+        'MCP_AUTH0_AUDIENCE (Auth0) and/or MCP_ENTRA_TENANT_ID and MCP_ENTRA_AUDIENCE (Entra) to ' +
+        'protect it.'
     );
   }
 

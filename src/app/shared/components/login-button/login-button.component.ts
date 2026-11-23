@@ -1,67 +1,38 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
-import { AuthService, User } from '@auth0/auth0-angular';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable, BehaviorSubject, combineLatest, of } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import { Router } from '@angular/router';
+import { combineLatest, map, Observable } from 'rxjs';
+import { AuthFacade, AuthProviderId } from '../../../core/auth/auth.facade';
 
-type ExtendedAuthService = AuthService & {
-  user$: Observable<User>;
-};
+/** Per-instance counter: the header renders this component twice, so the hint id must differ. */
+let nextHintId = 0;
 
 @Component({
   selector: 'app-login-button',
   standalone: true,
   imports: [CommonModule],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login-button.component.html',
 })
-export class LoginButtonComponent implements OnInit {
-  auth = inject(AuthService);
+export class LoginButtonComponent {
+  private facade = inject(AuthFacade);
+  private router = inject(Router);
 
-  authState$!: Observable<{ isAuthenticated: boolean; isLoading: boolean }>;
-  buttonText$ = new BehaviorSubject<string>('Einloggen');
+  /** Unique per instance — a duplicated id makes aria-describedby resolve to the wrong element. */
+  readonly microsoftHintId = `ms-login-hint-${nextHintId++}`;
 
-  private isDevelopment = !environment.isProduction || window.location.hostname === 'localhost';
+  authState$: Observable<{ isAuthenticated: boolean; isLoading: boolean }> = combineLatest([
+    this.facade.isAuthenticated$,
+    this.facade.isLoading$,
+  ]).pipe(map(([isAuthenticated, isLoading]) => ({ isAuthenticated, isLoading })));
 
-  ngOnInit() {
-    this.authState$ = combineLatest([
-      this.isDevelopment ? of(true) : this.auth.isAuthenticated$,
-      this.isDevelopment ? of(false) : this.auth.isLoading$,
-    ]).pipe(
-      map(([isAuthenticated, isLoading]) => ({ isAuthenticated, isLoading })),
-      tap(({ isAuthenticated, isLoading }) => {
-        if (!isLoading) {
-          this.buttonText$.next(isAuthenticated ? 'Ausloggen' : 'Einloggen');
-        }
-      }),
-      tap(({ isAuthenticated }) => {
-        if (this.isDevelopment && isAuthenticated) {
-          (this.auth as ExtendedAuthService).user$ = of({
-            email: 'local@development.com',
-            name: 'Local Development User',
-            sub: 'local-development',
-          } as User);
-        }
-      })
-    );
+  loginWith(provider: AuthProviderId): void {
+    // Pass the current URL so signing in from a deep page returns the user there instead of
+    // dumping them on the landing page. The facade sanitizes it before use.
+    this.facade.login(provider, this.router.url);
   }
 
-  loginOrLogout() {
-    this.auth.isAuthenticated$.subscribe(isAuthenticated => {
-      if (isAuthenticated) {
-        this.logout();
-      } else {
-        this.login();
-      }
-    });
-  }
-
-  private login() {
-    this.auth.loginWithRedirect();
-  }
-
-  private logout() {
-    this.auth.logout({ logoutParams: { returnTo: document.location.origin } });
+  logout(): void {
+    this.facade.logout();
   }
 }

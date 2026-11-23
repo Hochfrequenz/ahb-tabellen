@@ -22,6 +22,18 @@ interface PruefiOption {
   name: string;
 }
 
+const matchesSearchTerm = (value: string, searchTerm: string): boolean => {
+  if (!searchTerm.includes('*')) {
+    return value.includes(searchTerm);
+  }
+
+  const pattern = searchTerm
+    .split('*')
+    .map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('.*');
+  return new RegExp(`^${pattern}`).test(value);
+};
+
 @Component({
   selector: 'app-pruefi-input',
   standalone: true,
@@ -52,8 +64,8 @@ export class PruefiInputComponent implements ControlValueAccessor {
         .filter(
           p =>
             !term || // show all when no search term
-            p.pruefidentifikator.toLowerCase().includes(term) ||
-            p.name.toLowerCase().includes(term)
+            matchesSearchTerm(p.pruefidentifikator.toLowerCase(), term) ||
+            matchesSearchTerm(p.name.toLowerCase(), term)
         )
         .map(p => `${p.pruefidentifikator} - ${p.name}`);
     })

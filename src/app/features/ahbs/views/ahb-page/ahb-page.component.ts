@@ -30,6 +30,7 @@ import { DvgwFallbackPageComponent } from '../../../../shared/components/dvgw-fa
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { environment } from '../../../../environments/environment';
 import { getFormatOfPruefidentifikator, getCurrentEdifactFormatVersion } from '@hochfrequenz/efoli';
+import { isDvgwPruefi } from '../../../../shared/utils/dvgw-pruefi.utils';
 
 @Component({
   selector: 'app-ahb-page',
@@ -66,17 +67,11 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   searchQuery = signal<string | undefined>('');
   edifactFormat = computed(() => this.getEdifactFormat(this.pruefi()));
 
-  private readonly mehrMinderMengenMeldungSLP = '70095';
-  private readonly mehrMinderMengenMeldungRLM = '70096';
-
-  // Computed properties for fallback pages
-  isDvgwPruefi = computed(() => {
-    const currentPruefi = this.pruefi();
-    return (
-      currentPruefi === this.mehrMinderMengenMeldungSLP ||
-      currentPruefi === this.mehrMinderMengenMeldungRLM
-    );
-  });
+  // Computed properties for fallback pages.
+  // DVGW Prüfidentifikatoren (TSIMSG, SSQNOT) are only published as PDF by the DVGW and are
+  // hidden from the regular table view (see dvgw-pruefi.utils / issue #814). The check is an
+  // explicit allow-list because these Prüfis are not distinguishable via their EDIFACT format.
+  isDvgwPruefi = computed(() => isDvgwPruefi(this.pruefi()));
 
   // View references
   table = viewChild(AhbTableComponent);

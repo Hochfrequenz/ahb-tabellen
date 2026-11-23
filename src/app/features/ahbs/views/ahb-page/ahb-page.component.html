@@ -104,7 +104,9 @@
     <div class="flex-1 flex items-center justify-center">
       <!-- Show DVGW fallback page for specific Prüfidentifikatoren -->
       @if (isDvgwPruefi()) {
-        <app-dvgw-fallback-page class="w-11/12 max-w-4xl"></app-dvgw-fallback-page>
+        <app-dvgw-fallback-page
+          class="w-11/12 max-w-4xl"
+          [pruefi]="pruefi()"></app-dvgw-fallback-page>
       }
       <!-- Show regular fallback page for other cases -->
       @if (!isDvgwPruefi()) {

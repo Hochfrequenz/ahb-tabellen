@@ -34,7 +34,12 @@ export const MCP_TOOL_NAMES = [
 const searchFilterCondition = z.object({
   eq: z.string().optional(),
   neq: z.string().optional(),
-  contains: z.string().optional(),
+  contains: z
+    .string()
+    .optional()
+    .describe(
+      'Case-insensitive match. Without * this is a substring match. A * makes the match prefix-anchored: text before the first * must be at the start of the field, * matches any text between segments, and text after the final segment may follow (for example, Änderung*TR matches values that start with Änderung and contain TR afterwards). * is treated as a literal character by the other operators (eq/neq/startsWith/endsWith/in).'
+    ),
   startsWith: z.string().optional(),
   endsWith: z.string().optional(),
   in: z.array(z.string()).optional(),
@@ -95,7 +100,11 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
         'pagination, sorting, and per-field filters (eq/neq/contains/startsWith/endsWith/in/' +
         'isNull/isNotNull), including the virtual sender/empfaenger direction fields.',
       inputSchema: {
-        q: z.string().describe('Full-text query; use an empty string to match all lines.'),
+        q: z
+          .string()
+          .describe(
+            'Full-text query. Without * this is a substring match. A * makes the match prefix-anchored: text before the first * must be at the start of the field, * matches any text between segments, and text after the final segment may follow (for example, Änderung*TR matches values that start with Änderung and contain TR afterwards). Use an empty string to match all lines.'
+          ),
         page: z.number().int().min(1).describe('1-based page number.'),
         pageSize: z.number().int().min(1).max(500).describe('Results per page (1–500).'),
         sort: z

@@ -5,7 +5,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   BUILD_DATE: 'set by build_release_info step'
   COMMIT_DATE: 'set by build_release_info step'
-  COMMIT_ID: 'set by build_release_info step'
+  COMMIT_HASH: 'set by build_release_info step'
   VERSION_TAG: 'set by build_release_info step'
   DOCKER_TAG: 'set by extract-tag step'
 
@@ -58,15 +58,17 @@ jobs:
         run: |
           BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           COMMIT_DATE=$(git log -1 --format='%cI')
-          COMMIT_ID=$(git rev-parse HEAD)
+          COMMIT_HASH=$(git rev-parse HEAD)
+          BUILD_BRANCH=$GITHUB_REF_NAME
           VERSION_TAG=${GITHUB_REF#refs/tags/}
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
           echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
-          echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+          echo "BUILD_BRANCH=$BUILD_BRANCH" >> $GITHUB_ENV
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v4.6.0
+        uses: docker/login-action@v4.8.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -103,7 +105,7 @@ jobs:
 
       - name: Build and push Docker image for Stage
         id: push
-        uses: docker/build-push-action@v7.3.0
+        uses: docker/build-push-action@v7.4.0
         with:
           context: .
           push: true
@@ -112,7 +114,8 @@ jobs:
           build-args: |
             BUILD_DATE=${{ env.BUILD_DATE }}
             COMMIT_DATE=${{ env.COMMIT_DATE }}
-            COMMIT_ID=${{ env.COMMIT_ID }}
+            COMMIT_HASH=${{ env.COMMIT_HASH }}
+            BUILD_BRANCH=${{ env.BUILD_BRANCH }}
             VERSION=${{ env.VERSION_TAG }}
 
       - name: Generate artifact attestation
@@ -145,15 +148,17 @@ jobs:
         run: |
           BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           COMMIT_DATE=$(git log -1 --format='%cI')
-          COMMIT_ID=$(git rev-parse HEAD)
+          COMMIT_HASH=$(git rev-parse HEAD)
+          BUILD_BRANCH=$GITHUB_REF_NAME
           VERSION_TAG=${GITHUB_REF#refs/tags/}
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
           echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
-          echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+          echo "BUILD_BRANCH=$BUILD_BRANCH" >> $GITHUB_ENV
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v4.6.0
+        uses: docker/login-action@v4.8.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -191,7 +196,7 @@ jobs:
 
       - name: Build and push Docker image for Production
         id: push
-        uses: docker/build-push-action@v7.3.0
+        uses: docker/build-push-action@v7.4.0
         with:
           context: .
           push: true
@@ -200,7 +205,8 @@ jobs:
           build-args: |
             BUILD_DATE=${{ env.BUILD_DATE }}
             COMMIT_DATE=${{ env.COMMIT_DATE }}
-            COMMIT_ID=${{ env.COMMIT_ID }}
+            COMMIT_HASH=${{ env.COMMIT_HASH }}
+            BUILD_BRANCH=${{ env.BUILD_BRANCH }}
             VERSION=${{ env.VERSION_TAG }}
 
       - name: Generate artifact attestation
@@ -242,10 +248,22 @@ jobs:
           prerelease: false
           draft: false
 
+  # DISABLED — the Azure App Service cannot run the current image.
+  #
+  # Since Hochfrequenz/ahb-tabellen#985 the image carries no database: it is seeded into a volume
+  # by a separate job, and App Service has no volume to seed and no AHB_DB_PATH. A deploy here
+  # would push a container that fails its startup check and exits.
+  #
+  # The App Service is deliberately left RUNNING its old image as the rollback target while the
+  # Compose stacks in Hochfrequenz/hf-apps-collection take over. Only new deployments are stopped.
+  #
+  # Re-enable by removing the `if: false` line (the original condition is preserved below it).
+  # Retiring Azure for good — deleting these jobs, infra/ and the Pulumi stacks — is its own PR,
+  # to be done once the Compose stack has served production traffic.
   deploy-stage:
     name: Deploy to Stage
     needs: [build-stage]
-    if: ${{ contains(github.ref_name, '-rc') }}
+    if: false # && ${{ contains(github.ref_name, '-rc') }}
     permissions:
       contents: read
       id-token: write
@@ -260,10 +278,22 @@ jobs:
       azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
       pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
+  # DISABLED — the Azure App Service cannot run the current image.
+  #
+  # Since Hochfrequenz/ahb-tabellen#985 the image carries no database: it is seeded into a volume
+  # by a separate job, and App Service has no volume to seed and no AHB_DB_PATH. A deploy here
+  # would push a container that fails its startup check and exits.
+  #
+  # The App Service is deliberately left RUNNING its old image as the rollback target while the
+  # Compose stacks in Hochfrequenz/hf-apps-collection take over. Only new deployments are stopped.
+  #
+  # Re-enable by removing the `if: false` line (the original condition is preserved below it).
+  # Retiring Azure for good — deleting these jobs, infra/ and the Pulumi stacks — is its own PR,
+  # to be done once the Compose stack has served production traffic.
   deploy-production:
     name: Deploy to Production
     needs: [build-production]
-    if: ${{ !contains(github.ref_name, '-rc') }}
+    if: false # && ${{ !contains(github.ref_name, '-rc') }}
     permissions:
       contents: read
       id-token: write
