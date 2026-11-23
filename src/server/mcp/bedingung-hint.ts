@@ -9,6 +9,6 @@
 export const BEDINGUNG_JUMP_HINT =
   `The "ahb_expression" field (and "line_ahb_status" on diff sides) may contain a condition ` +
   `expression with bracketed conditions, e.g. "Muss [2] ∧ [3]". To resolve or evaluate those ` +
-  `conditions, use AHBicht: the Bedingungsbaum web UI (https://bedingungsbaum.hochfrequenz.de) ` +
+  `conditions, use AHBicht: the Bedingungsbaum web UI (https://bedingungsbaum.hochfrequenz.app) ` +
   `for humans, or the read-only AHBicht MCP server (from Hochfrequenz/ahbicht-functions, ` +
   `mounted at /mcp) which parses modal marks and condition expressions.`;
