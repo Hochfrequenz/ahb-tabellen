@@ -8,6 +8,9 @@ import * as azuread from "@pulumi/azuread";
 const config = new pulumi.Config();
 
 const imageName = config.get("imageName");
+// Set by the deploy workflow, which points it at the `-azure` image variant: the published
+// application image with the database baked back in. App Service has no volume to seed a
+// database into, so the slim image cannot run here — see infra/azure-image/Dockerfile.
 const imageTag = config.get("imageTag");
 if (!imageName) {
     throw new Error("imageName must be set");

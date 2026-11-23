@@ -271,29 +271,36 @@ For local development against a server started with `npm run server:start`, use 
 ## 🚀 Deployment
 
 > [!IMPORTANT]
-> **Tagging no longer deploys to Azure.** The `deploy-stage` and `deploy-production` jobs in
-> `.github/workflows/deploy.yml` are disabled (`if: false`). Pushing a version tag builds and
-> publishes the container image and creates the GitHub release, and stops there.
+> **Tagging deploys to Azure through a separate image.** Pushing a version tag builds the slim
+> application image, then derives an Azure variant from it — the same image with the ~1.1 GB
+> database baked back in, tagged `<version>-azure` (`infra/azure-image/Dockerfile`) — and deploys
+> _that_ to the App Service. `-rc` tags go to Stage, everything else to Production.
 >
-> They are off because the Azure App Service cannot run the current image: it carries no database,
-> and App Service has no volume to seed one into and no `AHB_DB_PATH`. A deploy would push a
-> container that fails its startup check and exits.
+> The detour exists because App Service has no volume to seed the database into and no
+> per-deployment place to point `AHB_DB_PATH` at, so the slim image from `Dockerfile` finds no
+> database there and exits at startup. Deriving the Azure image `FROM` the published one, instead
+> of building a second application image, keeps the code provably identical to what the Compose
+> stacks run and costs one layer rather than a second Angular build.
 >
-> The App Service itself is **left running its old image on purpose**, as the rollback target
-> while the Compose stacks in [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection)
-> take over. Deployment now happens there: bump the image tag and digest in the stack, and Dockhand
-> rolls it out.
+> Azure is the way out, not the destination. The Compose stacks in
+> [hf-apps-collection](https://github.com/Hochfrequenz/hf-apps-collection) already serve
+> `*.hochfrequenz.app` from the slim image and are where deployment is heading; the App Services
+> keep `*.hochfrequenz.de` working until DNS moves. Retiring Azure — deleting the deploy jobs,
+> `infra/`, `infra/azure-image/` and the Pulumi stacks — is its own change, to be made once that
+> has happened. Until then leave the Pulumi config, including `db_7z_archive_password`, in place:
+> a rollback to a pre-v2.0.0 image still needs it.
 >
-> Retiring Azure for good — deleting those jobs, `infra/` and the Pulumi stacks — is its own change,
-> to be made once the Compose stack has served production traffic. Until then leave the Pulumi
-> config, including `db_7z_archive_password`, in place.
+> The database Azure serves is pinned by tag **and** digest in `infra/azure-image/Dockerfile`.
+> Keep it in step with the `ahb-tabellen-db` seed job in the Compose stacks, so both platforms
+> serve the same dataset; bumping it is a deliberate, reviewable change rather than a side effect
+> of a release.
 >
 > Note the `ahb-tabellen/stage - preview deployment` check on pull requests comes from Pulumi
-> Cloud's GitHub app, not from this workflow, so disabling these jobs does not silence it. It
-> currently fails on unrelated `azuread` credentials — see `infra/README.md`.
+> Cloud's GitHub app, not from this workflow. It currently fails on unrelated `azuread`
+> credentials — see `infra/README.md`.
 
-The sections below describe the Azure pipeline as it was built; the build and release half of it
-still runs.
+The sections below describe the Azure pipeline as it was built. It all runs again, with the
+`build-azure-image` job inserted between the application build and the deploy.
 
 The application can be deployed to two environments: Stage and Production.
 The deployment process is fully automated using a combination of GitHub Actions and Pulumi, and is triggered by pushing a git tag, which creates a GitHub release.

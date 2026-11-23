@@ -248,29 +248,113 @@ jobs:
           prerelease: false
           draft: false
 
-  # DISABLED — the Azure App Service cannot run the current image.
+  # The Azure variant of the image: the published application image with the database baked back
+  # in. App Service has no volume to seed a database into and no per-deployment place to point
+  # AHB_DB_PATH at, so the slim image cannot run there (Hochfrequenz/ahb-tabellen#985). This adds
+  # one layer to the very image the Compose stacks run, rather than building a second application
+  # image that could drift from it.
   #
-  # Since Hochfrequenz/ahb-tabellen#985 the image carries no database: it is seeded into a volume
-  # by a separate job, and App Service has no volume to seed and no AHB_DB_PATH. A deploy here
-  # would push a container that fails its startup check and exits.
+  # TRANSITIONAL, like the two deploy jobs below and infra/ itself: it goes when Azure does.
   #
-  # The App Service is deliberately left RUNNING its old image as the rollback target while the
-  # Compose stacks in Hochfrequenz/hf-apps-collection take over. Only new deployments are stopped.
+  # One job serves both tiers. Whichever build job ran for this tag supplies the application tag;
+  # the other was skipped and contributes an empty string, so `||` picks the one that exists.
+  build-azure-image:
+    name: Build Azure Docker Image
+    needs: [build-stage, build-production]
+    if: ${{ !cancelled() && (needs.build-stage.result == 'success' || needs.build-production.result == 'success') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      docker-tag: ${{ steps.refs.outputs.tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v4.6.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve image references
+        id: refs
+        env:
+          APP_TAG: ${{ needs.build-stage.outputs.docker-tag || needs.build-production.outputs.docker-tag }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -z "$APP_TAG" ]; then
+            echo "::error::Neither build job produced an application tag"
+            exit 1
+          fi
+          # Docker references must be lowercase and the repository name is not. The build jobs get
+          # that for free from docker/metadata-action; a reference assembled by hand does not.
+          IMAGE="${REGISTRY}/${REPOSITORY,,}"
+          # `-azure` marks the tag as the gigabyte-sized variant, so it cannot be mistaken for the
+          # image the Compose stacks pull, while keeping the release it came from readable:
+          # 2.0.0-rc01 -> 2.0.0-rc01-azure.
+          # Read back from the Dockerfile rather than repeated here, so the pinned digest has
+          # exactly one home and the preflight check below cannot test a different image than
+          # the build pulls.
+          DB_IMAGE=$(sed -n 's/^ARG DB_IMAGE=//p' infra/azure-image/Dockerfile)
+          if [ -z "$DB_IMAGE" ]; then
+            echo "::error::No 'ARG DB_IMAGE=' default found in infra/azure-image/Dockerfile"
+            exit 1
+          fi
+          echo "tag=${APP_TAG}-azure" >> "$GITHUB_OUTPUT"
+          echo "app-image=${IMAGE}:${APP_TAG}" >> "$GITHUB_OUTPUT"
+          echo "azure-image=${IMAGE}:${APP_TAG}-azure" >> "$GITHUB_OUTPUT"
+          echo "db-image=${DB_IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "Application image: ${IMAGE}:${APP_TAG}"
+          echo "Azure image:       ${IMAGE}:${APP_TAG}-azure"
+          echo "Database image:    ${DB_IMAGE}"
+
+      # The database image belongs to another repository and is private (it holds licensed data
+      # unencrypted — hf-apps-collection ADR-0015). GITHUB_TOKEN reaches packages owned by THIS
+      # repository by default, so without an explicit grant the build fails on an opaque
+      # `denied`/`unauthorized` from the registry. Check it up front and say what to do instead.
+      - name: Check the database image is reachable
+        env:
+          DB_IMAGE: ${{ steps.refs.outputs.db-image }}
+        run: |
+          if ! docker manifest inspect "$DB_IMAGE" > /dev/null 2>&1; then
+            echo "::error::Cannot pull $DB_IMAGE. It is a private package owned by Hochfrequenz/xml-migs-and-ahbs, so this repository needs read access to it: GHCR package -> Package settings -> Manage Actions access -> add Hochfrequenz/ahb-tabellen with the Read role."
+            exit 1
+          fi
+          echo "Database image is reachable: $DB_IMAGE"
+
+      # The context is infra/azure-image, which holds nothing but the Dockerfile: both inputs are
+      # images, so there is no source to send. DB_IMAGE is passed so the preflight check above and
+      # the build cannot disagree, with the Dockerfile's pinned digest as the single default.
+      - name: Build and push the Azure image
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: infra/azure-image
+          push: true
+          tags: ${{ steps.refs.outputs.azure-image }}
+          build-args: |
+            APP_IMAGE=${{ steps.refs.outputs.app-image }}
+            DB_IMAGE=${{ steps.refs.outputs.db-image }}
+
+  # Re-enabled for the Azure endgame. These deploy the `-azure` image built above — the only
+  # variant App Service can run — because hochfrequenz.de still resolves to the App Services
+  # while the Compose stacks in Hochfrequenz/hf-apps-collection run on hochfrequenz.app.
   #
-  # Re-enable by removing the `if: false` line (the original condition is preserved below it).
-  # Retiring Azure for good — deleting these jobs, infra/ and the Pulumi stacks — is its own PR,
-  # to be done once the Compose stack has served production traffic.
+  # Retiring Azure for good, by deleting these jobs, infra/ and the Pulumi stacks, remains its own
+  # change, to be made once DNS has moved and the Compose stacks have served production traffic.
   deploy-stage:
     name: Deploy to Stage
-    needs: [build-stage]
-    if: false # && ${{ contains(github.ref_name, '-rc') }}
+    needs: [build-azure-image]
+    if: ${{ contains(github.ref_name, '-rc') }}
     permissions:
       contents: read
       id-token: write
     uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@34fe37930a5982285b67a7a9dc180805baee4e0f
     with:
       pulumi_stack_name: stage
-      docker_tag: ${{ needs.build-stage.outputs.docker-tag }}
+      docker_tag: ${{ needs.build-azure-image.outputs.docker-tag }}
       working_directory: infra
     secrets:
       azure_client_id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
@@ -278,29 +362,17 @@ jobs:
       azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID_HF_APPS }}
       pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
-  # DISABLED — the Azure App Service cannot run the current image.
-  #
-  # Since Hochfrequenz/ahb-tabellen#985 the image carries no database: it is seeded into a volume
-  # by a separate job, and App Service has no volume to seed and no AHB_DB_PATH. A deploy here
-  # would push a container that fails its startup check and exits.
-  #
-  # The App Service is deliberately left RUNNING its old image as the rollback target while the
-  # Compose stacks in Hochfrequenz/hf-apps-collection take over. Only new deployments are stopped.
-  #
-  # Re-enable by removing the `if: false` line (the original condition is preserved below it).
-  # Retiring Azure for good — deleting these jobs, infra/ and the Pulumi stacks — is its own PR,
-  # to be done once the Compose stack has served production traffic.
   deploy-production:
     name: Deploy to Production
-    needs: [build-production]
-    if: false # && ${{ !contains(github.ref_name, '-rc') }}
+    needs: [build-azure-image]
+    if: ${{ !contains(github.ref_name, '-rc') }}
     permissions:
       contents: read
       id-token: write
     uses: Hochfrequenz/reusable-workflows/.github/workflows/deploy.yaml@34fe37930a5982285b67a7a9dc180805baee4e0f
     with:
       pulumi_stack_name: prod
-      docker_tag: ${{ needs.build-production.outputs.docker-tag }}
+      docker_tag: ${{ needs.build-azure-image.outputs.docker-tag }}
       working_directory: infra
     secrets:
       azure_client_id: ${{ secrets.AZURE_CLIENT_ID_GITHUB_ACTION_OIDC }}
