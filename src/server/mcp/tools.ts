@@ -22,6 +22,7 @@ const PRUEFI_DESC = 'Prüfidentifikator: exactly 5 digits (e.g. "11001").';
 export const MCP_TOOL_NAMES = [
   'get_ahb',
   'search_ahb_lines',
+  'search_bedingung_usage',
   'get_ahb_diff',
   'get_ahb_diff_summary',
   'list_format_versions',
@@ -123,6 +124,57 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
         const payload: SearchPayload = { q, page, pageSize, sort, filters };
         return services.ahb.searchAhbLines(payload);
       })
+  );
+
+  server.registerTool(
+    'search_bedingung_usage',
+    {
+      title: 'Search Bedingung usage',
+      description:
+        'Where is an AHB condition (Bedingung) used? Lists, per Prüfidentifikator, the AHB lines ' +
+        'whose status expression uses the condition, e.g. "where is [931] used?". Resolves use ' +
+        'through packages ([nnPn]) and UB conditions ([UBn]) transitively: `via` lists the ways ' +
+        'a line reaches the condition, null meaning direct use and e.g. "UB1" meaning use through ' +
+        'condition [UB1]. ' +
+        bedingungJumpHint,
+      inputSchema: {
+        formatVersion: z.string().describe(FORMAT_VERSION_DESC),
+        bedingung: z
+          .string()
+          .describe(
+            'Condition key, with or without brackets (e.g. "931", "[931]", "UB1", "2P"); ' +
+              'whitespace is ignored and letters are case-insensitive.'
+          ),
+        format: z
+          .string()
+          .optional()
+          .describe('Optional format filter, plain (e.g. "UTILMD") or detailed (e.g. "UTILMDS").'),
+        pruefi: z
+          .string()
+          .optional()
+          .describe('Optional ' + PRUEFI_DESC),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(1000)
+          .optional()
+          .describe(
+            'Maximum number of AHB lines to return (1–1000, default 200); the result reports totalLines and truncated.'
+          ),
+      },
+      annotations: { ...READ_ONLY, title: 'Search Bedingung usage' },
+    },
+    async ({ formatVersion, bedingung, format, pruefi, limit }) =>
+      toToolResult(() =>
+        services.bedingungUsage.searchBedingungUsage({
+          formatVersion,
+          bedingung,
+          format,
+          pruefi,
+          limit,
+        })
+      )
   );
 
   server.registerTool(

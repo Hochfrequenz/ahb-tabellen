@@ -1,4 +1,5 @@
 import AhbService from '../service/ahb.service';
+import BedingungUsageService from '../service/bedingungUsage.service';
 import AhbDiffService from '../service/ahbDiff.service';
 import MetadataService from '../service/metadata.service';
 
@@ -9,6 +10,7 @@ import MetadataService from '../service/metadata.service';
 export interface McpServices {
   ahb: AhbService;
   ahbDiff: AhbDiffService;
+  bedingungUsage: BedingungUsageService;
   metadata: MetadataService;
 }
 
@@ -16,6 +18,7 @@ export function createMcpServices(): McpServices {
   return {
     ahb: new AhbService(),
     ahbDiff: new AhbDiffService(),
+    bedingungUsage: new BedingungUsageService(),
     metadata: new MetadataService(),
   };
 }

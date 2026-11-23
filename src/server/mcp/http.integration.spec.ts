@@ -100,7 +100,7 @@ describe('MCP over real HTTP (raw JSON-RPC)', () => {
   it('lists all tools (stateless: fresh server per request, no prior init)', async () => {
     const res = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     expect(res.status).toBe(200);
-    expect(res.json.result?.tools).toHaveLength(9);
+    expect(res.json.result?.tools).toHaveLength(10);
   });
 
   it('invokes a tool end-to-end, forwarding the parsed body to the service', async () => {

@@ -18,6 +18,7 @@ describe('MCP server (in-memory integration)', () => {
   let services: {
     ahb: { getAhb: jest.Mock; searchAhbLines: jest.Mock };
     ahbDiff: { getDiff: jest.Mock; getSummary: jest.Mock };
+    bedingungUsage: { searchBedingungUsage: jest.Mock };
     metadata: {
       listFormatVersions: jest.Mock;
       listFormate: jest.Mock;
@@ -32,6 +33,7 @@ describe('MCP server (in-memory integration)', () => {
     services = {
       ahb: { getAhb: jest.fn(), searchAhbLines: jest.fn() },
       ahbDiff: { getDiff: jest.fn(), getSummary: jest.fn() },
+      bedingungUsage: { searchBedingungUsage: jest.fn() },
       metadata: {
         listFormatVersions: jest.fn(),
         listFormate: jest.fn(),
@@ -123,6 +125,40 @@ describe('MCP server (in-memory integration)', () => {
         filters: { format: { eq: 'UTILMD' }, sender: { in: ['LF'] } },
       });
       expect(parse(result)).toEqual(searchResult);
+    });
+
+    it('search_bedingung_usage forwards the validated input and advertises the via marker', async () => {
+      const usage = { formatVersion: 'FV2610', bedingung: '931', totalLines: 0, pruefis: [] };
+      services.bedingungUsage.searchBedingungUsage.mockResolvedValue(usage);
+
+      const result = (await client.callTool({
+        name: 'search_bedingung_usage',
+        arguments: { formatVersion: 'FV2610', bedingung: '[931]', format: 'UTILMDS', limit: 50 },
+      })) as CallResult;
+
+      expect(services.bedingungUsage.searchBedingungUsage).toHaveBeenCalledWith({
+        formatVersion: 'FV2610',
+        bedingung: '[931]',
+        format: 'UTILMDS',
+        pruefi: undefined,
+        limit: 50,
+      });
+      expect(parse(result)).toEqual(usage);
+
+      const { tools } = await client.listTools();
+      const tool = tools.find(t => t.name === 'search_bedingung_usage');
+      expect(tool?.description).toContain('via');
+      expect(tool?.description).toContain('ahbicht-functions');
+    });
+
+    it('search_bedingung_usage rejects an out-of-range limit before calling the service', async () => {
+      const result = (await client.callTool({
+        name: 'search_bedingung_usage',
+        arguments: { formatVersion: 'FV2610', bedingung: '931', limit: 1001 },
+      })) as CallResult;
+
+      expect(result.isError).toBe(true);
+      expect(services.bedingungUsage.searchBedingungUsage).not.toHaveBeenCalled();
     });
 
     it('get_ahb_diff_summary returns the summary', async () => {
