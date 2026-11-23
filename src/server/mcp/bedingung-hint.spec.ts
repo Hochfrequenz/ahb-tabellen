@@ -17,6 +17,22 @@ describe('buildBedingungJumpHint', () => {
     expect(buildBedingungJumpHint({})).toContain('https://bedingungsbaum.hochfrequenz.de');
   });
 
+  it('reads the environment when called, not when the module was imported', () => {
+    // The regression this guards: resolving the hint into a module-level constant worked only
+    // because the server compiles to CommonJS, where `dotenv.config()` in server.ts runs before
+    // this module is required. Under ES modules the import is hoisted above it and the hint would
+    // quietly fall back to the retired host. Callers must therefore resolve it on demand.
+    const original = process.env[ENV_VARS.bedingungsbaumBaseUrl];
+    process.env[ENV_VARS.bedingungsbaumBaseUrl] = 'https://bedingungsbaum.set-after-import.test';
+
+    try {
+      expect(buildBedingungJumpHint()).toContain('https://bedingungsbaum.set-after-import.test');
+    } finally {
+      if (original === undefined) delete process.env[ENV_VARS.bedingungsbaumBaseUrl];
+      else process.env[ENV_VARS.bedingungsbaumBaseUrl] = original;
+    }
+  });
+
   it('treats an empty value as unset, matching buildRuntimeConfig', () => {
     // `readString` in app-config.ts gives an empty variable the same meaning as a missing one.
     // The two must agree, or /config.js and this hint would disagree about the same variable.

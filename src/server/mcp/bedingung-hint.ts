@@ -19,6 +19,13 @@ const DEFAULT_BEDINGUNGSBAUM_BASE_URL = 'https://bedingungsbaum.hochfrequenz.de'
  * `/config.js`, so the link an MCP client is told to follow and the link the web UI renders can
  * never drift apart. An unset or empty value keeps the compiled default, matching `readString`
  * in `app-config.ts`.
+ *
+ * Deliberately a function rather than a module-level constant. A constant would read
+ * `process.env` at import time, which is only correct because `tsconfig.server.json` compiles to
+ * CommonJS, so `dotenv.config()` on line 2 of `server.ts` runs before this module is required.
+ * Under ES modules — what the root `tsconfig.json` already targets — imports are hoisted above
+ * that call, and the hint would silently fall back to the retired host. Callers resolve it when
+ * they register their tools, long after the environment is loaded either way.
  */
 export function buildBedingungJumpHint(env: NodeJS.ProcessEnv = process.env): string {
   const bedingungsbaumBaseUrl =
@@ -32,6 +39,3 @@ export function buildBedingungJumpHint(env: NodeJS.ProcessEnv = process.env): st
     `mounted at /mcp) which parses modal marks and condition expressions.`
   );
 }
-
-/** Resolved once at startup, like the `/config.js` script the server renders in `server.ts`. */
-export const BEDINGUNG_JUMP_HINT = buildBedingungJumpHint();
