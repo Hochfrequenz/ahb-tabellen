@@ -19,12 +19,17 @@ const server = express();
 server.use(express.json());
 server.use(
   cors({
+    // The SPA no longer needs any of these: `apiUrl` defaults to the current origin, so its
+    // calls are same-origin and never preflight. The list stays for third-party browser clients
+    // of the public API, and for a deployment that points `APP_API_URL` at another host.
+    // Note stage is `ahb-tabellen-stage`, not `ahb-tabellen.stage` — the hostname was
+    // restructured in the move off hochfrequenz.de, not merely moved to a new TLD.
     origin: [
       'http://localhost:3000',
       'http://localhost:4200',
       'http://localhost:4000',
-      'https://ahb-tabellen.stage.hochfrequenz.de',
-      'https://ahb-tabellen.hochfrequenz.de',
+      'https://ahb-tabellen.hochfrequenz.app',
+      'https://ahb-tabellen-stage.hochfrequenz.app',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
