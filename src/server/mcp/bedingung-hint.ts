@@ -9,7 +9,10 @@ import { ENV_VARS } from '../infrastructure/app-config';
  * purely an affordance telling the LLM how to resolve/evaluate those conditions with AHBicht.
  */
 
-/** Used when the deployment sets no Bedingungsbaum URL; matches the sibling defaults in `environment.prod.ts`. */
+/**
+ * Used when the deployment sets no Bedingungsbaum URL; matches the sibling defaults in
+ * `environment.prod.ts`.
+ */
 const DEFAULT_BEDINGUNGSBAUM_BASE_URL = 'https://bedingungsbaum.hochfrequenz.app';
 
 /**
