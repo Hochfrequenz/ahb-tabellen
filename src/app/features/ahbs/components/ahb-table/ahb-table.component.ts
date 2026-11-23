@@ -249,7 +249,7 @@ export class AhbTableComponent {
       return null;
     }
     // EBD detection now happens in the backend (line.ebd_key); we only build the link.
-    // e.g. https://ebd.stage.hochfrequenz.de/ebd/?formatversion=FV2504&ebd=E_0004
+    // e.g. https://ebd-stage.hochfrequenz.app/ebd/?formatversion=FV2504&ebd=E_0004
     return `${environment.ebdBaseUrl}/ebd/?formatversion=${this.formatVersion()}&ebd=${ebdKey}`;
   }
 

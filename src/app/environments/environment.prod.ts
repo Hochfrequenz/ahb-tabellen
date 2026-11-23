@@ -28,9 +28,9 @@ const origin = typeof window === 'undefined' ? '' : window.location.origin;
 const defaults: EnvironmentInterface = {
   isProduction: true, // DO NOT CHANGE - disables automatic dummy user login in production environment
   apiUrl: origin,
-  bedingungsbaumBaseUrl: 'https://bedingungsbaum.hochfrequenz.de',
-  ebdBaseUrl: 'https://ebd.hochfrequenz.de',
-  fristenkalenderBaseUrl: 'https://fristenkalender.hochfrequenz.de',
+  bedingungsbaumBaseUrl: 'https://bedingungsbaum.hochfrequenz.app',
+  ebdBaseUrl: 'https://ebd.hochfrequenz.app',
+  fristenkalenderBaseUrl: 'https://fristenkalender.hochfrequenz.app',
   // planned host (ADR-0007 in Hochfrequenz/hf-apps-collection), not live yet
   // (see Hochfrequenz/mako_prozesse#65): the pill will not resolve until it is
   makoProzesseBaseUrl: 'https://mako-prozesse.hochfrequenz.app',

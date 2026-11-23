@@ -18,7 +18,9 @@ externalDocs:
   description: JSON files of the AHB documents
   url: https://github.com/Hochfrequenz/machine-readable_anwendungshandbuecher
 servers:
-  - url: https://ahb-tabellen.hochfrequenz.de/api/v1
+  # Origin only: every path below already carries the `/api` prefix, so appending one
+  # here would document endpoints such as `/api/v1/api/search/query`, which do not exist.
+  - url: https://ahb-tabellen.hochfrequenz.app
 tags:
   - name: ahb
     description: Everything about AHB documents

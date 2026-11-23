@@ -37,9 +37,9 @@ services:
       APP_API_URL: http://localhost:4000
       APP_BASE_URL: http://localhost:4000
       APP_AUTH0_CLIENT_ID: Hku0EniRjy4B2krnx1sCwTIOzAiVta1B
-      APP_BEDINGUNGSBAUM_BASE_URL: https://bedingungsbaum.stage.hochfrequenz.de
-      APP_EBD_BASE_URL: https://ebd.stage.hochfrequenz.de
-      APP_FRISTENKALENDER_BASE_URL: https://fristenkalender.stage.hochfrequenz.de
+      APP_BEDINGUNGSBAUM_BASE_URL: https://bedingungsbaum-stage.hochfrequenz.app
+      APP_EBD_BASE_URL: https://ebd-stage.hochfrequenz.app
+      APP_FRISTENKALENDER_BASE_URL: https://fristenkalender-stage.hochfrequenz.app
       APP_MAKO_PROZESSE_BASE_URL: https://mako-prozesse.hochfrequenz.app
       APP_ALLOW_SEARCH_INDEXING: 'false'
       APP_ENABLE_PRUEFI_COMPARISON: 'true'

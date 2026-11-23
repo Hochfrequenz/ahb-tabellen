@@ -2,11 +2,11 @@ config:
   ahb-tabellen:appPath: app
   ahb-tabellen:appServicePlanSkuName: "B1"
   ahb-tabellen:appServicePlanSkuTier: "Basic"
-  ahb-tabellen:bedingungsbaumBaseUrl: https://bedingungsbaum.hochfrequenz.de
+  ahb-tabellen:bedingungsbaumBaseUrl: https://bedingungsbaum.hochfrequenz.app
   ahb-tabellen:containerPort: "80"
   ahb-tabellen:db_7z_archive_password:
     secure: AAABAG9VAmOftI7npdJm+AxiHDF90IWlsDdCQxNGeJImf4j21yqJi+GDTxI71zYlQ38da4IAEuzc/fXW1p4=
-  ahb-tabellen:ebdBaseUrl: https://ebd.hochfrequenz.de
+  ahb-tabellen:ebdBaseUrl: https://ebd.hochfrequenz.app
   ahb-tabellen:environment: production
   ahb-tabellen:ghcr_token:
     secure: AAABAPxqz5l9dn9CRjuSdmBw1dz+WQpoqfXJ1pRz5SzsxAuKHMB8mOo+Ir3nCllS0u8VjraFpDnDqGq1SA5a6RbNeOl49eJ+
