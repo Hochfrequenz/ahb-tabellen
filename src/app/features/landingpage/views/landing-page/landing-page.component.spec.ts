@@ -3,6 +3,7 @@ import { MockBuilder, MockRender, ngMocks } from 'ng-mocks';
 import { Meta } from '@angular/platform-browser';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { AuthFacade } from '../../../../core/auth/auth.facade';
+import { ENTRA_IS_CONFIGURED } from '../../../../core/auth/msal.tokens';
 import { NEVER, Observable, Subject, of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
@@ -102,6 +103,21 @@ describe('LandingPageComponent', () => {
       expect(labels).toHaveLength(2);
       expect(labels[0]).toContain('Jetzt öffnen');
       expect(labels[1]).toContain('Mit Microsoft anmelden');
+    });
+
+    it('offers only Auth0 where no Entra app registration exists', async () => {
+      // environment.prod.ts ships placeholder Entra credentials, because the registrations are
+      // provisioned only for stacks with `entraEnabled`. A rendered button there sends the user
+      // to Microsoft for an error they can do nothing about.
+      await setup(false).provide({ provide: ENTRA_IS_CONFIGURED, useValue: false });
+      const fixture = MockRender(LandingPageComponent);
+      const labels = buttonsOf(fixture).map(button => button.textContent?.trim());
+      expect(labels).toHaveLength(1);
+      expect(labels[0]).toContain('Jetzt öffnen');
+      const html = fixture.nativeElement.innerHTML;
+      expect(html).not.toContain('Mit Microsoft anmelden');
+      // The audience hint belongs to the button; on its own it is dangling text.
+      expect(html).not.toContain('Für Hochfrequenz-Mitarbeitende');
     });
 
     it('names the audience of the Microsoft path rather than the vendor of the other', async () => {

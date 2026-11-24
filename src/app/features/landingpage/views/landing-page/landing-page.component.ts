@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map, startWith } from 'rxjs/operators';
 import { AuthFacade, AuthProviderId } from '../../../../core/auth/auth.facade';
+import { ENTRA_IS_CONFIGURED } from '../../../../core/auth/msal.tokens';
 import { safeInternalTarget } from '../../../../core/auth/safe-target';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { environment } from '../../../../environments/environment';
@@ -24,6 +25,9 @@ export class LandingPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private meta = inject(Meta);
   private readonly title = inject(Title);
+
+  /** Hides the Microsoft CTA where no Entra app registration exists — see msal.tokens.ts. */
+  readonly entraIsConfigured = inject(ENTRA_IS_CONFIGURED);
 
   /**
    * `isAuthenticated$` emits nothing while Auth0's session check is in flight, so 'pending' is an

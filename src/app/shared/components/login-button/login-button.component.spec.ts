@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { LoginButtonComponent } from './login-button.component';
 import { AuthFacade } from '../../../core/auth/auth.facade';
+import { ENTRA_IS_CONFIGURED } from '../../../core/auth/msal.tokens';
 
 type MockFacade = {
   isAuthenticated$: Observable<boolean>;
@@ -16,7 +17,11 @@ describe('LoginButtonComponent', () => {
   let fixture: ComponentFixture<LoginButtonComponent>;
   let facade: MockFacade;
 
-  async function setup(isAuthenticated: boolean, url = '/ahb/UTILMD'): Promise<void> {
+  async function setup(
+    isAuthenticated: boolean,
+    url = '/ahb/UTILMD',
+    entraIsConfigured = true
+  ): Promise<void> {
     facade = {
       isAuthenticated$: of(isAuthenticated),
       isLoading$: of(false),
@@ -28,6 +33,7 @@ describe('LoginButtonComponent', () => {
       providers: [
         { provide: AuthFacade, useValue: facade },
         { provide: Router, useValue: { url } },
+        { provide: ENTRA_IS_CONFIGURED, useValue: entraIsConfigured },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(LoginButtonComponent);
@@ -107,5 +113,26 @@ describe('LoginButtonComponent', () => {
     await setup(true);
     const buttons = fixture.nativeElement.querySelectorAll('button');
     expect(buttons.length).toBe(1);
+  });
+
+  it('offers only Auth0 where no Entra app registration exists', async () => {
+    // environment.prod.ts ships placeholder Entra credentials, because the registrations are
+    // provisioned only for stacks with `entraEnabled`. Offering the button there sends the user
+    // to Microsoft for an error they can do nothing about, so it must not render at all.
+    await setup(false, '/search', false);
+    const host = fixture.nativeElement as HTMLElement;
+    const buttons = Array.from(host.querySelectorAll<HTMLButtonElement>('button'));
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0].textContent?.trim()).toBe('Anmelden');
+    expect(host.innerHTML).not.toContain('Mit Microsoft anmelden');
+  });
+
+  it('leaves no orphaned hint behind when the Microsoft button is hidden', async () => {
+    // The hint is only reachable through the button's aria-describedby; left on its own it is
+    // dangling text that screen readers can still stumble into.
+    await setup(false, '/search', false);
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector(`#${component.microsoftHintId}`)).toBeNull();
+    expect(host.textContent).not.toContain('Für Hochfrequenz-Mitarbeitende');
   });
 });

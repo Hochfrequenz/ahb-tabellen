@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { combineLatest, map, Observable } from 'rxjs';
 import { AuthFacade, AuthProviderId } from '../../../core/auth/auth.facade';
+import { ENTRA_IS_CONFIGURED } from '../../../core/auth/msal.tokens';
 
 /** Per-instance counter: the header renders this component twice, so the hint id must differ. */
 let nextHintId = 0;
@@ -20,6 +21,9 @@ export class LoginButtonComponent {
 
   /** Unique per instance — a duplicated id makes aria-describedby resolve to the wrong element. */
   readonly microsoftHintId = `ms-login-hint-${nextHintId++}`;
+
+  /** Hides the Microsoft button where no Entra app registration exists — see msal.tokens.ts. */
+  readonly entraIsConfigured = inject(ENTRA_IS_CONFIGURED);
 
   authState$: Observable<{ isAuthenticated: boolean; isLoading: boolean }> = combineLatest([
     this.facade.isAuthenticated$,
