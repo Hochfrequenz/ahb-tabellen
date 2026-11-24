@@ -52,19 +52,26 @@
               <span>Jetzt öffnen</span>
             </button>
 
-            <div class="flex flex-col items-center gap-1">
-              <button
-                (click)="signIn('microsoft')"
-                aria-describedby="ms-login-hint"
-                class="flex flex-row items-center gap-2 rounded-full border border-hf-weiches-schwarz/20 text-hf-weiches-schwarz text-sm md:text-base px-4 py-2 transition hover:border-hf-weiches-schwarz/40 hover:bg-hf-weiches-schwarz/5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2 focus-visible:ring-offset-hf-pastell-rose">
-                <img src="assets/icons/microsoft.svg" alt="" class="w-4 h-4" />
-                <span>Mit Microsoft anmelden</span>
-              </button>
-              <!-- Outside the button on purpose: keeps the accessible name to the action alone. -->
-              <span id="ms-login-hint" class="text-xs text-hf-weiches-schwarz/60">
-                Für Hochfrequenz-Mitarbeitende
-              </span>
-            </div>
+            <!--
+              Only where an Entra app registration exists. Production ships placeholder
+              credentials, so an ungated CTA would offer a sign-in that fails at Microsoft —
+              see msal.tokens.ts.
+            -->
+            @if (entraIsConfigured) {
+              <div class="flex flex-col items-center gap-1">
+                <button
+                  (click)="signIn('microsoft')"
+                  aria-describedby="ms-login-hint"
+                  class="flex flex-row items-center gap-2 rounded-full border border-hf-weiches-schwarz/20 text-hf-weiches-schwarz text-sm md:text-base px-4 py-2 transition hover:border-hf-weiches-schwarz/40 hover:bg-hf-weiches-schwarz/5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-hf-weiches-schwarz focus-visible:ring-offset-2 focus-visible:ring-offset-hf-pastell-rose">
+                  <img src="assets/icons/microsoft.svg" alt="" class="w-4 h-4" />
+                  <span>Mit Microsoft anmelden</span>
+                </button>
+                <!-- Outside the button on purpose: keeps the accessible name to the action alone. -->
+                <span id="ms-login-hint" class="text-xs text-hf-weiches-schwarz/60">
+                  Für Hochfrequenz-Mitarbeitende
+                </span>
+              </div>
+            }
           }
           @default {
             <!--
