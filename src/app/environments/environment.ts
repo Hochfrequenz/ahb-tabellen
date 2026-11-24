@@ -18,6 +18,9 @@ const defaults: EnvironmentInterface = {
   bedingungsbaumBaseUrl: 'https://bedingungsbaum-stage.hochfrequenz.app',
   ebdBaseUrl: 'https://ebd-stage.hochfrequenz.app',
   fristenkalenderBaseUrl: 'https://fristenkalender-stage.hochfrequenz.app',
+  // planned host (ADR-0007 in Hochfrequenz/hf-apps-collection), not live yet
+  // (see Hochfrequenz/mako_prozesse#65) - same URL as in every other environment
+  makoProzesseBaseUrl: 'https://mako-prozesse.hochfrequenz.app',
   auth0Domain: 'auth.hochfrequenz.de',
   auth0ClientId: 'Hku0EniRjy4B2krnx1sCwTIOzAiVta1B',
   entraClientId: 'e8418ff3-641e-4ef6-b407-30e36b867b9c',

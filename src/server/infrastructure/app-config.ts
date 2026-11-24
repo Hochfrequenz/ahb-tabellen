@@ -22,6 +22,7 @@ export const ENV_VARS = {
   bedingungsbaumBaseUrl: 'APP_BEDINGUNGSBAUM_BASE_URL',
   ebdBaseUrl: 'APP_EBD_BASE_URL',
   fristenkalenderBaseUrl: 'APP_FRISTENKALENDER_BASE_URL',
+  makoProzesseBaseUrl: 'APP_MAKO_PROZESSE_BASE_URL',
   auth0Domain: 'APP_AUTH0_DOMAIN',
   auth0ClientId: 'APP_AUTH0_CLIENT_ID',
   entraClientId: 'APP_ENTRA_CLIENT_ID',
@@ -89,6 +90,7 @@ export function buildRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtim
   setIfPresent(config, 'bedingungsbaumBaseUrl', readString(env, ENV_VARS.bedingungsbaumBaseUrl));
   setIfPresent(config, 'ebdBaseUrl', readString(env, ENV_VARS.ebdBaseUrl));
   setIfPresent(config, 'fristenkalenderBaseUrl', readString(env, ENV_VARS.fristenkalenderBaseUrl));
+  setIfPresent(config, 'makoProzesseBaseUrl', readString(env, ENV_VARS.makoProzesseBaseUrl));
   setIfPresent(config, 'auth0Domain', readString(env, ENV_VARS.auth0Domain));
   setIfPresent(config, 'auth0ClientId', readString(env, ENV_VARS.auth0ClientId));
   setIfPresent(config, 'entraClientId', readString(env, ENV_VARS.entraClientId));

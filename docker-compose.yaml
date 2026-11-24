@@ -40,5 +40,6 @@ services:
       APP_BEDINGUNGSBAUM_BASE_URL: https://bedingungsbaum-stage.hochfrequenz.app
       APP_EBD_BASE_URL: https://ebd-stage.hochfrequenz.app
       APP_FRISTENKALENDER_BASE_URL: https://fristenkalender-stage.hochfrequenz.app
+      APP_MAKO_PROZESSE_BASE_URL: https://mako-prozesse.hochfrequenz.app
       APP_ALLOW_SEARCH_INDEXING: 'false'
       APP_ENABLE_PRUEFI_COMPARISON: 'true'

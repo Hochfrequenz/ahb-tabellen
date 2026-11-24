@@ -34,6 +34,13 @@ if (!ebdBaseUrl) {
     throw new Error("ebdBaseUrl must be set");
 }
 
+// MaKo-Prozesse is planned under a .app host (ADR-0007 in Hochfrequenz/hf-apps-collection) that
+// is not live yet (see Hochfrequenz/mako_prozesse#65), so every stack - stage included - uses it.
+const makoProzesseBaseUrl = config.get("makoProzesseBaseUrl");
+if (!makoProzesseBaseUrl) {
+    throw new Error("makoProzesseBaseUrl must be set");
+}
+
 const environment = config.get("environment");
 if (!environment) {
     throw new Error("environment must be set");
@@ -101,6 +108,7 @@ const appSettings = [
     { name: "PORT", value: String(containerPort) },
     { name: "BEDINGUNGSBAUM_BASE_URL", value: bedingungsbaumBaseUrl },
     { name: "EBD_BASE_URL", value: ebdBaseUrl },
+    { name: "MAKO_PROZESSE_BASE_URL", value: makoProzesseBaseUrl },
     { name: "ENVIRONMENT", value: environment },
     { name: "WEBSITES_CONTAINER_START_TIME_LIMIT", value: websitesContainerStartTimeLimit },
     { name: "OH_DEAR_HEALTH_CHECK_SECRET", value: ohDearHealthCheckSecret },

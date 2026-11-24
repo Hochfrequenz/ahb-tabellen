@@ -4,6 +4,12 @@ export interface EnvironmentInterface {
   bedingungsbaumBaseUrl: string;
   ebdBaseUrl: string;
   fristenkalenderBaseUrl: string;
+  /**
+   * MaKo-Prozesse is planned under https://mako-prozesse.hochfrequenz.app (ADR-0007 in
+   * Hochfrequenz/hf-apps-collection) but not live yet, in any environment (see
+   * https://github.com/Hochfrequenz/mako_prozesse/issues/65). Re-check once it is.
+   */
+  makoProzesseBaseUrl: string;
   auth0Domain: string;
   auth0ClientId: string;
   // Microsoft Entra ID (second, independent login provider — see #951). The SPA login is

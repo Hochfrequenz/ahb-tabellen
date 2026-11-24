@@ -31,6 +31,9 @@ const defaults: EnvironmentInterface = {
   bedingungsbaumBaseUrl: 'https://bedingungsbaum.hochfrequenz.app',
   ebdBaseUrl: 'https://ebd.hochfrequenz.app',
   fristenkalenderBaseUrl: 'https://fristenkalender.hochfrequenz.app',
+  // planned host (ADR-0007 in Hochfrequenz/hf-apps-collection), not live yet
+  // (see Hochfrequenz/mako_prozesse#65): the pill will not resolve until it is
+  makoProzesseBaseUrl: 'https://mako-prozesse.hochfrequenz.app',
   auth0Domain: 'auth.hochfrequenz.de',
   auth0ClientId: 'VSkXGqlTD7Rf5Q4n9a0h00rInEyL2ZQj',
   entraClientId: '00000000-0000-0000-0000-000000000000', // provisioned by infra (#951)

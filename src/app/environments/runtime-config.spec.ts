@@ -7,6 +7,7 @@ const defaults: EnvironmentInterface = {
   bedingungsbaumBaseUrl: 'https://bedingungsbaum.compiled.example',
   ebdBaseUrl: 'https://ebd.compiled.example',
   fristenkalenderBaseUrl: 'https://fristenkalender.compiled.example',
+  makoProzesseBaseUrl: 'https://mako-prozesse.compiled.example',
   auth0Domain: 'auth.compiled.example',
   auth0ClientId: 'compiled-client-id',
   entraClientId: 'compiled-entra-client-id',
