@@ -46,7 +46,7 @@
     "@angular/platform-browser": "^22.3.0",
     "@angular/platform-browser-dynamic": "^22.3.0",
     "@angular/router": "^22.3.0",
-    "@auth0/auth0-angular": "^2.15.0",
+    "@auth0/auth0-angular": "^2.16.0",
     "@azure/msal-browser": "^5.30.0",
     "@hochfrequenz/efoli": "^2.0.1",
     "@mdi/font": "^7.4.47",
