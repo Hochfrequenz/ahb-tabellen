@@ -1,5 +1,23 @@
 import { MigNode } from '../../core/api';
 
+/** Meaning of the status codes in BDEW MIGs. */
+export const STATUS_LABELS: Record<string, string> = {
+  M: 'Muss',
+  R: 'Erforderlich',
+  D: 'Abhängig',
+  O: 'Optional',
+  N: 'Nicht benutzt',
+  C: 'Konditional',
+};
+
+export const TYPE_NAMES: Record<MigNode['type'], string> = {
+  segment_group: 'Segmentgruppe',
+  segment: 'Segment',
+  dataelementgroup: 'Datenelementgruppe',
+  dataelement: 'Datenelement',
+  code: 'Code',
+};
+
 /** Every node that has children, depth first (for "expand all"). */
 export function expandableNodes(nodes: MigNode[]): MigNode[] {
   const result: MigNode[] = [];

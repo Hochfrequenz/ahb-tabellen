@@ -10,12 +10,13 @@ import {
   inject,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { Ahb } from '../../../../core/api';
+import { Ahb, AhbMigLink, AhbMigLinks } from '../../../../core/api';
 import { HighlightPipe, HighlightResult } from '../../../../shared/pipes/highlight.pipe';
 import { environment } from '../../../../environments/environment';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
 import { DomSanitizer } from '@angular/platform-browser';
 import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.utils';
+import { MigElementDetailsComponent } from '../../../mig/components/mig-element-details/mig-element-details.component';
 
 interface ExpandedState {
   [key: number]: boolean;
@@ -24,7 +25,7 @@ interface ExpandedState {
 @Component({
   selector: 'app-ahb-table',
   standalone: true,
-  imports: [HighlightPipe, IconLinkComponent],
+  imports: [HighlightPipe, IconLinkComponent, MigElementDetailsComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './ahb-table.component.html',
 })
@@ -37,6 +38,8 @@ export class AhbTableComponent {
   highlight = input<string | undefined>();
   formatVersion = input.required<string>();
   pruefi = input.required<string>();
+  /** MIG element of each line; null hides the MIG column (feature off or no MIG data). */
+  migLinks = input<AhbMigLinks | null>(null);
 
   scrollToElement = output<{ element: HTMLElement; offsetY: number }>();
 
@@ -44,6 +47,12 @@ export class AhbTableComponent {
   markIndex = signal(0);
   expandedRows = signal<ExpandedState>({});
   private lastHighlightText = signal<string | undefined>(undefined);
+
+  readonly migByGuid = computed(
+    () => new Map<string, AhbMigLink>((this.migLinks()?.links ?? []).map(l => [l.guid, l]))
+  );
+  /** Lines whose MIG details are open, by guid. */
+  readonly openMig = signal<ReadonlySet<string>>(new Set());
 
   // max. string length of 'Bedingung/Hinweis' entries
   readonly COLLAPSE_LENGTH = 80;
@@ -260,6 +269,14 @@ export class AhbTableComponent {
       .split(/(?=\[\d+\])/)
       .map(s => s.trim())
       .filter(s => s);
+  }
+
+  toggleMig(guid: string): void {
+    const open = new Set(this.openMig());
+    if (!open.delete(guid)) {
+      open.add(guid);
+    }
+    this.openMig.set(open);
   }
 
   toggleExpand(index: number) {

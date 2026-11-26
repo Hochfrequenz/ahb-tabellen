@@ -1,0 +1,58 @@
+@let e = element();
+<div class="flex flex-col gap-3 rounded-xl bg-hf-weiss-rose p-4 text-sm">
+  <div class="flex flex-wrap items-baseline justify-between gap-2">
+    <div class="flex flex-wrap items-baseline gap-2">
+      <span class="text-xs uppercase text-hf-text-color opacity-70">
+        MIG {{ mig().format }} {{ mig().versionsnummer }} · {{ typeNames[e.type] }}
+      </span>
+      <span class="font-mono font-semibold text-hf-weiches-schwarz">{{ e.key }}</span>
+      <span class="text-hf-weiches-schwarz">{{ e.name }}</span>
+    </div>
+    <a
+      [routerLink]="migRoute()"
+      [queryParams]="migQuery()"
+      class="rounded-full bg-hf-dunkel-blau px-3 py-1 text-xs font-semibold text-white hover:opacity-90">
+      In MIG-Struktur öffnen
+    </a>
+  </div>
+
+  <dl class="flex flex-wrap gap-x-6 gap-y-2">
+    <div>
+      <dt class="text-xs text-hf-text-color opacity-70">Status (BDEW)</dt>
+      <dd class="font-semibold text-hf-weiches-schwarz">
+        {{ e.statusSpecification }} · {{ statusLabels[e.statusSpecification] ?? '' }}
+      </dd>
+    </div>
+    @if (e.maxRepSpecification !== undefined) {
+      <div>
+        <dt class="text-xs text-hf-text-color opacity-70">Max. Wiederholungen</dt>
+        <dd class="font-semibold text-hf-weiches-schwarz">{{ e.maxRepSpecification }}</dd>
+      </div>
+    }
+    @if (e.formatSpecification) {
+      <div>
+        <dt class="text-xs text-hf-text-color opacity-70">Format</dt>
+        <dd class="font-mono font-semibold text-hf-weiches-schwarz">{{ e.formatSpecification }}</dd>
+      </div>
+    }
+    @if (e.number) {
+      <div>
+        <dt class="text-xs text-hf-text-color opacity-70">Segmentnummer</dt>
+        <dd class="font-mono font-semibold text-hf-weiches-schwarz">{{ e.number }}</dd>
+      </div>
+    }
+  </dl>
+
+  @if (e.description) {
+    <p class="whitespace-pre-line text-hf-weiches-schwarz">{{ e.description }}</p>
+  }
+  @if (e.example) {
+    <code class="font-mono text-xs text-hf-weiches-schwarz">{{ e.example }}</code>
+  }
+  @if (!link().exact) {
+    <p class="text-xs text-hf-text-color opacity-70">
+      Die MIG führt diese Qualifier-Variante nicht eigens; angezeigt ist eine gleich aufgebaute
+      Variante.
+    </p>
+  }
+</div>

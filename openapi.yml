@@ -324,6 +324,41 @@ paths:
           description: Invalid format version or format, or a version is needed
         '404':
           description: No such MIG (or the database contains no MIG data)
+  /api/ahb-mig/{format-version}/{pruefi}:
+    get:
+      tags:
+        - mig
+      summary: The MIG element of each line of a Prüfidentifikator's AHB
+      description: >-
+        Matches the AHB lines to the MIG by their paths. Where a format has several MIGs (UTILMD),
+        the one that matches the most lines is used. Lines without a MIG counterpart are left out.
+      operationId: getAhbMigLinks
+      parameters:
+        - name: format-version
+          in: path
+          description: FVxxxx code, 'current', or an ISO date YYYY-MM-DD
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+        - name: pruefi
+          in: path
+          description: Prüfidentifikator
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{5}$'
+            example: '55001'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AhbMigLinks'
+        '400':
+          description: Invalid format version or Prüfidentifikator
+        '404':
+          description: No such AHB, or no MIG for its format (or the database contains no MIG data)
   /api/pruefidentifikatoren/{format-version}:
     get:
       tags:
@@ -959,6 +994,69 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MigNode'
+    MigElement:
+      type: object
+      description: A MIG node without its subtree
+      required: [type, key, name, statusStd, statusSpecification]
+      properties:
+        type:
+          type: string
+          enum: [segment_group, segment, dataelementgroup, dataelement, code]
+        key:
+          type: string
+        name:
+          type: string
+        statusStd:
+          type: string
+        statusSpecification:
+          type: string
+        maxRepStd:
+          type: integer
+        maxRepSpecification:
+          type: integer
+        number:
+          type: string
+        formatStd:
+          type: string
+        formatSpecification:
+          type: string
+        description:
+          type: string
+        example:
+          type: string
+    AhbMigLink:
+      type: object
+      required: [guid, node, exact, element]
+      properties:
+        guid:
+          type: string
+          description: guid of the AHB line
+        node:
+          type: string
+          description: Index path of the element in the MIG tree (the MIG view's node deep link)
+          example: '6-0-1'
+        exact:
+          type: boolean
+          description: False when AHB and MIG disagree on a qualifier on the way (another variant stands in)
+        element:
+          $ref: '#/components/schemas/MigElement'
+    AhbMigLinks:
+      type: object
+      required: [mig, links]
+      properties:
+        mig:
+          allOf:
+            - $ref: '#/components/schemas/MigSummary'
+            - type: object
+              required: [formatVersion]
+              properties:
+                formatVersion:
+                  type: string
+                  example: 'FV2610'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/AhbMigLink'
     Datenstand:
       type: object
       description: Latest publication date of the AHB data

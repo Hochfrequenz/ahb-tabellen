@@ -27,4 +27,14 @@ export default class MigController {
       next(error);
     }
   }
+
+  public async ahbLinks(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const formatVersion = req.params['formatVersion'] as string;
+      const pruefi = req.params['pruefi'] as string;
+      res.status(200).json(await this.service.getAhbMigLinks(formatVersion, pruefi));
+    } catch (error) {
+      next(error);
+    }
+  }
 }

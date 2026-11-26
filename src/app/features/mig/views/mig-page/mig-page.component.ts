@@ -22,25 +22,14 @@ import {
   MigTreeNodeComponent,
   TYPE_LABELS,
 } from '../../components/mig-tree-node/mig-tree-node.component';
-import { expandableNodes, indexMigTree, nodeAtPath, sampleMessage } from '../../mig-tree';
-
-/** Meaning of the status codes in BDEW MIGs. */
-export const STATUS_LABELS: Record<string, string> = {
-  M: 'Muss',
-  R: 'Erforderlich',
-  D: 'Abhängig',
-  O: 'Optional',
-  N: 'Nicht benutzt',
-  C: 'Konditional',
-};
-
-const TYPE_NAMES: Record<MigNode['type'], string> = {
-  segment_group: 'Segmentgruppe',
-  segment: 'Segment',
-  dataelementgroup: 'Datenelementgruppe',
-  dataelement: 'Datenelement',
-  code: 'Code',
-};
+import {
+  STATUS_LABELS,
+  TYPE_NAMES,
+  expandableNodes,
+  indexMigTree,
+  nodeAtPath,
+  sampleMessage,
+} from '../../mig-tree';
 
 @Component({
   selector: 'app-mig-page',

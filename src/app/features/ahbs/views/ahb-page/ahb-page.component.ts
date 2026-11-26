@@ -16,7 +16,7 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
 import { SolutionsFooterComponent } from '../../../../shared/components/solutions-footer/solutions-footer.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AhbTableComponent } from '../../components/ahb-table/ahb-table.component';
-import { Ahb, AhbService } from '../../../../core/api';
+import { Ahb, AhbMigLinks, AhbService, MigService } from '../../../../core/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Observable, Subject, of } from 'rxjs';
@@ -60,6 +60,7 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly title = inject(Title);
+  private readonly migService = inject(MigService);
 
   // State management
   formatVersion = signal<string>('');
@@ -81,6 +82,8 @@ export class AhbPageComponent implements OnInit, OnDestroy {
   ahb$?: Observable<Ahb>;
   lines$?: Observable<Ahb['lines']>;
   errorOccurred = false;
+  /** MIG element of each line (null while loading, with the MIG view off, or without MIG data). */
+  migLinks = signal<AhbMigLinks | null>(null);
 
   private destroy$ = new Subject<void>();
 
@@ -161,6 +164,25 @@ export class AhbPageComponent implements OnInit, OnDestroy {
       );
 
     this.lines$ = this.ahb$.pipe(map(ahb => ahb.lines));
+    this.loadMigLinks(formatVersion, pruefi);
+  }
+
+  /** Optional extra: without MIG data the table simply has no MIG column. */
+  private loadMigLinks(formatVersion: string, pruefi: string): void {
+    this.migLinks.set(null);
+    if (!environment.enableMigView) return;
+    this.migService
+      .getAhbMigLinks({ 'format-version': formatVersion, pruefi })
+      .pipe(
+        catchError(() => of(null)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(links => {
+        // Ignore a late answer for a Prüfi the user has already left.
+        if (this.pruefi() === pruefi && this.formatVersion() === formatVersion) {
+          this.migLinks.set(links);
+        }
+      });
   }
 
   onFormatVersionChange(newFormatVersion: string) {

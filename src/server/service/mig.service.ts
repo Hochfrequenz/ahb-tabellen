@@ -1,7 +1,8 @@
 import { EdifactFormat } from '@hochfrequenz/efoli';
 import MigRepository, { MigHierarchyRow, MigInfo } from '../repository/mig';
 import { NotFoundError, ValidationError } from '../infrastructure/errors';
-import { resolveFormatVersion } from './validation';
+import { assertPruefi, resolveFormatVersion } from './validation';
+import { matchAhbLines, MatchNode, parseIdPath } from './ahbMigMatch';
 
 const KNOWN_FORMATS = new Set<string>(Object.values(EdifactFormat));
 
@@ -39,6 +40,25 @@ export interface MigSummary {
 export interface MigTree {
   meta: MigSummary & { formatVersion: string };
   nodes: MigNode[];
+}
+
+/** A MIG node without its subtree. */
+export type MigElement = Omit<MigNode, 'children'>;
+
+/** The MIG element of one AHB line. */
+export interface AhbMigLink {
+  /** The AHB line's `guid`. */
+  guid: string;
+  /** Index path of the element in the MIG tree (the MIG view's `node` deep link). */
+  node: string;
+  /** False when AHB and MIG disagree on a qualifier on the way (another variant stands in). */
+  exact: boolean;
+  element: MigElement;
+}
+
+export interface AhbMigLinks {
+  mig: MigTree['meta'];
+  links: AhbMigLink[];
 }
 
 function toSummary(mig: MigInfo): MigSummary {
@@ -101,7 +121,10 @@ function nodeOf(row: MigHierarchyRow): MigNode {
  * row one level up. Relies on `depth`, not on ids, so a node reused in several places of the
  * MIG still lands in each of them.
  */
-export function buildMigTree(rows: MigHierarchyRow[]): MigNode[] {
+export function buildMigTree(
+  rows: MigHierarchyRow[],
+  idPaths?: Map<MigNode, string | null>
+): MigNode[] {
   const roots: MigNode[] = [];
   const stack: MigNode[] = []; // stack[d] = last node seen at depth d
   for (const row of rows) {
@@ -111,11 +134,30 @@ export function buildMigTree(rows: MigHierarchyRow[]): MigNode[] {
       );
     }
     const node = nodeOf(row);
+    idPaths?.set(node, row.id_path);
     stack.length = row.depth;
     (row.depth === 0 ? roots : stack[row.depth - 1].children).push(node);
     stack.push(node);
   }
   return roots;
+}
+
+function toMatchTree(nodes: MigNode[], idPaths: Map<MigNode, string | null>): MatchNode<MigNode>[] {
+  return nodes.map(node => {
+    const steps = parseIdPath(idPaths.get(node));
+    return {
+      // A node without id_path (a few empty code rows) gets a step nothing matches.
+      step: steps[steps.length - 1] ?? { key: '', qualifier: undefined, repetition: undefined },
+      value: node,
+      children: toMatchTree(node.children, idPaths),
+    };
+  });
+}
+
+function elementOf(node: MigNode): MigElement {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { children, ...element } = node;
+  return element;
 }
 
 export default class MigService {
@@ -175,5 +217,42 @@ export default class MigService {
       meta: { formatVersion: resolved, ...toSummary(mig) },
       nodes: buildMigTree(rows),
     };
+  }
+
+  /**
+   * The MIG element of each line of a Prüfidentifikator's AHB. Where a format has several MIGs
+   * (UTILMD: Strom and Gas), the one that matches the most lines is used.
+   */
+  public async getAhbMigLinks(formatVersion: string, pruefi: string): Promise<AhbMigLinks> {
+    const resolved = resolveFormatVersion(formatVersion);
+    assertPruefi(pruefi);
+    const lines = await this.repository.getAhbLinePaths(resolved, pruefi);
+    if (lines.length === 0) {
+      throw new NotFoundError(`No AHB for ${pruefi} in ${resolved}.`);
+    }
+    const migs = await this.repository.findMigs(resolved, lines[0].format);
+    if (migs.length === 0) {
+      throw new NotFoundError(
+        `No MIG for ${lines[0].format} in ${resolved}. The database may not contain MIG data.`
+      );
+    }
+    const linePaths = lines.map(l => ({ id: l.id, idPath: l.id_path }));
+
+    const candidates: AhbMigLinks[] = [];
+    for (const mig of migs) {
+      const idPaths = new Map<MigNode, string | null>();
+      const nodes = buildMigTree(await this.repository.getHierarchy(mig.primary_key), idPaths);
+      const links = matchAhbLines(toMatchTree(nodes, idPaths), linePaths)
+        .filter(m => m !== null)
+        .map(m => ({
+          guid: m.id,
+          node: m.indexPath,
+          exact: m.exact,
+          element: elementOf(m.value),
+        }));
+      candidates.push({ mig: { formatVersion: resolved, ...toSummary(mig) }, links });
+    }
+    // The first one wins a tie.
+    return candidates.reduce((best, c) => (c.links.length > best.links.length ? c : best));
   }
 }

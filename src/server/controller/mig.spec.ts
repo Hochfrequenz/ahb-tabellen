@@ -10,7 +10,11 @@ describe('MigController', () => {
   let next: jest.Mock;
 
   beforeEach(() => {
-    service = { listMigs: jest.fn(), getMigTree: jest.fn() } as unknown as jest.Mocked<MigService>;
+    service = {
+      listMigs: jest.fn(),
+      getMigTree: jest.fn(),
+      getAhbMigLinks: jest.fn(),
+    } as unknown as jest.Mocked<MigService>;
     controller = new MigController(service);
     res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
     next = jest.fn();
@@ -51,5 +55,17 @@ describe('MigController', () => {
       next as NextFunction
     );
     expect(next).toHaveBeenCalledWith(error);
+  });
+
+  it('passes format version and Prüfi to the AHB link lookup', async () => {
+    const links = { mig: {}, links: [] } as never;
+    service.getAhbMigLinks.mockResolvedValue(links);
+    await controller.ahbLinks(
+      { params: { formatVersion: 'FV2610', pruefi: '55001' } } as unknown as Request,
+      res as unknown as Response,
+      next as NextFunction
+    );
+    expect(service.getAhbMigLinks).toHaveBeenCalledWith('FV2610', '55001');
+    expect(res.json).toHaveBeenCalledWith(links);
   });
 });

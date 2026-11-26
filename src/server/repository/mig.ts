@@ -25,6 +25,8 @@ export interface MigHierarchyRow {
   type: string;
   depth: number;
   sort_path: string;
+  /** e.g. `SG4+24>DTM+137>`; null for a few empty code rows. */
+  id_path: string | null;
   line_name: string | null;
   line_status_std: string | null;
   line_status_specification: string | null;
@@ -45,6 +47,12 @@ export interface MigHierarchyRow {
   dataelement_format_specification: string | null;
   code_value: string | null;
   code_description: string | null;
+}
+
+export interface AhbLinePathRow {
+  id: string;
+  id_path: string | null;
+  format: string;
 }
 
 async function ensureInitialized(): Promise<void> {
@@ -82,7 +90,7 @@ export default class MigRepository {
   public async getHierarchy(migPrimaryKey: string): Promise<MigHierarchyRow[]> {
     await ensureInitialized();
     return AppDataSource.query(
-      `SELECT type, depth, sort_path, line_name, line_status_std, line_status_specification,
+      `SELECT type, depth, sort_path, id_path, line_name, line_status_std, line_status_specification,
               segmentgroup_id, segmentgroup_max_rep_std, segmentgroup_max_rep_specification,
               segment_id, segment_number, segment_max_rep_std, segment_max_rep_specification,
               segment_description, segment_example,
@@ -94,6 +102,18 @@ export default class MigRepository {
         WHERE mig_pk = ?
         ORDER BY sort_path`,
       [migPrimaryKey]
+    );
+  }
+
+  /** The id_paths of a Prüfidentifikator's AHB lines, in table order. */
+  public async getAhbLinePaths(formatVersion: string, pruefi: string): Promise<AhbLinePathRow[]> {
+    await ensureInitialized();
+    return AppDataSource.query(
+      `SELECT id, id_path, format
+         FROM v_ahbtabellen
+        WHERE format_version = ? AND pruefidentifikator = ?
+        ORDER BY sort_path`,
+      [formatVersion, pruefi]
     );
   }
 }

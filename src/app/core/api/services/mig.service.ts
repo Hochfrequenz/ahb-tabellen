@@ -11,6 +11,9 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
+import { AhbMigLinks } from '../models/ahb-mig-links';
+import { getAhbMigLinks } from '../fn/mig/get-ahb-mig-links';
+import { GetAhbMigLinks$Params } from '../fn/mig/get-ahb-mig-links';
 import { getMigs } from '../fn/mig/get-migs';
 import { GetMigs$Params } from '../fn/mig/get-migs';
 import { getMigTree } from '../fn/mig/get-mig-tree';
@@ -91,6 +94,39 @@ export class MigService extends BaseService {
   getMigTree(params: GetMigTree$Params, context?: HttpContext): Observable<MigTree> {
     return this.getMigTree$Response(params, context).pipe(
       map((r: StrictHttpResponse<MigTree>): MigTree => r.body)
+    );
+  }
+
+  /** Path part for operation `getAhbMigLinks()` */
+  static readonly GetAhbMigLinksPath = '/api/ahb-mig/{format-version}/{pruefi}';
+
+  /**
+   * The MIG element of each line of a Prüfidentifikator's AHB.
+   *
+   * Matches the AHB lines to the MIG by their paths. Where a format has several MIGs (UTILMD), the one that matches the most lines is used. Lines without a MIG counterpart are left out.
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getAhbMigLinks()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAhbMigLinks$Response(params: GetAhbMigLinks$Params, context?: HttpContext): Observable<StrictHttpResponse<AhbMigLinks>> {
+    return getAhbMigLinks(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * The MIG element of each line of a Prüfidentifikator's AHB.
+   *
+   * Matches the AHB lines to the MIG by their paths. Where a format has several MIGs (UTILMD), the one that matches the most lines is used. Lines without a MIG counterpart are left out.
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getAhbMigLinks$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAhbMigLinks(params: GetAhbMigLinks$Params, context?: HttpContext): Observable<AhbMigLinks> {
+    return this.getAhbMigLinks$Response(params, context).pipe(
+      map((r: StrictHttpResponse<AhbMigLinks>): AhbMigLinks => r.body)
     );
   }
 

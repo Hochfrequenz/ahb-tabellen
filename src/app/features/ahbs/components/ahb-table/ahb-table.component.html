@@ -42,6 +42,13 @@
           class="bg-hf-weiss-rose px-6 py-3 text-left text-xs text-hf-text-color uppercase">
           Bedingung / Hinweis / Format
         </th>
+        @if (migLinks()) {
+          <th
+            scope="col"
+            class="bg-hf-weiss-rose px-6 py-3 text-left text-xs text-hf-text-color uppercase">
+            MIG
+          </th>
+        }
       </tr>
     </thead>
     <tbody>
@@ -101,7 +108,30 @@
               }
             }
           </td>
+          @if (migLinks(); as mig) {
+            <td class="px-6 py-4">
+              @if (migByGuid().get(line.guid); as link) {
+                <button
+                  type="button"
+                  (click)="toggleMig(line.guid)"
+                  [attr.aria-expanded]="openMig().has(line.guid)"
+                  [title]="'MIG: ' + link.element.name"
+                  class="whitespace-nowrap rounded-full border border-hf-dunkel-blau px-2 py-0.5 font-mono text-xs text-hf-dunkel-blau hover:bg-hf-weiss-rose">
+                  {{ link.element.key }} {{ openMig().has(line.guid) ? '▴' : '▾' }}
+                </button>
+              }
+            </td>
+          }
         </tr>
+        @if (migLinks(); as mig) {
+          @if (openMig().has(line.guid) && migByGuid().get(line.guid); as link) {
+            <tr>
+              <td colspan="9" class="px-6 pb-4">
+                <app-mig-element-details [link]="link" [mig]="mig.mig" />
+              </td>
+            </tr>
+          }
+        }
       }
     </tbody>
   </table>

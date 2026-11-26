@@ -7,6 +7,7 @@ function row(over: Partial<MigHierarchyRow>): MigHierarchyRow {
     type: 'segment',
     depth: 0,
     sort_path: '00000-',
+    id_path: null,
     line_name: 'Name',
     line_status_std: 'M',
     line_status_specification: 'M',
@@ -141,6 +142,7 @@ describe('MigService', () => {
       listMigs: jest.fn(),
       findMigs: jest.fn(),
       getHierarchy: jest.fn(),
+      getAhbLinePaths: jest.fn(),
     } as unknown as jest.Mocked<MigRepository>;
     service = new MigService(repository);
   });
@@ -208,6 +210,67 @@ describe('MigService', () => {
     it('rejects an unknown format', async () => {
       await expect(service.getMigTree('FV2610', 'toString')).rejects.toThrow(ValidationError);
       expect(repository.findMigs).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getAhbMigLinks', () => {
+    // Strom MIG: SG4+24 > IDE; Gas MIG: SG4 > IDE and SG4 > DTM.
+    const strom = [
+      row({ type: 'segment_group', depth: 0, id_path: 'SG4+24>', segmentgroup_id: 'SG4' }),
+      row({ type: 'segment', depth: 1, id_path: 'SG4+24>IDE>', segment_id: 'IDE' }),
+    ];
+    const gas = [
+      row({ type: 'segment_group', depth: 0, id_path: 'SG4>', segmentgroup_id: 'SG4' }),
+      row({ type: 'segment', depth: 1, id_path: 'SG4>IDE>', segment_id: 'IDE' }),
+      row({
+        type: 'segment',
+        depth: 1,
+        id_path: 'SG4>DTM+92>',
+        segment_id: 'DTM',
+        segment_max_rep_specification: 1,
+      }),
+    ];
+
+    beforeEach(() => {
+      repository.findMigs.mockResolvedValue([
+        { ...UTILMD_G, primary_key: 'g' },
+        { ...UTILMD_S, primary_key: 's' },
+      ]);
+      repository.getHierarchy.mockImplementation(async pk => (pk === 'g' ? gas : strom));
+    });
+
+    it('links each AHB line to its element in the MIG that matches best', async () => {
+      repository.getAhbLinePaths.mockResolvedValue([
+        { id: 'l1', id_path: 'SG4>', format: 'UTILMD' },
+        { id: 'l2', id_path: 'SG4>DTM+92>', format: 'UTILMD' },
+        { id: 'l3', id_path: null, format: 'UTILMD' },
+      ]);
+      const result = await service.getAhbMigLinks('FV2610', '44001');
+      expect(repository.getAhbLinePaths).toHaveBeenCalledWith('FV2610', '44001');
+      expect(repository.findMigs).toHaveBeenCalledWith('FV2610', 'UTILMD');
+      expect(result.mig).toMatchObject({ formatVersion: 'FV2610', versionsnummer: 'G1.2' });
+      expect(result.links).toEqual([
+        expect.objectContaining({ guid: 'l1', node: '0', exact: true }),
+        {
+          guid: 'l2',
+          node: '0-1',
+          exact: true,
+          element: expect.objectContaining({ type: 'segment', key: 'DTM', maxRepSpecification: 1 }),
+        },
+      ]);
+      expect(result.links[1].element).not.toHaveProperty('children');
+    });
+
+    it('rejects an invalid Prüfidentifikator', async () => {
+      await expect(service.getAhbMigLinks('FV2610', '1')).rejects.toThrow(ValidationError);
+    });
+
+    it('reports an unknown Prüfidentifikator or a missing MIG as not found', async () => {
+      repository.getAhbLinePaths.mockResolvedValue([]);
+      await expect(service.getAhbMigLinks('FV2610', '44001')).rejects.toThrow(NotFoundError);
+      repository.getAhbLinePaths.mockResolvedValue([{ id: 'l', id_path: 'X>', format: 'UTILMD' }]);
+      repository.findMigs.mockResolvedValue([]);
+      await expect(service.getAhbMigLinks('FV2610', '44001')).rejects.toThrow(/No MIG/);
     });
   });
 });

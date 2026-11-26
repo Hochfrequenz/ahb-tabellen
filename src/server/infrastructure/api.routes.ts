@@ -49,6 +49,10 @@ router.get('/mig/:formatVersion/:format', (req, res, next) => {
   migController.get(req, res, next);
 });
 
+router.get('/ahb-mig/:formatVersion/:pruefi', (req, res, next) => {
+  migController.ahbLinks(req, res, next);
+});
+
 router.post('/search/query', (req, res, next) => {
   searchController.query(req, res, next);
 });
