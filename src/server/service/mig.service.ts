@@ -2,7 +2,10 @@ import { EdifactFormat } from '@hochfrequenz/efoli';
 import MigRepository, { MigHierarchyRow, MigInfo } from '../repository/mig';
 import { NotFoundError, ValidationError } from '../infrastructure/errors';
 import { assertPruefi, resolveFormatVersion } from './validation';
-import { matchAhbLines, MatchNode, parseIdPath } from './ahbMigMatch';
+import { matchAhbLines, MatchNode, MatchResult, parseIdPath } from './ahbMigMatch';
+
+/** Built MIG trees kept for AHB matching (UTILMD has two MIGs per format version). */
+const MATCH_TREE_CACHE_SIZE = 8;
 
 const KNOWN_FORMATS = new Set<string>(Object.values(EdifactFormat));
 
@@ -162,6 +165,7 @@ function elementOf(node: MigNode): MigElement {
 
 export default class MigService {
   private repository: MigRepository;
+  private readonly matchTrees = new Map<string, MatchNode<MigNode>[]>();
 
   constructor(repository?: MigRepository) {
     this.repository = repository ?? new MigRepository();
@@ -238,21 +242,54 @@ export default class MigService {
     }
     const linePaths = lines.map(l => ({ id: l.id, idPath: l.id_path }));
 
-    const candidates: AhbMigLinks[] = [];
+    let best: { result: MatchResult<MigNode>; mig: MigInfo } | undefined;
     for (const mig of migs) {
-      const idPaths = new Map<MigNode, string | null>();
-      const nodes = buildMigTree(await this.repository.getHierarchy(mig.primary_key), idPaths);
-      const links = matchAhbLines(toMatchTree(nodes, idPaths), linePaths)
+      const result = matchAhbLines(await this.matchTree(mig.primary_key), linePaths);
+      // More lines placed wins, then better qualifier agreement; the first MIG wins a tie.
+      if (
+        !best ||
+        result.matched > best.result.matched ||
+        (result.matched === best.result.matched && result.score > best.result.score)
+      ) {
+        best = { result, mig };
+      }
+    }
+    if (!best) {
+      throw new NotFoundError(`No MIG for ${lines[0].format} in ${resolved}.`);
+    }
+    return {
+      mig: { formatVersion: resolved, ...toSummary(best.mig) },
+      links: best.result.matches
         .filter(m => m !== null)
         .map(m => ({
           guid: m.id,
           node: m.indexPath,
           exact: m.exact,
           element: elementOf(m.value),
-        }));
-      candidates.push({ mig: { formatVersion: resolved, ...toSummary(mig) }, links });
+        })),
+    };
+  }
+
+  /**
+   * A MIG's tree prepared for matching. The database is read-only, so built trees are kept;
+   * a few, as one is several thousand nodes.
+   */
+  private async matchTree(migPrimaryKey: string): Promise<MatchNode<MigNode>[]> {
+    const cached = this.matchTrees.get(migPrimaryKey);
+    if (cached) {
+      // Re-insert: Map keeps insertion order, so the first key is the least recently used.
+      this.matchTrees.delete(migPrimaryKey);
+      this.matchTrees.set(migPrimaryKey, cached);
+      return cached;
     }
-    // The first one wins a tie.
-    return candidates.reduce((best, c) => (c.links.length > best.links.length ? c : best));
+    const idPaths = new Map<MigNode, string | null>();
+    const nodes = buildMigTree(await this.repository.getHierarchy(migPrimaryKey), idPaths);
+    const tree = toMatchTree(nodes, idPaths);
+    this.matchTrees.set(migPrimaryKey, tree);
+    if (this.matchTrees.size > MATCH_TREE_CACHE_SIZE) {
+      const oldest = this.matchTrees.keys().next().value;
+      if (oldest !== undefined) this.matchTrees.delete(oldest);
+    }
+    return tree;
   }
 }

@@ -261,6 +261,24 @@ describe('MigService', () => {
       expect(result.links[1].element).not.toHaveProperty('children');
     });
 
+    it('chooses the MIG whose qualifiers agree when both place every line', async () => {
+      // Both MIGs have an SG4; only the Strom MIG names the AHB's qualifier 24.
+      repository.getAhbLinePaths.mockResolvedValue([
+        { id: 'l1', id_path: 'SG4+24>IDE>', format: 'UTILMD' },
+      ]);
+      const result = await service.getAhbMigLinks('FV2610', '55001');
+      expect(result.mig.versionsnummer).toBe('S2.2');
+    });
+
+    it('builds each MIG tree once across requests', async () => {
+      repository.getAhbLinePaths.mockResolvedValue([
+        { id: 'l1', id_path: 'SG4>', format: 'UTILMD' },
+      ]);
+      await service.getAhbMigLinks('FV2610', '44001');
+      await service.getAhbMigLinks('FV2610', '44002');
+      expect(repository.getHierarchy).toHaveBeenCalledTimes(2); // g and s, once each
+    });
+
     it('rejects an invalid Prüfidentifikator', async () => {
       await expect(service.getAhbMigLinks('FV2610', '1')).rejects.toThrow(ValidationError);
     });

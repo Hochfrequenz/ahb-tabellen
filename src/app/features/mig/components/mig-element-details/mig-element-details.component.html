@@ -17,12 +17,17 @@
   </div>
 
   <dl class="flex flex-wrap gap-x-6 gap-y-2">
-    <div>
-      <dt class="text-xs text-hf-text-color opacity-70">Status (BDEW)</dt>
-      <dd class="font-semibold text-hf-weiches-schwarz">
-        {{ e.statusSpecification }} · {{ statusLabels[e.statusSpecification] ?? '' }}
-      </dd>
-    </div>
+    @if (e.statusSpecification) {
+      <div>
+        <dt class="text-xs text-hf-text-color opacity-70">Status (BDEW)</dt>
+        <dd class="font-semibold text-hf-weiches-schwarz">
+          {{ e.statusSpecification }}
+          @if (statusLabels[e.statusSpecification]; as label) {
+            · {{ label }}
+          }
+        </dd>
+      </div>
+    }
     @if (e.maxRepSpecification !== undefined) {
       <div>
         <dt class="text-xs text-hf-text-color opacity-70">Max. Wiederholungen</dt>
@@ -51,8 +56,8 @@
   }
   @if (!link().exact) {
     <p class="text-xs text-hf-text-color opacity-70">
-      Die MIG führt diese Qualifier-Variante nicht eigens; angezeigt ist eine gleich aufgebaute
-      Variante.
+      AHB und MIG nennen hier einen anderen Qualifier oder eine andere Wiederholung; angezeigt ist
+      das gleich aufgebaute Element der MIG.
     </p>
   }
 </div>

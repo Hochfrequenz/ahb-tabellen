@@ -42,7 +42,7 @@
           class="bg-hf-weiss-rose px-6 py-3 text-left text-xs text-hf-text-color uppercase">
           Bedingung / Hinweis / Format
         </th>
-        @if (migLinks()) {
+        @if (hasMig()) {
           <th
             scope="col"
             class="bg-hf-weiss-rose px-6 py-3 text-left text-xs text-hf-text-color uppercase">
@@ -108,7 +108,7 @@
               }
             }
           </td>
-          @if (migLinks(); as mig) {
+          @if (hasMig()) {
             <td class="px-6 py-4">
               @if (migByGuid().get(line.guid); as link) {
                 <button
@@ -123,7 +123,7 @@
             </td>
           }
         </tr>
-        @if (migLinks(); as mig) {
+        @if (hasMig() && migLinks(); as mig) {
           @if (openMig().has(line.guid) && migByGuid().get(line.guid); as link) {
             <tr>
               <td colspan="9" class="px-6 pb-4">

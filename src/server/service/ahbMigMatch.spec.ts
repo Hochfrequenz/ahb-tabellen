@@ -1,5 +1,7 @@
 import { matchAhbLines, MatchNode, parseIdPath } from './ahbMigMatch';
 
+const only = <T>(r: ReturnType<typeof matchAhbLines<T>>) => r.matches;
+
 function n(id: string, children: MatchNode<string>[] = []): MatchNode<string> {
   return { step: parseIdPath(id)[0], value: id, children };
 }
@@ -30,32 +32,84 @@ describe('matchAhbLines', () => {
   ];
 
   it('follows the path through levels the AHB leaves out', () => {
-    const [m] = matchAhbLines(mig, [{ id: 'a', idPath: 'SG6+TN>RFF>C_C506>D_1153>TN>' }]);
+    const [m] = only(matchAhbLines(mig, [{ id: 'a', idPath: 'SG6+TN>RFF>C_C506>D_1153>TN>' }]));
     expect(m).toEqual({ id: 'a', value: 'TN', indexPath: '2-0-0-0-0', exact: true });
   });
 
   it('prefers the variant whose qualifier matches', () => {
-    const [m] = matchAhbLines(mig, [{ id: 'a', idPath: 'SG6+Z13>' }]);
+    const [m] = only(matchAhbLines(mig, [{ id: 'a', idPath: 'SG6+Z13>' }]));
     expect(m).toMatchObject({ value: 'SG6+Z13', exact: true });
   });
 
   it('matches an unqualified AHB step to the variant that leads to its codes', () => {
-    const [m] = matchAhbLines(mig, [{ id: 'a', idPath: 'SG6>RFF>C_C506>D_1153>TN>' }]);
+    const [m] = only(matchAhbLines(mig, [{ id: 'a', idPath: 'SG6>RFF>C_C506>D_1153>TN>' }]));
     expect(m).toMatchObject({ value: 'TN', indexPath: '2-0-0-0-0', exact: true });
   });
 
   it('falls back to another qualifier variant and marks the match as not exact', () => {
-    const [m] = matchAhbLines(mig, [{ id: 'a', idPath: 'SG6+Z51>RFF>' }]);
+    const [m] = only(matchAhbLines(mig, [{ id: 'a', idPath: 'SG6+Z51>RFF>' }]));
     expect(m).toMatchObject({ value: 'RFF', exact: false });
   });
 
   it('uses the repetition to tell repeated data elements apart', () => {
-    const [m] = matchAhbLines(mig, [{ id: 'a', idPath: 'FTX>C_C108>D_4440>#2' }]);
+    const [m] = only(matchAhbLines(mig, [{ id: 'a', idPath: 'FTX>C_C108>D_4440>#2' }]));
     expect(m).toMatchObject({ value: 'D_4440#2', indexPath: '3-0-1', exact: true });
   });
 
   it('returns null for a line without a MIG counterpart', () => {
-    expect(matchAhbLines(mig, [{ id: 'a', idPath: 'BGM>' }])).toEqual([null]);
-    expect(matchAhbLines(mig, [{ id: 'b', idPath: null }])).toEqual([null]);
+    expect(only(matchAhbLines(mig, [{ id: 'a', idPath: 'BGM>' }]))).toEqual([null]);
+    expect(only(matchAhbLines(mig, [{ id: 'b', idPath: null }]))).toEqual([null]);
+  });
+
+  it('puts a group line into the variant its lines below fit, not the first one', () => {
+    // UTILMD S2.2: SG4+Z01 (list) comes before SG4+24 (transaction); the AHB writes plain SG4.
+    const utilmd = [
+      n('SG4+Z01', [n('IDE', [n('C_C206', [n('D_7402')])])]),
+      n('SG4+24', [n('IDE', [n('D_7495', [n('24')]), n('C_C206', [n('D_7402')])])]),
+    ];
+    const { matches } = matchAhbLines(utilmd, [
+      { id: 'sg', idPath: 'SG4>' },
+      { id: 'ide', idPath: 'SG4>IDE>' },
+      { id: 'nr', idPath: 'SG4>IDE>C_C206>D_7402>' },
+      { id: 'code', idPath: 'SG4>IDE>D_7495>24>' },
+    ]);
+    expect(matches.map(m => m?.indexPath)).toEqual(['1', '1-0', '1-0-1-0', '1-0-0-0']);
+    expect(matches.every(m => m?.exact)).toBe(true);
+  });
+
+  it('keeps a line inside the variant chosen for its group', () => {
+    // The AHB's SG8+ZA3 is missing in the MIG; it must stay below the SG4 the other lines chose.
+    const utilmd = [
+      n('SG4+Z01', [n('SG8', [n('SEQ')])]),
+      n('SG4+24', [n('IDE'), n('SG8+Z03', [n('SEQ')])]),
+    ];
+    const { matches } = matchAhbLines(utilmd, [
+      { id: 'ide', idPath: 'SG4>IDE>' },
+      { id: 'sg8', idPath: 'SG4>SG8+ZA3>' },
+      { id: 'seq', idPath: 'SG4>SG8+ZA3>SEQ>' },
+    ]);
+    expect(matches.map(m => m?.indexPath)).toEqual(['1-0', '1-1', '1-1-0']);
+    expect(matches.map(m => m?.exact)).toEqual([true, false, false]);
+  });
+
+  it('scores the whole AHB so the better fitting of two MIGs can be chosen', () => {
+    const lines = [{ id: 'a', idPath: 'SG6+TN>RFF>' }];
+    const good = matchAhbLines(mig, lines);
+    const poor = matchAhbLines([n('SG6+Z13', [n('RFF')])], lines);
+    expect(good.matched).toBe(1);
+    expect(poor.matched).toBe(1);
+    expect(good.score).toBeGreaterThan(poor.score);
+  });
+
+  it('places a line the chosen variant lacks into another variant of the same group', () => {
+    // The AHB has one STS group; the MIG splits its codes over two STS variants.
+    const mig = [n('SG4', [n('STS+7', [n('E01'), n('E02')]), n('STS+E01', [n('E03')])])];
+    const { matches } = matchAhbLines(mig, [
+      { id: 'sts', idPath: 'SG4>STS>' },
+      { id: 'e01', idPath: 'SG4>STS>E01>' },
+      { id: 'e02', idPath: 'SG4>STS>E02>' },
+      { id: 'e03', idPath: 'SG4>STS>E03>' },
+    ]);
+    expect(matches.map(m => m?.indexPath)).toEqual(['0-0', '0-0-0', '0-0-1', '0-1-0']);
   });
 });

@@ -7,9 +7,14 @@
  * - the AHB table leaves out levels (a code line without its data element group line), so a
  *   line is resolved from the root of the MIG, step by step, not from its parent line;
  * - either side may lack a qualifier the other has (AHB `SG1+ACW` vs MIG `SG1`, or AHB `SG27`
- *   vs MIG `SG27+Z01`/`SG27+Z64`); then the variant that leads on to the rest of the path wins;
+ *   vs MIG `SG27+Z01`/`SG27+Z64`); then the variant that fits the AHB lines below it wins;
  * - the MIG does not list every qualifier variant (UTILMD S2.2 has no `SG6+Z51`); then another
  *   variant with the same structure stands in, and the match is marked as not exact.
+ *
+ * So the matcher does not place lines one by one: it builds the AHB's paths into a tree and
+ * places each AHB group once, into the MIG variant under which the most of its lines find a
+ * place (then: whose qualifiers agree best). Its lines are then placed inside that variant
+ * only, so a group line and the lines below it always land in the same part of the MIG.
  */
 
 export interface PathStep {
@@ -34,8 +39,17 @@ export interface LineMatch<T> {
   value: T;
   /** Child indexes from the MIG root, e.g. `6-0-1` (the MIG view's deep link). */
   indexPath: string;
-  /** False when a qualifier on the way differs between AHB and MIG. */
+  /** False when AHB and MIG name a different qualifier or repetition on the way. */
   exact: boolean;
+}
+
+export interface MatchResult<T> {
+  /** One per AHB line, in the order of the lines; null where the MIG has no counterpart. */
+  matches: (LineMatch<T> | null)[];
+  /** Number of lines matched. */
+  matched: number;
+  /** Sum of qualifier/repetition agreement over all placed steps; higher fits better. */
+  score: number;
 }
 
 const STEP = /^([^+#]+)(?:\+([^#]*))?(?:#(\d+))?$/;
@@ -60,7 +74,8 @@ const REPETITION_WEIGHT = 1;
 
 /**
  * How well a MIG step fits an AHB step: undefined if the keys differ, else a score that rises
- * with each qualifier/repetition both have and agree on and falls with each they disagree on.
+ * with each qualifier/repetition both name and agree on, and falls with each they disagree on.
+ * A qualifier or repetition only one side names neither adds nor subtracts.
  */
 function stepScore(ahb: PathStep, mig: PathStep): number | undefined {
   if (ahb.key !== mig.key) return undefined;
@@ -74,56 +89,155 @@ function stepScore(ahb: PathStep, mig: PathStep): number | undefined {
   return score;
 }
 
-interface Best<T> {
-  node: MatchNode<T>;
-  indexPath: number[];
-  score: number;
-  exact: boolean;
+function stepAgrees(ahb: PathStep, mig: PathStep): boolean {
+  const differs = (a: string | undefined, m: string | undefined) => !!a && !!m && a !== m;
+  return !differs(ahb.qualifier, mig.qualifier) && !differs(ahb.repetition, mig.repetition);
 }
 
-/** The best-scoring MIG node for `steps[i..]` below `pool`; the first wins a tie. */
-function bestMatch<T>(pool: MatchNode<T>[], steps: PathStep[], i: number): Best<T> | undefined {
-  let best: Best<T> | undefined;
-  pool.forEach((node, index) => {
-    const score = stepScore(steps[i], node.step);
-    if (score === undefined) return;
-    const exact = score >= 0;
-    let candidate: Best<T> | undefined;
-    if (i === steps.length - 1) {
-      candidate = { node, indexPath: [index], score, exact };
-    } else {
-      const rest = bestMatch(node.children, steps, i + 1);
-      if (rest) {
-        candidate = {
-          node: rest.node,
-          indexPath: [index, ...rest.indexPath],
-          score: score + rest.score,
-          exact: exact && rest.exact,
-        };
+/** One AHB path prefix; `lines` are the indexes of the lines whose path ends here. */
+interface AhbPrefix {
+  step: PathStep;
+  lines: number[];
+  children: AhbPrefix[];
+}
+
+function buildAhbTree(lines: AhbLinePath[]): AhbPrefix[] {
+  const roots: AhbPrefix[] = [];
+  const byPrefix = new Map<string, AhbPrefix>();
+  lines.forEach((line, lineIndex) => {
+    const steps = parseIdPath(line.idPath);
+    let siblings = roots;
+    let key = '';
+    steps.forEach((step, i) => {
+      key += `${step.key}+${step.qualifier ?? ''}#${step.repetition ?? ''}>`;
+      let prefix = byPrefix.get(key);
+      if (!prefix) {
+        prefix = { step, lines: [], children: [] };
+        byPrefix.set(key, prefix);
+        siblings.push(prefix);
+      }
+      if (i === steps.length - 1) prefix.lines.push(lineIndex);
+      siblings = prefix.children;
+    });
+  });
+  return roots;
+}
+
+interface Fit {
+  /** AHB lines placed in this subtree. */
+  matched: number;
+  score: number;
+}
+
+const better = (a: Fit, b: Fit): boolean =>
+  a.matched !== b.matched ? a.matched > b.matched : a.score > b.score;
+
+/**
+ * Places AHB prefixes into MIG nodes. `fit` is memoized per (prefix, node) pair, so each pair is
+ * evaluated once however the paths overlap.
+ */
+class Placer<T> {
+  private readonly memo = new Map<AhbPrefix, Map<MatchNode<T>, Fit | undefined>>();
+
+  /** How well `prefix` and everything below it fits into `node`; undefined if keys differ. */
+  fit(prefix: AhbPrefix, node: MatchNode<T>): Fit | undefined {
+    let perNode = this.memo.get(prefix);
+    if (!perNode) {
+      perNode = new Map();
+      this.memo.set(prefix, perNode);
+    }
+    if (perNode.has(node)) return perNode.get(node);
+    const own = stepScore(prefix.step, node.step);
+    let result: Fit | undefined;
+    if (own !== undefined) {
+      result = { matched: prefix.lines.length, score: own };
+      for (const child of prefix.children) {
+        const best = this.best(child, node.children);
+        if (best) {
+          result.matched += best.fit.matched;
+          result.score += best.fit.score;
+        }
       }
     }
-    if (candidate && (!best || candidate.score > best.score)) {
-      best = candidate;
+    perNode.set(node, result);
+    return result;
+  }
+
+  /** The best fit of `prefix` among the nodes of `pool`. */
+  private best(prefix: AhbPrefix, pool: MatchNode<T>[]): { fit: Fit } | undefined {
+    let best: { fit: Fit } | undefined;
+    for (const node of pool) {
+      const fit = this.fit(prefix, node);
+      if (fit && (!best || better(fit, best.fit))) best = { fit };
     }
-  });
-  return best;
+    return best;
+  }
 }
 
-/** The MIG node of each AHB line (null where the MIG has none), in the order of `lines`. */
-export function matchAhbLines<T>(
-  roots: MatchNode<T>[],
-  lines: AhbLinePath[]
-): (LineMatch<T> | null)[] {
-  return lines.map(line => {
-    const steps = parseIdPath(line.idPath);
-    if (steps.length === 0) return null;
-    const best = bestMatch(roots, steps, 0);
-    if (!best) return null;
-    return {
-      id: line.id,
-      value: best.node.value,
-      indexPath: best.indexPath.join('-'),
-      exact: best.exact,
-    };
-  });
+interface Candidate<T> {
+  node: MatchNode<T>;
+  indexPath: number[];
+  exact: boolean;
+  fit: Fit;
+}
+
+/** The MIG node of each AHB line, placed group by group (see the module comment). */
+export function matchAhbLines<T>(roots: MatchNode<T>[], lines: AhbLinePath[]): MatchResult<T> {
+  const matches: (LineMatch<T> | null)[] = lines.map(() => null);
+  const placer = new Placer<T>();
+  let score = 0;
+
+  /** The nodes of `pool` that fit `prefix`, best first (stable, so the first wins a tie). */
+  const ranked = (
+    prefix: AhbPrefix,
+    pool: MatchNode<T>[],
+    indexPath: number[],
+    exact: boolean
+  ): Candidate<T>[] => {
+    const found: Candidate<T>[] = [];
+    pool.forEach((node, index) => {
+      const fit = placer.fit(prefix, node);
+      if (fit) {
+        found.push({
+          node,
+          indexPath: [...indexPath, index],
+          exact: exact && stepAgrees(prefix.step, node.step),
+          fit,
+        });
+      }
+    });
+    return found.sort((a, b) => (better(a.fit, b.fit) ? -1 : better(b.fit, a.fit) ? 1 : 0));
+  };
+
+  /**
+   * Places `prefix` into the first of `candidates`. The others are the other variants of the
+   * same group: a line below that has no place in the chosen variant may use one of them (the
+   * AHB writes one STS group where the MIG has several STS variants with different codes).
+   */
+  const place = (prefix: AhbPrefix, candidates: Candidate<T>[]): void => {
+    const [chosen] = candidates;
+    score += stepScore(prefix.step, chosen.node.step) ?? 0;
+    for (const lineIndex of prefix.lines) {
+      matches[lineIndex] = {
+        id: lines[lineIndex].id,
+        value: chosen.node.value,
+        indexPath: chosen.indexPath.join('-'),
+        exact: chosen.exact,
+      };
+    }
+    for (const child of prefix.children) {
+      const inChosen = ranked(child, chosen.node.children, chosen.indexPath, chosen.exact);
+      const inOthers = candidates
+        .slice(1)
+        .flatMap(c => ranked(child, c.node.children, c.indexPath, c.exact));
+      const childCandidates = [...inChosen, ...inOthers];
+      if (childCandidates.length > 0) place(child, childCandidates);
+    }
+  };
+
+  for (const prefix of buildAhbTree(lines)) {
+    const candidates = ranked(prefix, roots, [], true);
+    if (candidates.length > 0) place(prefix, candidates);
+  }
+  return { matches, matched: matches.filter(m => m !== null).length, score };
 }

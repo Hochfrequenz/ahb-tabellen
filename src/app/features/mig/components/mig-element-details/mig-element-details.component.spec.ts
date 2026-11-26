@@ -40,7 +40,7 @@ describe('MigElementDetailsComponent', () => {
     expect(text).toContain('MIG UTILMD S2.2 · Datenelement');
     expect(text).toContain('R · Erforderlich');
     expect(text).toContain('an..3');
-    expect(text).toContain('Qualifier-Variante');
+    expect(text).toContain('anderen Qualifier');
     expect(root.querySelector('a')?.getAttribute('href')).toBe(
       '/mig/FV2610/UTILMD?version=S2.2&node=6-0-1'
     );

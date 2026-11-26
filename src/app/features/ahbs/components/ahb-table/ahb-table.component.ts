@@ -51,6 +51,8 @@ export class AhbTableComponent {
   readonly migByGuid = computed(
     () => new Map<string, AhbMigLink>((this.migLinks()?.links ?? []).map(l => [l.guid, l]))
   );
+  /** The MIG column shows only when there is something to link. */
+  readonly hasMig = computed(() => (this.migLinks()?.links.length ?? 0) > 0);
   /** Lines whose MIG details are open, by guid. */
   readonly openMig = signal<ReadonlySet<string>>(new Set());
 
