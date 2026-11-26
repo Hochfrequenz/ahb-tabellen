@@ -84,6 +84,36 @@ describe('BedingungUsageService', () => {
     expect(repository.findUsages).not.toHaveBeenCalled();
   });
 
+  it.each(['toString', 'UTILMDX', 'FOO'])('rejects unknown format %j', async format => {
+    await expect(
+      service.searchBedingungUsage({ formatVersion: 'FV2610', bedingung: '931', format })
+    ).rejects.toThrow(ValidationError);
+    expect(repository.findUsages).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['utilmds', 'UTILMDS'],
+    [' mscons ', 'MSCONS'],
+  ])('accepts known format %j as %j', async (format, expected) => {
+    repository.findUsages.mockResolvedValue({ totalLines: 0, rows: [] });
+    await service.searchBedingungUsage({ formatVersion: 'FV2610', bedingung: '931', format });
+    expect(repository.findUsages).toHaveBeenCalledWith(
+      expect.objectContaining({ format: expected })
+    );
+  });
+
+  it('keeps repeated, otherwise identical lines apart by sortPath', async () => {
+    repository.findUsages.mockResolvedValue({
+      totalLines: 2,
+      rows: [row({ sort_path: '0001-0001' }), row({ sort_path: '0001-0002' })],
+    });
+    const result = await service.searchBedingungUsage({
+      formatVersion: 'FV2610',
+      bedingung: '931',
+    });
+    expect(result.pruefis[0].lines.map(l => l.sortPath)).toEqual(['0001-0001', '0001-0002']);
+  });
+
   it('merges direct and via rows of one line, null first, and groups by pruefi', async () => {
     repository.findUsages.mockResolvedValue({
       totalLines: 3,
@@ -111,6 +141,7 @@ describe('BedingungUsageService', () => {
         qualifier: null,
         lineName: 'Name',
         lineAhbStatus: 'Muss [931]',
+        sortPath: '0001',
         via: [null, 'UB1'],
       },
       expect.objectContaining({ via: ['2P'] }),

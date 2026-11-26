@@ -1,9 +1,13 @@
 import BedingungUsageRepository, { BedingungUsageRow } from '../repository/bedingungUsage';
 import { ValidationError } from '../infrastructure/errors';
 import { assertPruefi, resolveFormatVersion } from './validation';
+import { EdifactFormat } from '@hochfrequenz/efoli';
 
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 1000;
+
+/** Plain (`UTILMD`) and detailed (`UTILMDS`) formats efoli knows about. */
+const KNOWN_FORMATS = new Set<string>(Object.values(EdifactFormat));
 
 export interface BedingungUsageInput {
   formatVersion: string;
@@ -20,6 +24,11 @@ export interface BedingungUsageLine {
   qualifier: string | null;
   lineName: string | null;
   lineAhbStatus: string | null;
+  /**
+   * Position of the line in the AHB; sorts like the AHB and tells repeated segment groups apart
+   * (their lines are otherwise identical).
+   */
+  sortPath: string;
   /** All ways the line reaches the condition; `null` = direct use. Sorted, `null` first. */
   via: (string | null)[];
 }
@@ -80,6 +89,11 @@ export default class BedingungUsageService {
       throw new ValidationError(`limit must be an integer between 1 and ${MAX_LIMIT}.`);
     }
     const format = input.format?.trim().toUpperCase() || undefined;
+    if (format !== undefined && !KNOWN_FORMATS.has(format)) {
+      throw new ValidationError(
+        `Invalid format: ${input.format}. Expected an EDIFACT format such as "UTILMD" or "UTILMDS".`
+      );
+    }
 
     const { totalLines, rows } = await this.repository.findUsages({
       formatVersion,
@@ -124,6 +138,7 @@ export default class BedingungUsageService {
           qualifier: row.qualifier,
           lineName: row.line_name,
           lineAhbStatus: row.line_ahb_status,
+          sortPath: row.sort_path,
           via: [],
         });
         lastSortPath = row.sort_path;
