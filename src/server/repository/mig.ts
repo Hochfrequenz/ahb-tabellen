@@ -53,6 +53,8 @@ export interface AhbLinePathRow {
   id: string;
   id_path: string | null;
   format: string;
+  line_name?: string | null;
+  line_type?: string | null;
 }
 
 async function ensureInitialized(): Promise<void> {
@@ -109,7 +111,7 @@ export default class MigRepository {
   public async getAhbLinePaths(formatVersion: string, pruefi: string): Promise<AhbLinePathRow[]> {
     await ensureInitialized();
     return AppDataSource.query(
-      `SELECT id, id_path, format
+      `SELECT id, id_path, format, line_name, line_type
          FROM v_ahbtabellen
         WHERE format_version = ? AND pruefidentifikator = ?
         ORDER BY sort_path`,

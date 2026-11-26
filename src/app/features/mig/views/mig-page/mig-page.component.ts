@@ -118,6 +118,8 @@ export class MigPageComponent {
       this.migs.set([]);
       this.migService.getMigs({ 'format-version': formatVersion }).subscribe({
         next: migs => {
+          // Ignore a late answer for a format version the user has already left.
+          if (this.loadedListFormatVersion !== formatVersion) return;
           this.migs.set(migs);
           if (!this.format() && migs.length > 0) {
             this.navigate(formatVersion, migs[0].format, migs[0].versionsnummer, '', true);
@@ -150,6 +152,8 @@ export class MigPageComponent {
       })
       .subscribe({
         next: tree => {
+          // Ignore a late answer for a MIG the user has already switched away from.
+          if (this.loadedTreeKey !== treeKey) return;
           this.tree.set(tree);
           this.loading.set(false);
           this.version.set(tree.meta.versionsnummer);
@@ -161,6 +165,7 @@ export class MigPageComponent {
           this.selectByPath(p.node);
         },
         error: err => {
+          if (this.loadedTreeKey !== treeKey) return;
           this.loading.set(false);
           this.error.set(err?.error?.message ?? 'Die MIG konnte nicht geladen werden.');
         },

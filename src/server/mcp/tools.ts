@@ -5,6 +5,7 @@ import { toToolResult } from './result';
 import { EBD_JUMP_HINT } from './ebd-hint';
 import { buildBedingungJumpHint } from './bedingung-hint';
 import { SearchPayload } from '../repository/ahb';
+import type { Ahb } from '../../app/core/api/models';
 
 /**
  * All AHB tools are read-only queries over a fixed data set.
@@ -93,7 +94,9 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
       annotations: { ...READ_ONLY, title: 'Get AHB' },
     },
     async ({ formatVersion, pruefi }) =>
-      toToolResult(async () => (await services.ahb.getAhb(pruefi, formatVersion, 'json')).content)
+      toToolResult(async () =>
+        withoutIdPaths((await services.ahb.getAhb(pruefi, formatVersion, 'json')).content as Ahb)
+      )
   );
 
   server.registerTool(
@@ -272,4 +275,17 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
     async ({ formatVersion }) =>
       toToolResult(() => services.metadata.listPruefisByFormatVersion(formatVersion))
   );
+}
+
+/**
+ * The AHB lines' `id_path` serves the web UI (segment group brackets); MCP clients get the AHB
+ * as before, without spending tokens on it.
+ */
+function withoutIdPaths(ahb: Ahb): Ahb {
+  if (!Array.isArray(ahb?.lines)) return ahb;
+  return {
+    ...ahb,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    lines: ahb.lines.map(({ id_path, ...line }) => line),
+  };
 }

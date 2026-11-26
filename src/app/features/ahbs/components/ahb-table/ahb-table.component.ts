@@ -1,6 +1,8 @@
 import {
   Component,
   ElementRef,
+  Injector,
+  afterNextRender,
   computed,
   effect,
   input,
@@ -112,7 +114,12 @@ export class AhbTableComponent {
     NONE: '',
   } as const;
 
+  /** Bumped after folding re-rendered the rows, so the search hits are read again. */
+  private readonly rowsRendered = signal(0);
+  private readonly injector = inject(Injector);
+
   markElements = computed<HTMLElement[]>(() => {
+    this.rowsRendered();
     const highlight = this.highlight();
     const nativeElement = this.elementRef.nativeElement;
     if (!highlight || !nativeElement) {
@@ -319,6 +326,23 @@ export class AhbTableComponent {
       collapsed.add(idPath);
     }
     this.collapsedGroups.set(collapsed);
+    this.afterRowsChanged();
+  }
+
+  /**
+   * Folding adds or removes rows and their search hits: once they are rendered, count the hits
+   * again and keep the current one if it is still there.
+   */
+  private afterRowsChanged(): void {
+    afterNextRender(
+      () => {
+        this.rowsRendered.update(n => n + 1);
+        if (this.markIndex() >= this.markElements().length) {
+          this.markIndex.set(0);
+        }
+      },
+      { injector: this.injector }
+    );
   }
 
   /** Rows of a group, header excluded, for the toggle's label. */
@@ -341,6 +365,7 @@ export class AhbTableComponent {
       [index]: !currentState[index],
     };
     this.expandedRows.set(newState);
+    this.afterRowsChanged();
 
     // If there's an active search, re-apply highlighting to show/hide matches
     const highlight = this.highlight();

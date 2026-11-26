@@ -68,4 +68,17 @@ describe('MigController', () => {
     expect(service.getAhbMigLinks).toHaveBeenCalledWith('FV2610', '55001');
     expect(res.json).toHaveBeenCalledWith(links);
   });
+
+  it('rejects a repeated version parameter as invalid input', async () => {
+    await controller.get(
+      {
+        params: { formatVersion: 'FV2610', format: 'UTILMD' },
+        query: { version: ['S2.2', 'G1.2'] },
+      } as unknown as Request,
+      res as unknown as Response,
+      next as NextFunction
+    );
+    expect(next).toHaveBeenCalledWith(expect.any(ValidationError));
+    expect(service.getMigTree).not.toHaveBeenCalled();
+  });
 });

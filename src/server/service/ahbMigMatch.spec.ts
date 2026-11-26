@@ -112,4 +112,61 @@ describe('matchAhbLines', () => {
     ]);
     expect(matches.map(m => m?.indexPath)).toEqual(['0-0', '0-0-0', '0-0-1', '0-1-0']);
   });
+
+  it('gives each repeat of an unqualified group its own MIG variant (SG29>#1, #2, #3)', () => {
+    // ORDERS: three SG29 variants told apart only by their names and contents.
+    const named = (id: string, name: string, children: MatchNode<string>[] = []) => ({
+      ...n(id, children),
+      name,
+    });
+    const orders = [
+      named('SG29', 'Positionsteil', [n('LIN')]),
+      named('SG29', 'Erforderliches Produkt der Marktlokation', [n('LIN'), n('PIA')]),
+      named('SG29', 'Erforderliches Produkt der Tranche', [n('LIN'), n('PIA')]),
+    ];
+    const group = (id: string, idPath: string, name: string) => ({
+      id,
+      idPath,
+      name,
+      isSegmentGroup: true,
+    });
+    const { matches } = matchAhbLines(orders, [
+      group('h1', 'SG29>#1', 'Positionsteil'),
+      { id: 'lin1', idPath: 'SG29>LIN>' },
+      group('h2', 'SG29>#2', 'Erforderliches Produkt der Marktlokation'),
+      { id: 'lin2', idPath: 'SG29>LIN>' },
+      { id: 'pia2', idPath: 'SG29>PIA>' },
+      group('h3', 'SG29>#3', 'Erforderliches Produkt der Tranche'),
+      { id: 'lin3', idPath: 'SG29>LIN>' },
+      { id: 'pia3', idPath: 'SG29>PIA>' },
+      { id: 'unt', idPath: 'UNT>' },
+    ]);
+    expect(matches.map(m => m?.indexPath ?? null)).toEqual([
+      '0',
+      '0-0',
+      '1',
+      '1-0',
+      '1-1',
+      '2',
+      '2-0',
+      '2-1',
+      null,
+    ]);
+    expect(matches.slice(0, 8).every(m => m?.exact)).toBe(true);
+  });
+
+  it('breaks a tie between unqualified variants by name, and marks an unbroken tie', () => {
+    const named = (name: string) => ({ ...n('SG5', [n('LOC')]), name });
+    const mig = [named('Netzlokation'), named('Marktlokation')];
+    const sg5 = (name: string) => [
+      { id: 'sg', idPath: 'SG5>', name, isSegmentGroup: true },
+      { id: 'loc', idPath: 'SG5>LOC>' },
+    ];
+    const byName = matchAhbLines(mig, sg5('Marktlokation')).matches;
+    expect(byName.map(m => m?.indexPath)).toEqual(['1', '1-0']);
+    expect(byName[0]?.exact).toBe(true);
+
+    const guess = matchAhbLines(mig, sg5('Technische Ressource')).matches;
+    expect(guess.map(m => m?.exact)).toEqual([false, false]);
+  });
 });

@@ -151,6 +151,7 @@ function toMatchTree(nodes: MigNode[], idPaths: Map<MigNode, string | null>): Ma
     return {
       // A node without id_path (a few empty code rows) gets a step nothing matches.
       step: steps[steps.length - 1] ?? { key: '', qualifier: undefined, repetition: undefined },
+      name: node.name,
       value: node,
       children: toMatchTree(node.children, idPaths),
     };
@@ -240,7 +241,12 @@ export default class MigService {
         `No MIG for ${lines[0].format} in ${resolved}. The database may not contain MIG data.`
       );
     }
-    const linePaths = lines.map(l => ({ id: l.id, idPath: l.id_path }));
+    const linePaths = lines.map(l => ({
+      id: l.id,
+      idPath: l.id_path,
+      name: l.line_name,
+      isSegmentGroup: l.line_type === 'segment_group',
+    }));
 
     let best: { result: MatchResult<MigNode>; mig: MigInfo } | undefined;
     for (const mig of migs) {
