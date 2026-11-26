@@ -16,7 +16,7 @@ import { environment } from '../../../../environments/environment';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
 import { DomSanitizer } from '@angular/platform-browser';
 import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.utils';
-import { RowGuide, treeGuides } from '../../ahb-tree-guides';
+import { RowGuide, hiddenRows, treeGuides } from '../../ahb-tree-guides';
 import { MigElementDetailsComponent } from '../../../mig/components/mig-element-details/mig-element-details.component';
 
 interface ExpandedState {
@@ -72,6 +72,18 @@ export class AhbTableComponent {
   readonly guideWidth = computed(
     () => Math.max(1, ...this.guides().map(g => g?.brackets.length ?? 0)) * this.guideStep + 8
   );
+  /** Collapsed segment groups, by the guid of their header row (not by SG number). */
+  readonly collapsedGroups = signal<ReadonlySet<string>>(new Set());
+  /** Rows hidden by collapsed groups, by row index. */
+  readonly hiddenRows = computed(() => {
+    const collapsed = this.collapsedGroups();
+    if (collapsed.size === 0) return new Set<number>();
+    const rows = new Set<number>();
+    this.lines().forEach((line, i) => {
+      if (collapsed.has(line.guid)) rows.add(i);
+    });
+    return hiddenRows(this.guides(), rows);
+  });
   /** Lines whose MIG details are open, by guid. */
   readonly openMig = signal<ReadonlySet<string>>(new Set());
 
@@ -113,6 +125,8 @@ export class AhbTableComponent {
       // Only run auto-expansion when the highlight text actually changes
       if (highlight && highlight !== lastHighlight) {
         this.lastHighlightText.set(highlight);
+        // A new search must find its matches in collapsed groups too.
+        this.collapsedGroups.set(new Set());
         this.markIndex.set(0);
         this.autoExpandRowsWithMatches(highlight);
         setTimeout(() => this.applyCurrentMark());
@@ -290,6 +304,19 @@ export class AhbTableComponent {
       .split(/(?=\[\d+\])/)
       .map(s => s.trim())
       .filter(s => s);
+  }
+
+  toggleGroup(guid: string): void {
+    const collapsed = new Set(this.collapsedGroups());
+    if (!collapsed.delete(guid)) {
+      collapsed.add(guid);
+    }
+    this.collapsedGroups.set(collapsed);
+  }
+
+  /** Rows of a group, header excluded, for the toggle's label. */
+  groupSize(guide: RowGuide, row: number): number {
+    return (guide.lastRow ?? row) - row;
   }
 
   toggleMig(guid: string): void {

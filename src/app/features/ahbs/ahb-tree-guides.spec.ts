@@ -1,4 +1,4 @@
-import { GuideLine, treeGuides } from './ahb-tree-guides';
+import { GuideLine, hiddenRows, treeGuides } from './ahb-tree-guides';
 
 const sg = (path: string): GuideLine => ({ path, isSegmentGroup: true });
 const row = (path: string | undefined): GuideLine => ({ path, isSegmentGroup: false });
@@ -54,5 +54,29 @@ describe('treeGuides', () => {
     const guides = treeGuides([sg('1'), row(undefined), row('1-0')]);
     expect(guides[1]).toBeNull();
     expect(guides[2]?.brackets).toEqual(['end']);
+  });
+
+  it('knows the last row of each group', () => {
+    const guides = treeGuides(lines);
+    expect(guides.map(g => g?.lastRow)).toEqual([
+      undefined,
+      8,
+      undefined,
+      6,
+      undefined,
+      6,
+      undefined,
+      8,
+      undefined,
+      undefined,
+    ]);
+  });
+
+  it('hides only the rows of the collapsed group, not those of its same-named neighbour', () => {
+    const guides = treeGuides(lines);
+    expect([...hiddenRows(guides, new Set([3]))]).toEqual([4, 5, 6]); // first SG8 only
+    expect([...hiddenRows(guides, new Set([7]))]).toEqual([8]); // second SG8 only
+    expect([...hiddenRows(guides, new Set([1]))]).toEqual([2, 3, 4, 5, 6, 7, 8]); // SG4
+    expect(hiddenRows(guides, new Set([0])).size).toBe(0); // not a group
   });
 });

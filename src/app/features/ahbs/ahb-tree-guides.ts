@@ -14,6 +14,8 @@ export type BracketPart = 'start' | 'middle' | 'end' | 'single';
 export interface RowGuide {
   /** One per enclosing segment group (the row's own, if it is one, included), outermost first. */
   brackets: BracketPart[];
+  /** For a segment group's header row: the index of the group's last row. */
+  lastRow?: number;
 }
 
 export interface GuideLine {
@@ -45,6 +47,7 @@ export function treeGuides(lines: GuideLine[]): (RowGuide | null)[] {
   return lines.map((line, row) => {
     if (line.path === undefined) return null;
     return {
+      ...(line.isSegmentGroup ? { lastRow: lastRow.get(row) } : {}),
       brackets: enclosing[row].map(group => {
         const starts = group === row;
         const ends = lastRow.get(group) === row;
@@ -52,4 +55,18 @@ export function treeGuides(lines: GuideLine[]): (RowGuide | null)[] {
       }),
     };
   });
+}
+
+/**
+ * The rows hidden by collapsed groups: all rows of a group but its header. Groups are collapsed
+ * by header row, so of several neighbouring SG8 only the collapsed one hides its rows.
+ */
+export function hiddenRows(guides: (RowGuide | null)[], collapsed: Set<number>): Set<number> {
+  const hidden = new Set<number>();
+  for (const row of collapsed) {
+    const last = guides[row]?.lastRow;
+    if (last === undefined) continue;
+    for (let r = row + 1; r <= last; r++) hidden.add(r);
+  }
+  return hidden;
 }
