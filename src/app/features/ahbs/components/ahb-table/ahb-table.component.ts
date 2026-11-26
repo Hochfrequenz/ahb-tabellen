@@ -54,16 +54,23 @@ export class AhbTableComponent {
   );
   /** The MIG column shows only when there is something to link. */
   readonly hasMig = computed(() => (this.migLinks()?.links.length ?? 0) > 0);
-  /** Tree guide lines left of the table, from each line's MIG position. */
+  /** Segment group brackets left of the table, from each line's MIG position. */
   readonly guides = computed<(RowGuide | null)[]>(() =>
-    this.hasMig() ? treeGuides(this.lines().map(l => this.migByGuid().get(l.guid)?.node)) : []
+    this.hasMig()
+      ? treeGuides(
+          this.lines().map(l => ({
+            path: this.migByGuid().get(l.guid)?.node,
+            isSegmentGroup: l.line_type === this.LINE_TYPE.SEGMENT_GROUP,
+          }))
+        )
+      : []
   );
-  /** Horizontal space per tree level, in px. */
-  readonly guideStep = 12;
-  /** Vertical position of an elbow: the middle of a row's first text line (py-4 + half line). */
-  readonly guideElbowY = 26;
+  /** Horizontal space per nesting level, in px. */
+  readonly guideStep = 14;
+  /** Length of the tick at a group's header row, in px. */
+  readonly guideTick = 7;
   readonly guideWidth = computed(
-    () => (Math.max(0, ...this.guides().map(g => g?.depth ?? 0)) + 2) * this.guideStep
+    () => Math.max(1, ...this.guides().map(g => g?.brackets.length ?? 0)) * this.guideStep + 8
   );
   /** Lines whose MIG details are open, by guid. */
   readonly openMig = signal<ReadonlySet<string>>(new Set());

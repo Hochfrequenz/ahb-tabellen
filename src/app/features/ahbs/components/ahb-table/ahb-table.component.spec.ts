@@ -65,9 +65,9 @@ describe('AhbTableComponent', () => {
       migLinks,
     });
     expect(ngMocks.findAll('th').map(th => ngMocks.formatText(th))).toContain('MIG');
-    // The tree guide gutter: one cell per line, with the elbow of a top-level last line.
+    // The segment group gutter: one cell per line; a top-level segment draws no bracket.
     expect(ngMocks.findAll('td[aria-hidden="true"]')).toHaveLength(1);
-    expect(ngMocks.findAll('td[aria-hidden="true"] span')).toHaveLength(2);
+    expect(ngMocks.findAll('td[aria-hidden="true"] span')).toHaveLength(0);
     const button = ngMocks.find('button[aria-expanded]');
     expect(ngMocks.formatText(button)).toContain('UNH');
     expect(ngMocks.findAll(MigElementDetailsComponent)).toHaveLength(0);

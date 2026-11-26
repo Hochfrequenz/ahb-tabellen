@@ -1,54 +1,55 @@
 /**
- * Tree guide lines for the AHB table: which vertical lines and elbows each row draws so the
- * table shows its nesting, like the indent guides of a code editor.
+ * Segment group brackets for the AHB table: each segment group gets a thin vertical line from
+ * its header row to its last row, one level further in per nesting. Neighbouring groups (two
+ * SG8) are separate brackets on the same level; a group inside another (SG10 in SG8) is a
+ * bracket further in. Segments, data elements and codes draw no lines of their own.
  *
- * The nesting comes from each line's position in the MIG (an index path such as `10-3-0`):
- * a row hangs below the nearest row above it whose MIG node contains its own.
+ * Which rows a group spans comes from each line's position in the MIG (an index path such as
+ * `10-48-2`): a row belongs to a group if the group's MIG node contains its own.
  */
 
+/** How a row meets the bracket of one enclosing segment group. */
+export type BracketPart = 'start' | 'middle' | 'end' | 'single';
+
 export interface RowGuide {
-  /** Number of ancestor rows. */
-  depth: number;
-  /** No later sibling: the elbow ends here (└) instead of passing on (├). */
-  last: boolean;
-  /** Per level left of the elbow: whether an ancestor's line passes this row (│). */
-  through: boolean[];
-  /** Per level, for a row inserted below this one: the lines that pass it. */
-  below: boolean[];
+  /** One per enclosing segment group (the row's own, if it is one, included), outermost first. */
+  brackets: BracketPart[];
 }
 
-const contains = (ancestor: string, path: string): boolean => path.startsWith(`${ancestor}-`);
+export interface GuideLine {
+  /** The line's MIG index path; undefined if it has none. */
+  path: string | undefined;
+  isSegmentGroup: boolean;
+}
 
-/** The guide of each row, in row order; null for a row without a MIG position. */
-export function treeGuides(paths: (string | undefined)[]): (RowGuide | null)[] {
-  const parent: number[] = paths.map(() => -1);
-  const ancestors: number[][] = paths.map(() => []);
-  const lastChild = new Map<number, number>(); // parent row (-1: top) → its last child row
-  const hasChildren = new Set<number>();
+const within = (group: string, path: string): boolean =>
+  path === group || path.startsWith(`${group}-`);
 
-  const stack: number[] = [];
-  paths.forEach((path, row) => {
+/** The brackets each row draws, in row order; null for a row without a MIG position. */
+export function treeGuides(lines: GuideLine[]): (RowGuide | null)[] {
+  const enclosing: number[][] = lines.map(() => []); // per row: the group rows it lies in
+  const lastRow = new Map<number, number>(); // group row → its last row
+
+  const stack: number[] = []; // open group rows, outermost first
+  lines.forEach((line, row) => {
+    const path = line.path;
     if (path === undefined) return;
-    while (stack.length > 0 && !contains(paths[stack[stack.length - 1]] as string, path)) {
+    while (stack.length > 0 && !within(lines[stack[stack.length - 1]].path as string, path)) {
       stack.pop();
     }
-    parent[row] = stack.length > 0 ? stack[stack.length - 1] : -1;
-    ancestors[row] = [...stack];
-    lastChild.set(parent[row], row);
-    if (parent[row] >= 0) hasChildren.add(parent[row]);
-    stack.push(row);
+    if (line.isSegmentGroup) stack.push(row);
+    enclosing[row] = [...stack];
+    for (const group of stack) lastRow.set(group, row);
   });
 
-  const isLast = (row: number): boolean => lastChild.get(parent[row]) === row;
-  return paths.map((path, row) => {
-    if (path === undefined) return null;
-    const through = ancestors[row].map(a => !isLast(a));
-    const last = isLast(row);
+  return lines.map((line, row) => {
+    if (line.path === undefined) return null;
     return {
-      depth: ancestors[row].length,
-      last,
-      through,
-      below: [...through, !last, hasChildren.has(row)],
+      brackets: enclosing[row].map(group => {
+        const starts = group === row;
+        const ends = lastRow.get(group) === row;
+        return starts && ends ? 'single' : starts ? 'start' : ends ? 'end' : 'middle';
+      }),
     };
   });
 }

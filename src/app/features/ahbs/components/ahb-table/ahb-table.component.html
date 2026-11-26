@@ -62,27 +62,24 @@
           @if (hasMig()) {
             <td class="relative p-0" aria-hidden="true" [style.width.px]="guideWidth()">
               @if (guides()[i]; as g) {
-                @for (passes of g.through; track $index; let level = $index) {
-                  @if (passes) {
+                @for (part of g.brackets; track $index; let level = $index) {
+                  @if (part === 'start' || part === 'single') {
                     <span
-                      class="absolute inset-y-0 border-l border-hf-weiches-schwarz/20"
+                      class="absolute border-t border-hf-weiches-schwarz/50"
+                      [style.left.px]="level * guideStep + guideStep / 2"
+                      [style.top.%]="50"
+                      [style.width.px]="guideTick"></span>
+                  }
+                  @if (part === 'start') {
+                    <span
+                      class="absolute bottom-0 border-l border-hf-weiches-schwarz/50"
+                      [style.left.px]="level * guideStep + guideStep / 2"
+                      [style.top.%]="50"></span>
+                  } @else if (part !== 'single') {
+                    <span
+                      class="absolute inset-y-0 border-l border-hf-weiches-schwarz/50"
                       [style.left.px]="level * guideStep + guideStep / 2"></span>
                   }
-                }
-                <span
-                  class="absolute top-0 border-l border-hf-weiches-schwarz/20"
-                  [style.left.px]="g.depth * guideStep + guideStep / 2"
-                  [style.height]="g.last ? guideElbowY + 'px' : '100%'"></span>
-                <span
-                  class="absolute border-t border-hf-weiches-schwarz/20"
-                  [style.left.px]="g.depth * guideStep + guideStep / 2"
-                  [style.top.px]="guideElbowY"
-                  [style.width.px]="guideStep / 2 + 2"></span>
-                @if (g.below[g.depth + 1]) {
-                  <span
-                    class="absolute bottom-0 border-l border-hf-weiches-schwarz/20"
-                    [style.left.px]="(g.depth + 1) * guideStep + guideStep / 2"
-                    [style.top.px]="guideElbowY"></span>
                 }
               }
             </td>
@@ -161,10 +158,10 @@
             <tr>
               <td class="relative p-0" aria-hidden="true">
                 @if (guides()[i]; as g) {
-                  @for (passes of g.below; track $index; let level = $index) {
-                    @if (passes) {
+                  @for (part of g.brackets; track $index; let level = $index) {
+                    @if (part !== 'single') {
                       <span
-                        class="absolute inset-y-0 border-l border-hf-weiches-schwarz/20"
+                        class="absolute inset-y-0 border-l border-hf-weiches-schwarz/50"
                         [style.left.px]="level * guideStep + guideStep / 2"></span>
                     }
                   }
