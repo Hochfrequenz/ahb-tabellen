@@ -16,6 +16,8 @@
     <button
       type="button"
       (click)="toggle($event)"
+      (keydown.enter)="$event.stopPropagation()"
+      (keydown.space)="$event.stopPropagation()"
       class="w-5 h-5 flex-none flex items-center justify-center rounded hover:bg-hf-pastell-rose text-hf-text-color transition-transform duration-150"
       [class.rotate-90]="expanded()"
       [attr.aria-label]="expanded() ? 'Zuklappen' : 'Aufklappen'">

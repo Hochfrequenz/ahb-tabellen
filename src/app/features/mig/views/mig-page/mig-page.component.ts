@@ -116,17 +116,20 @@ export class MigPageComponent {
     if (this.loadedListFormatVersion !== formatVersion) {
       this.loadedListFormatVersion = formatVersion;
       this.migs.set([]);
-      this.migService.getMigs({ 'format-version': formatVersion }).subscribe({
-        next: migs => {
-          // Ignore a late answer for a format version the user has already left.
-          if (this.loadedListFormatVersion !== formatVersion) return;
-          this.migs.set(migs);
-          if (!this.format() && migs.length > 0) {
-            this.navigate(formatVersion, migs[0].format, migs[0].versionsnummer, '', true);
-          }
-        },
-        error: () => this.error.set('Die MIGs konnten nicht geladen werden.'),
-      });
+      this.migService
+        .getMigs({ 'format-version': formatVersion })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: migs => {
+            // Ignore a late answer for a format version the user has already left.
+            if (this.loadedListFormatVersion !== formatVersion) return;
+            this.migs.set(migs);
+            if (!this.format() && migs.length > 0) {
+              this.navigate(formatVersion, migs[0].format, migs[0].versionsnummer, '', true);
+            }
+          },
+          error: () => this.error.set('Die MIGs konnten nicht geladen werden.'),
+        });
     }
 
     if (!p.format) {
@@ -150,6 +153,7 @@ export class MigPageComponent {
         format: p.format,
         ...(p.version ? { version: p.version } : {}),
       })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: tree => {
           // Ignore a late answer for a MIG the user has already switched away from.
@@ -232,14 +236,9 @@ export class MigPageComponent {
     const queryParams: Record<string, string> = {};
     if (version) queryParams['version'] = version;
     if (node) queryParams['node'] = node;
-    this.router.navigate(format ? ['/mig', formatVersion, format] : ['/mig'], {
+    this.router.navigate(format ? ['/mig', formatVersion, format] : ['/mig', formatVersion], {
       queryParams,
       replaceUrl,
     });
-    if (!format) {
-      // '/mig' without a format: remember the chosen format version for the MIG list.
-      this.loadedListFormatVersion = '';
-      this.onRoute({ formatVersion, format: '', version: '', node: '' });
-    }
   }
 }

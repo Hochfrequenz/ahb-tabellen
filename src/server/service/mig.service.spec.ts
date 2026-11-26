@@ -186,9 +186,15 @@ describe('MigService', () => {
         { ...UTILMD_G, primary_key: 'g' },
         { ...UTILMD_S, primary_key: 's' },
       ]);
-      repository.getHierarchy.mockResolvedValue([]);
+      repository.getHierarchy.mockResolvedValue([row({ segment_id: 'UNH' })]);
       await service.getMigTree('FV2610', 'UTILMD', 's2.2');
       expect(repository.getHierarchy).toHaveBeenCalledWith('s');
+    });
+
+    it('reports a MIG without structure data as not found', async () => {
+      repository.findMigs.mockResolvedValue([{ ...UTILMD_S, primary_key: 's' }]);
+      repository.getHierarchy.mockResolvedValue([]);
+      await expect(service.getMigTree('FV2610', 'UTILMD', 'S2.2')).rejects.toThrow(NotFoundError);
     });
 
     it('asks for a version when a format has several MIGs', async () => {
@@ -277,6 +283,20 @@ describe('MigService', () => {
       await service.getAhbMigLinks('FV2610', '44001');
       await service.getAhbMigLinks('FV2610', '44002');
       expect(repository.getHierarchy).toHaveBeenCalledTimes(2); // g and s, once each
+    });
+
+    it('skips a MIG without structure data, and reports none left as not found', async () => {
+      repository.getAhbLinePaths.mockResolvedValue([
+        { id: 'l1', id_path: 'SG4>', format: 'UTILMD' },
+      ]);
+      repository.getHierarchy.mockImplementation(async pk => (pk === 'g' ? [] : strom));
+      const result = await service.getAhbMigLinks('FV2610', '55001');
+      expect(result.mig.versionsnummer).toBe('S2.2');
+
+      repository.getHierarchy.mockResolvedValue([]);
+      await expect(new MigService(repository).getAhbMigLinks('FV2610', '55001')).rejects.toThrow(
+        NotFoundError
+      );
     });
 
     it('rejects an invalid Prüfidentifikator', async () => {

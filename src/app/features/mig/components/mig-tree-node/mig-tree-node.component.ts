@@ -32,8 +32,13 @@ export class MigTreeNodeComponent {
     this.picked.emit(this.node());
   }
 
+  /**
+   * From the expander's click or Space on the row. The expander stops its own Enter/Space
+   * keydown, so its native click toggles once; Space on the row must not scroll the page.
+   */
   toggle(event: Event): void {
     event.stopPropagation();
+    event.preventDefault();
     this.state.toggle(this.node());
   }
 }

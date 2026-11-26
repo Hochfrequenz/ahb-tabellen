@@ -152,6 +152,7 @@ function toMatchTree(nodes: MigNode[], idPaths: Map<MigNode, string | null>): Ma
       // A node without id_path (a few empty code rows) gets a step nothing matches.
       step: steps[steps.length - 1] ?? { key: '', qualifier: undefined, repetition: undefined },
       name: node.name,
+      isGroup: node.type === 'segment_group',
       value: node,
       children: toMatchTree(node.children, idPaths),
     };
@@ -218,6 +219,11 @@ export default class MigService {
     }
 
     const rows = await this.repository.getHierarchy(mig.primary_key);
+    if (rows.length === 0) {
+      throw new NotFoundError(
+        `MIG ${normalizedFormat} ${mig.versionsnummer} in ${resolved} has no structure data.`
+      );
+    }
     return {
       meta: { formatVersion: resolved, ...toSummary(mig) },
       nodes: buildMigTree(rows),
@@ -250,7 +256,9 @@ export default class MigService {
 
     let best: { result: MatchResult<MigNode>; mig: MigInfo } | undefined;
     for (const mig of migs) {
-      const result = matchAhbLines(await this.matchTree(mig.primary_key), linePaths);
+      const tree = await this.matchTree(mig.primary_key);
+      if (tree.length === 0) continue; // MIG metadata without structure data
+      const result = matchAhbLines(tree, linePaths);
       // More lines placed wins, then better qualifier agreement; the first MIG wins a tie.
       if (
         !best ||

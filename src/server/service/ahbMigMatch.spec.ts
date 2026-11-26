@@ -169,4 +169,23 @@ describe('matchAhbLines', () => {
     const guess = matchAhbLines(mig, sg5('Technische Ressource')).matches;
     expect(guess.map(m => m?.exact)).toEqual([false, false]);
   });
+
+  it('never falls back into another segment group variant than the one chosen', () => {
+    const group = (id: string, children: MatchNode<string>[]) => ({
+      ...n(id, children),
+      isGroup: true,
+    });
+    // The code Z99 exists only in the list SG4's SG8; the AHB's SG4 is the transaction one.
+    const utilmd = [
+      group('SG4+Z01', [group('SG8', [n('SEQ', [n('Z99')])])]),
+      group('SG4+24', [n('IDE'), n('DTM'), group('SG8', [n('SEQ', [n('Z01')])])]),
+    ];
+    const { matches } = matchAhbLines(utilmd, [
+      { id: 'ide', idPath: 'SG4>IDE>' },
+      { id: 'dtm', idPath: 'SG4>DTM>' },
+      { id: 'z01', idPath: 'SG4>SG8>SEQ>Z01>' },
+      { id: 'z99', idPath: 'SG4>SG8>SEQ>Z99>' },
+    ]);
+    expect(matches.map(m => m?.indexPath ?? null)).toEqual(['1-0', '1-1', '1-2-0-0', null]);
+  });
 });

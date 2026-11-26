@@ -32,6 +32,8 @@ export interface MatchNode<T> {
   step: PathStep;
   /** The element's name in the MIG; agreeing with the AHB line's name breaks ties. */
   name?: string;
+  /** A segment group: fallbacks to other variants never leave the chosen one. */
+  isGroup?: boolean;
   value: T;
   children: MatchNode<T>[];
 }
@@ -249,6 +251,8 @@ interface Candidate<T> {
   indexPath: number[];
   exact: boolean;
   fit: Fit;
+  /** Index path of the innermost MIG segment group the node's children lie in ('' = top). */
+  childScope: string;
 }
 
 /** The MIG node of each AHB line, placed group by group (see the module comment). */
@@ -262,17 +266,20 @@ export function matchAhbLines<T>(roots: MatchNode<T>[], lines: AhbLinePath[]): M
     prefix: AhbPrefix,
     pool: MatchNode<T>[],
     indexPath: number[],
-    exact: boolean
+    exact: boolean,
+    scope: string
   ): Candidate<T>[] => {
     const found: Candidate<T>[] = [];
     pool.forEach((node, index) => {
       const fit = placer.fit(prefix, node);
       if (fit) {
+        const path = [...indexPath, index];
         found.push({
           node,
-          indexPath: [...indexPath, index],
+          indexPath: path,
           exact: exact && stepAgrees(prefix.step, node.step),
           fit,
+          childScope: node.isGroup ? path.join('-') : scope,
         });
       }
     });
@@ -286,8 +293,9 @@ export function matchAhbLines<T>(roots: MatchNode<T>[], lines: AhbLinePath[]): M
 
   /**
    * Places `prefix` into the first of `candidates`. The others are the other variants of the
-   * same group: a line below that has no place in the chosen variant may use one of them (the
-   * AHB writes one STS group where the MIG has several STS variants with different codes).
+   * same element: a line below that has no place in the chosen variant may use one of them (the
+   * AHB writes one STS segment where the MIG has several STS variants with different codes),
+   * but only within the same segment group: a line never leaves the group chosen for it.
    */
   const place = (prefix: AhbPrefix, candidates: Candidate<T>[]): void => {
     const [chosen] = candidates;
@@ -301,17 +309,24 @@ export function matchAhbLines<T>(roots: MatchNode<T>[], lines: AhbLinePath[]): M
       };
     }
     for (const child of prefix.children) {
-      const inChosen = ranked(child, chosen.node.children, chosen.indexPath, chosen.exact);
+      const inChosen = ranked(
+        child,
+        chosen.node.children,
+        chosen.indexPath,
+        chosen.exact,
+        chosen.childScope
+      );
       const inOthers = candidates
         .slice(1)
-        .flatMap(c => ranked(child, c.node.children, c.indexPath, c.exact));
+        .filter(c => c.childScope === chosen.childScope)
+        .flatMap(c => ranked(child, c.node.children, c.indexPath, c.exact, c.childScope));
       const childCandidates = [...inChosen, ...inOthers];
       if (childCandidates.length > 0) place(child, childCandidates);
     }
   };
 
   for (const prefix of buildAhbTree(lines)) {
-    const candidates = ranked(prefix, roots, [], true);
+    const candidates = ranked(prefix, roots, [], true, '');
     if (candidates.length > 0) place(prefix, candidates);
   }
   return { matches, matched: matches.filter(m => m !== null).length, score };
