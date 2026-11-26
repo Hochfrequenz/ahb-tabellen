@@ -16,6 +16,7 @@ import { environment } from '../../../../environments/environment';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
 import { DomSanitizer } from '@angular/platform-browser';
 import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.utils';
+import { RowGuide, treeGuides } from '../../ahb-tree-guides';
 import { MigElementDetailsComponent } from '../../../mig/components/mig-element-details/mig-element-details.component';
 
 interface ExpandedState {
@@ -53,6 +54,17 @@ export class AhbTableComponent {
   );
   /** The MIG column shows only when there is something to link. */
   readonly hasMig = computed(() => (this.migLinks()?.links.length ?? 0) > 0);
+  /** Tree guide lines left of the table, from each line's MIG position. */
+  readonly guides = computed<(RowGuide | null)[]>(() =>
+    this.hasMig() ? treeGuides(this.lines().map(l => this.migByGuid().get(l.guid)?.node)) : []
+  );
+  /** Horizontal space per tree level, in px. */
+  readonly guideStep = 12;
+  /** Vertical position of an elbow: the middle of a row's first text line (py-4 + half line). */
+  readonly guideElbowY = 26;
+  readonly guideWidth = computed(
+    () => (Math.max(0, ...this.guides().map(g => g?.depth ?? 0)) + 2) * this.guideStep
+  );
   /** Lines whose MIG details are open, by guid. */
   readonly openMig = signal<ReadonlySet<string>>(new Set());
 

@@ -2,6 +2,11 @@
   <table class="table-auto w-full min-w-[1000px] text-sm text-hf-text-color">
     <thead #header class="sticky top-0 z-10">
       <tr>
+        @if (hasMig()) {
+          <th scope="col" class="bg-hf-weiss-rose p-0" [style.width.px]="guideWidth()">
+            <span class="sr-only">Struktur</span>
+          </th>
+        }
         <th
           scope="col"
           class="bg-hf-weiss-rose px-6 py-3 text-left text-xs text-hf-text-color uppercase">
@@ -54,6 +59,34 @@
     <tbody>
       @for (line of lines(); track line.index; let i = $index) {
         <tr [class]="getRowClass(i)">
+          @if (hasMig()) {
+            <td class="relative p-0" aria-hidden="true" [style.width.px]="guideWidth()">
+              @if (guides()[i]; as g) {
+                @for (passes of g.through; track $index; let level = $index) {
+                  @if (passes) {
+                    <span
+                      class="absolute inset-y-0 border-l border-hf-weiches-schwarz/20"
+                      [style.left.px]="level * guideStep + guideStep / 2"></span>
+                  }
+                }
+                <span
+                  class="absolute top-0 border-l border-hf-weiches-schwarz/20"
+                  [style.left.px]="g.depth * guideStep + guideStep / 2"
+                  [style.height]="g.last ? guideElbowY + 'px' : '100%'"></span>
+                <span
+                  class="absolute border-t border-hf-weiches-schwarz/20"
+                  [style.left.px]="g.depth * guideStep + guideStep / 2"
+                  [style.top.px]="guideElbowY"
+                  [style.width.px]="guideStep / 2 + 2"></span>
+                @if (g.below[g.depth + 1]) {
+                  <span
+                    class="absolute bottom-0 border-l border-hf-weiches-schwarz/20"
+                    [style.left.px]="(g.depth + 1) * guideStep + guideStep / 2"
+                    [style.top.px]="guideElbowY"></span>
+                }
+              }
+            </td>
+          }
           <td
             class="px-6 py-4"
             [class.font-bold]="isSegmentGroup(i)"
@@ -126,6 +159,17 @@
         @if (hasMig() && migLinks(); as mig) {
           @if (openMig().has(line.guid) && migByGuid().get(line.guid); as link) {
             <tr>
+              <td class="relative p-0" aria-hidden="true">
+                @if (guides()[i]; as g) {
+                  @for (passes of g.below; track $index; let level = $index) {
+                    @if (passes) {
+                      <span
+                        class="absolute inset-y-0 border-l border-hf-weiches-schwarz/20"
+                        [style.left.px]="level * guideStep + guideStep / 2"></span>
+                    }
+                  }
+                }
+              </td>
               <td colspan="9" class="px-6 pb-4">
                 <app-mig-element-details [link]="link" [mig]="mig.mig" />
               </td>

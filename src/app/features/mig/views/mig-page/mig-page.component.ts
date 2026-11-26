@@ -14,7 +14,6 @@ import { combineLatest, distinctUntilChanged, map } from 'rxjs';
 import { getCurrentEdifactFormatVersion } from '@hochfrequenz/efoli';
 
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
-import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { FormatVersionSelectComponent } from '../../../ahbs/components/format-version-select/format-version-select.component';
 import { MigNode, MigService, MigSummary, MigTree } from '../../../../core/api';
 import { MigTreeState } from '../../mig-tree-state.service';
@@ -37,7 +36,6 @@ import {
   imports: [
     ReactiveFormsModule,
     HeaderComponent,
-    FooterComponent,
     FormatVersionSelectComponent,
     MigTreeNodeComponent,
   ],

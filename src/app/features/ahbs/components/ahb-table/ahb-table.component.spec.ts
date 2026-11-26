@@ -54,6 +54,7 @@ describe('AhbTableComponent', () => {
   it('has no MIG column without MIG links', () => {
     MockRender(AhbTableComponent, { lines: [line], formatVersion: 'FV2610', pruefi: '13002' });
     expect(ngMocks.findAll('th').map(th => ngMocks.formatText(th))).not.toContain('MIG');
+    expect(ngMocks.findAll('td[aria-hidden="true"]')).toHaveLength(0);
   });
 
   it('opens and closes the MIG details of a line', () => {
@@ -64,6 +65,9 @@ describe('AhbTableComponent', () => {
       migLinks,
     });
     expect(ngMocks.findAll('th').map(th => ngMocks.formatText(th))).toContain('MIG');
+    // The tree guide gutter: one cell per line, with the elbow of a top-level last line.
+    expect(ngMocks.findAll('td[aria-hidden="true"]')).toHaveLength(1);
+    expect(ngMocks.findAll('td[aria-hidden="true"] span')).toHaveLength(2);
     const button = ngMocks.find('button[aria-expanded]');
     expect(ngMocks.formatText(button)).toContain('UNH');
     expect(ngMocks.findAll(MigElementDetailsComponent)).toHaveLength(0);
