@@ -425,6 +425,7 @@ export default class AHBRepository {
         ? line.data_element.substring(2)
         : line.data_element || '',
       guid: line.id,
+      id_path: line.id_path ?? null,
       index: 0, // This will need to be calculated based on sort_path if needed
       name: isSectionLine ? '' : line.line_name || '',
       section_name: isSectionLine ? line.line_name || '' : '',

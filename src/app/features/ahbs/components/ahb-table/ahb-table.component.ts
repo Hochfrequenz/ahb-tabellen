@@ -54,17 +54,21 @@ export class AhbTableComponent {
   );
   /** The MIG column shows only when there is something to link. */
   readonly hasMig = computed(() => (this.migLinks()?.links.length ?? 0) > 0);
-  /** Segment group brackets left of the table, from each line's MIG position. */
+  /**
+   * Segment group brackets left of the table, from each line's id_path (see ahb-tree-guides).
+   * Part of the MIG demo, so behind the same feature flag.
+   */
   readonly guides = computed<(RowGuide | null)[]>(() =>
-    this.hasMig()
+    environment.enableMigView
       ? treeGuides(
           this.lines().map(l => ({
-            path: this.migByGuid().get(l.guid)?.node,
+            idPath: l.id_path,
             isSegmentGroup: l.line_type === this.LINE_TYPE.SEGMENT_GROUP,
           }))
         )
       : []
   );
+  readonly hasGuides = computed(() => this.guides().some(g => g !== null));
   /** Horizontal space per nesting level, in px. */
   readonly guideStep = 14;
   /** Length of the tick at a group's header row, in px. */
@@ -72,7 +76,10 @@ export class AhbTableComponent {
   readonly guideWidth = computed(
     () => Math.max(1, ...this.guides().map(g => g?.brackets.length ?? 0)) * this.guideStep + 8
   );
-  /** Collapsed segment groups, by the guid of their header row (not by SG number). */
+  /**
+   * Collapsed segment groups, by the id_path of their header row. The id_path carries the
+   * qualifier, so `SG4>SG8+Z79>` and `SG4>SG8+ZH0>` collapse independently.
+   */
   readonly collapsedGroups = signal<ReadonlySet<string>>(new Set());
   /** Rows hidden by collapsed groups, by row index. */
   readonly hiddenRows = computed(() => {
@@ -80,7 +87,7 @@ export class AhbTableComponent {
     if (collapsed.size === 0) return new Set<number>();
     const rows = new Set<number>();
     this.lines().forEach((line, i) => {
-      if (collapsed.has(line.guid)) rows.add(i);
+      if (line.id_path && collapsed.has(line.id_path)) rows.add(i);
     });
     return hiddenRows(this.guides(), rows);
   });
@@ -306,10 +313,10 @@ export class AhbTableComponent {
       .filter(s => s);
   }
 
-  toggleGroup(guid: string): void {
+  toggleGroup(idPath: string): void {
     const collapsed = new Set(this.collapsedGroups());
-    if (!collapsed.delete(guid)) {
-      collapsed.add(guid);
+    if (!collapsed.delete(idPath)) {
+      collapsed.add(idPath);
     }
     this.collapsedGroups.set(collapsed);
   }

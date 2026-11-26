@@ -2,7 +2,7 @@
   <table class="table-auto w-full min-w-[1000px] text-sm text-hf-text-color">
     <thead #header class="sticky top-0 z-10">
       <tr>
-        @if (hasMig()) {
+        @if (hasGuides()) {
           <th
             scope="col"
             class="bg-hf-weiss-rose p-0"
@@ -64,7 +64,7 @@
       @for (line of lines(); track line.index; let i = $index) {
         @if (!hiddenRows().has(i)) {
           <tr [class]="getRowClass(i)">
-            @if (hasMig()) {
+            @if (hasGuides()) {
               <td
                 class="relative p-0"
                 data-guide
@@ -73,10 +73,10 @@
                 @if (guides()[i]; as g) {
                   @for (part of g.brackets; track $index; let level = $index) {
                     @if (part === 'start') {
-                      @let collapsed = collapsedGroups().has(line.guid);
+                      @let collapsed = !!line.id_path && collapsedGroups().has(line.id_path);
                       <button
                         type="button"
-                        (click)="toggleGroup(line.guid)"
+                        (click)="toggleGroup(line.id_path ?? '')"
                         [attr.aria-expanded]="!collapsed"
                         [attr.aria-label]="
                           (collapsed ? 'Ausklappen: ' : 'Einklappen: ') +
@@ -190,17 +190,19 @@
           @if (hasMig() && migLinks(); as mig) {
             @if (openMig().has(line.guid) && migByGuid().get(line.guid); as link) {
               <tr>
-                <td class="relative p-0" aria-hidden="true" data-guide>
-                  @if (guides()[i]; as g) {
-                    @for (part of g.brackets; track $index; let level = $index) {
-                      @if (part !== 'single') {
-                        <span
-                          class="absolute inset-y-0 border-l border-hf-weiches-schwarz/50"
-                          [style.left.px]="level * guideStep + guideStep / 2"></span>
+                @if (hasGuides()) {
+                  <td class="relative p-0" aria-hidden="true" data-guide>
+                    @if (guides()[i]; as g) {
+                      @for (part of g.brackets; track $index; let level = $index) {
+                        @if (part !== 'single') {
+                          <span
+                            class="absolute inset-y-0 border-l border-hf-weiches-schwarz/50"
+                            [style.left.px]="level * guideStep + guideStep / 2"></span>
+                        }
                       }
                     }
-                  }
-                </td>
+                  </td>
+                }
                 <td colspan="9" class="px-6 pb-4">
                   <app-mig-element-details [link]="link" [mig]="mig.mig" />
                 </td>

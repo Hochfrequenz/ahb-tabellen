@@ -4,8 +4,12 @@
  * SG8) are separate brackets on the same level; a group inside another (SG10 in SG8) is a
  * bracket further in. Segments, data elements and codes draw no lines of their own.
  *
- * Which rows a group spans comes from each line's position in the MIG (an index path such as
- * `10-48-2`): a row belongs to a group if the group's MIG node contains its own.
+ * A group is identified by its header's `id_path`, which carries the qualifier that makes it a
+ * group of its own: `SG4>SG8+Z79>` and `SG4>SG8+ZH0>` are two SG8. A row belongs to the
+ * innermost open group whose path its own `id_path` starts with (`SG4>SG8+Z79>SEQ>…`).
+ * A group that repeats without a qualifier has `#n` on its header only (`SG29>#1`, `SG29>#2`;
+ * the rows inside are `SG29>LIN>…`), so the `#n` is ignored for membership, and a new header
+ * with the same path closes the previous group.
  */
 
 /** How a row meets the bracket of one enclosing segment group. */
@@ -19,33 +23,41 @@ export interface RowGuide {
 }
 
 export interface GuideLine {
-  /** The line's MIG index path; undefined if it has none. */
-  path: string | undefined;
+  /** The line's `id_path`; null/undefined if it has none. */
+  idPath: string | null | undefined;
   isSegmentGroup: boolean;
 }
 
-const within = (group: string, path: string): boolean =>
-  path === group || path.startsWith(`${group}-`);
+/** `SG29>#2` → `SG29>`: the prefix the rows of a group start with. */
+const memberPrefix = (idPath: string): string => idPath.replace(/#\d+$/, '');
 
-/** The brackets each row draws, in row order; null for a row without a MIG position. */
+/** The brackets each row draws, in row order; null for a row without `id_path`. */
 export function treeGuides(lines: GuideLine[]): (RowGuide | null)[] {
   const enclosing: number[][] = lines.map(() => []); // per row: the group rows it lies in
   const lastRow = new Map<number, number>(); // group row → its last row
+  const prefixOf = (row: number): string => memberPrefix(lines[row].idPath as string);
 
   const stack: number[] = []; // open group rows, outermost first
   lines.forEach((line, row) => {
-    const path = line.path;
-    if (path === undefined) return;
-    while (stack.length > 0 && !within(lines[stack[stack.length - 1]].path as string, path)) {
-      stack.pop();
+    const path = line.idPath;
+    if (!path) return;
+    const top = () => stack[stack.length - 1];
+    if (line.isSegmentGroup) {
+      // A header closes every group it is not inside, and a same-path sibling (SG29>#1 → #2).
+      const own = memberPrefix(path);
+      while (stack.length > 0 && (!path.startsWith(prefixOf(top())) || own === prefixOf(top()))) {
+        stack.pop();
+      }
+      stack.push(row);
+    } else {
+      while (stack.length > 0 && !path.startsWith(prefixOf(top()))) stack.pop();
     }
-    if (line.isSegmentGroup) stack.push(row);
     enclosing[row] = [...stack];
     for (const group of stack) lastRow.set(group, row);
   });
 
   return lines.map((line, row) => {
-    if (line.path === undefined) return null;
+    if (!line.idPath) return null;
     return {
       ...(line.isSegmentGroup ? { lastRow: lastRow.get(row) } : {}),
       brackets: enclosing[row].map(group => {

@@ -54,6 +54,7 @@ describe('AhbTableComponent', () => {
   it('has no MIG column without MIG links', () => {
     MockRender(AhbTableComponent, { lines: [line], formatVersion: 'FV2610', pruefi: '13002' });
     expect(ngMocks.findAll('th').map(th => ngMocks.formatText(th))).not.toContain('MIG');
+    // Without id_path there are no segment group brackets either.
     expect(ngMocks.findAll('td[data-guide]')).toHaveLength(0);
   });
 
@@ -65,9 +66,6 @@ describe('AhbTableComponent', () => {
       migLinks,
     });
     expect(ngMocks.findAll('th').map(th => ngMocks.formatText(th))).toContain('MIG');
-    // The segment group gutter: one cell per line; a top-level segment draws no bracket.
-    expect(ngMocks.findAll('td[data-guide]')).toHaveLength(1);
-    expect(ngMocks.findAll('td[data-guide] span')).toHaveLength(0);
     const button = ngMocks.find('button[aria-expanded]');
     expect(ngMocks.formatText(button)).toContain('UNH');
     expect(ngMocks.findAll(MigElementDetailsComponent)).toHaveLength(0);
@@ -83,27 +81,27 @@ describe('AhbTableComponent', () => {
   });
 
   it('collapses only the clicked one of two neighbouring SG8', () => {
-    const rows: [string, string, string, string][] = [
-      // guid, segment group, segment, MIG node
-      ['sg8a', 'SG8', '', '10-48'],
-      ['seqa', 'SG8', 'SEQ', '10-48-0'],
-      ['sg8b', 'SG8', '', '10-49'],
-      ['seqb', 'SG8', 'SEQ', '10-49-0'],
+    const rows: [string, string, string][] = [
+      // guid, segment, id_path
+      ['sg8a', '', 'SG4>SG8+Z79>'],
+      ['seqa', 'SEQ', 'SG4>SG8+Z79>SEQ>'],
+      ['sg8b', '', 'SG4>SG8+ZH0>'],
+      ['seqb', 'SEQ', 'SG4>SG8+ZH0>SEQ>'],
     ];
-    const lines = rows.map(([guid, sg, seg], index) => ({
+    const lines = rows.map(([guid, seg, id_path], index) => ({
       ...line,
       guid,
       index,
-      segment_group_key: sg,
+      id_path,
+      segment_group_key: 'SG8',
       segment_code: seg,
       line_type: seg ? 'segment' : 'segment_group',
     }));
     const links: AhbMigLinks = {
       ...migLinks,
-      links: rows.map(([guid, , , node]) => ({
+      links: rows.map(([guid]) => ({
         ...migLinks.links[0],
         guid,
-        node,
         element: { ...migLinks.links[0].element, key: guid },
       })),
     };
@@ -113,7 +111,7 @@ describe('AhbTableComponent', () => {
       pruefi: '55001',
       migLinks: links,
     });
-    // The MIG button of each visible row shows its line's guid.
+    expect(ngMocks.findAll('td[data-guide]')).toHaveLength(4);
     const visible = () =>
       ngMocks
         .findAll('tbody button[aria-expanded][title^="MIG"]')
