@@ -1,8 +1,8 @@
 import { AhbPageComponent } from './ahb-page.component';
 import { MockBuilder, MockRender, ngMocks } from 'ng-mocks';
-import { AhbService } from '../../../../core/api';
+import { AhbMigLinks, AhbService, MigService } from '../../../../core/api';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AhbTableComponent } from '../../components/ahb-table/ahb-table.component';
 import { signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -10,9 +10,21 @@ import { HttpClient } from '@angular/common/http';
 describe('AhbPageComponent', () => {
   let mockRouter: { navigate: jest.Mock };
   let mockAhbService: { getAhb$Json: jest.Mock };
+  let mockMigService: { getAhbMigLinks: jest.Mock };
+  const migLinks: AhbMigLinks = {
+    mig: {
+      formatVersion: 'FV123',
+      format: 'MSCONS',
+      versionsnummer: '2.5',
+      gueltigVon: null,
+      gueltigBis: null,
+    },
+    links: [],
+  };
 
   beforeEach(() => {
     mockRouter = { navigate: jest.fn() };
+    mockMigService = { getAhbMigLinks: jest.fn(() => of(migLinks)) };
     mockAhbService = {
       getAhb$Json: jest.fn(params =>
         of({
@@ -42,6 +54,10 @@ describe('AhbPageComponent', () => {
       .provide({
         provide: AhbService,
         useValue: mockAhbService,
+      })
+      .provide({
+        provide: MigService,
+        useValue: mockMigService,
       })
       .provide({
         provide: ActivatedRoute,
@@ -81,6 +97,10 @@ describe('AhbPageComponent', () => {
         useValue: mockAhbService,
       })
       .provide({
+        provide: MigService,
+        useValue: mockMigService,
+      })
+      .provide({
         provide: ActivatedRoute,
         useValue: {
           queryParams: of({}),
@@ -97,6 +117,21 @@ describe('AhbPageComponent', () => {
           get: jest.fn(() => of('')),
         },
       });
+
+  it('loads the MIG links of the Prüfi', () => {
+    const fixture = MockRender(AhbPageComponent);
+    expect(mockMigService.getAhbMigLinks).toHaveBeenCalledWith({
+      'format-version': 'FV123',
+      pruefi: '123',
+    });
+    expect(fixture.point.componentInstance.migLinks()).toBe(migLinks);
+  });
+
+  it('shows no MIG column when the MIG links cannot be loaded', () => {
+    mockMigService.getAhbMigLinks.mockReturnValue(throwError(() => new Error('404')));
+    const fixture = MockRender(AhbPageComponent);
+    expect(fixture.point.componentInstance.migLinks()).toBeNull();
+  });
 
   it('should render', () => {
     const fixture = MockRender(AhbPageComponent, {
@@ -140,6 +175,10 @@ describe('AhbPageComponent', () => {
       .provide({
         provide: AhbService,
         useValue: mockAhbService,
+      })
+      .provide({
+        provide: MigService,
+        useValue: mockMigService,
       })
       .provide({
         provide: ActivatedRoute,

@@ -32,6 +32,8 @@ tags:
     description: EDIFACT format versions e.g. `FV2510`
   - name: prüfidentifikatoren
     description: Prüfidentifikatoren which is defined by edi@energy, e.g. 55001
+  - name: mig
+    description: Message Implementation Guides (MIGs), the structure of an EDIFACT message
   - name: maintenance
     description: Endpoints which have mainly a technical focus
 paths:
@@ -259,6 +261,104 @@ paths:
           description: pruefiOld and pruefiNew are identical
         '404':
           description: One or both Pruefidentifikatoren not found in the given format version
+  /api/migs:
+    get:
+      tags:
+        - mig
+      summary: List the MIGs (Message Implementation Guides) of a format version
+      description: Empty if the database contains no MIG data (the AHB-only database).
+      operationId: getMigs
+      parameters:
+        - name: format-version
+          in: query
+          description: FVxxxx code, 'current', or an ISO date YYYY-MM-DD
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MigSummary'
+        '400':
+          description: Invalid format version
+  /api/mig/{format-version}/{format}:
+    get:
+      tags:
+        - mig
+      summary: Get the structure of a MIG as a tree (segment groups, segments, data element groups, data elements, codes)
+      operationId: getMigTree
+      parameters:
+        - name: format-version
+          in: path
+          description: FVxxxx code, 'current', or an ISO date YYYY-MM-DD
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+        - name: format
+          in: path
+          description: EDIFACT format, e.g. MSCONS
+          required: true
+          schema:
+            type: string
+            example: 'MSCONS'
+        - name: version
+          in: query
+          description: Versionsnummer of the MIG (e.g. S2.2); required only if the format has several MIGs in the format version (UTILMD)
+          required: false
+          schema:
+            type: string
+            example: 'S2.2'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigTree'
+        '400':
+          description: Invalid format version or format, or a version is needed
+        '404':
+          description: No such MIG (or the database contains no MIG data)
+  /api/ahb-mig/{format-version}/{pruefi}:
+    get:
+      tags:
+        - mig
+      summary: The MIG element of each line of a Prüfidentifikator's AHB
+      description: >-
+        Matches the AHB lines to the MIG by their paths. Where a format has several MIGs (UTILMD),
+        the one that matches the most lines is used. Lines without a MIG counterpart are left out.
+      operationId: getAhbMigLinks
+      parameters:
+        - name: format-version
+          in: path
+          description: FVxxxx code, 'current', or an ISO date YYYY-MM-DD
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+        - name: pruefi
+          in: path
+          description: Prüfidentifikator
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{5}$'
+            example: '55001'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AhbMigLinks'
+        '400':
+          description: Invalid format version or Prüfidentifikator
+        '404':
+          description: No such AHB, or no MIG for its format (or the database contains no MIG data)
   /api/pruefidentifikatoren/{format-version}:
     get:
       tags:
@@ -577,6 +677,14 @@ components:
               line_type:
                 type: string
                 example: 'segment'
+              id_path:
+                type: string
+                nullable: true
+                description: >-
+                  Path of the line through the message structure, with qualifiers, e.g.
+                  'SG4>SG8+Z79>SEQ>D_1229>Z79>'. A segment group header that repeats without a
+                  qualifier carries '#n' at the end (e.g. 'SG29>#2').
+                example: 'SG4>SG8+Z79>SEQ>'
             required:
               - ahb_expression
               - data_element
@@ -824,6 +932,139 @@ components:
         - added
         - deleted
         - modified
+    MigSummary:
+      type: object
+      required: [format, versionsnummer, gueltigVon, gueltigBis]
+      properties:
+        format:
+          type: string
+          example: 'UTILMD'
+        versionsnummer:
+          type: string
+          example: 'S2.2'
+        gueltigVon:
+          type: string
+          nullable: true
+          example: '2026-10-01'
+        gueltigBis:
+          type: string
+          nullable: true
+    MigTree:
+      type: object
+      required: [meta, nodes]
+      properties:
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/MigSummary'
+            - type: object
+              required: [formatVersion]
+              properties:
+                formatVersion:
+                  type: string
+                  example: 'FV2610'
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigNode'
+    MigNode:
+      type: object
+      required: [type, key, name, statusStd, statusSpecification, children]
+      properties:
+        type:
+          type: string
+          enum: [segment_group, segment, dataelementgroup, dataelement, code]
+        key:
+          type: string
+          description: SG4, RFF, C_C506, D_1153 or a code value like AAV
+        name:
+          type: string
+        statusStd:
+          type: string
+          description: Status in the EDIFACT standard (M, C, R, D, O, N)
+        statusSpecification:
+          type: string
+          description: Status in the BDEW specification (M, C, R, D, O, N)
+        maxRepStd:
+          type: integer
+        maxRepSpecification:
+          type: integer
+        number:
+          type: string
+        formatStd:
+          type: string
+        formatSpecification:
+          type: string
+        description:
+          type: string
+        example:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigNode'
+    MigElement:
+      type: object
+      description: A MIG node without its subtree
+      required: [type, key, name, statusStd, statusSpecification]
+      properties:
+        type:
+          type: string
+          enum: [segment_group, segment, dataelementgroup, dataelement, code]
+        key:
+          type: string
+        name:
+          type: string
+        statusStd:
+          type: string
+        statusSpecification:
+          type: string
+        maxRepStd:
+          type: integer
+        maxRepSpecification:
+          type: integer
+        number:
+          type: string
+        formatStd:
+          type: string
+        formatSpecification:
+          type: string
+        description:
+          type: string
+        example:
+          type: string
+    AhbMigLink:
+      type: object
+      required: [guid, node, exact, element]
+      properties:
+        guid:
+          type: string
+          description: guid of the AHB line
+        node:
+          type: string
+          description: Index path of the element in the MIG tree (the MIG view's node deep link)
+          example: '6-0-1'
+        exact:
+          type: boolean
+          description: False when AHB and MIG disagree on a qualifier on the way (another variant stands in)
+        element:
+          $ref: '#/components/schemas/MigElement'
+    AhbMigLinks:
+      type: object
+      required: [mig, links]
+      properties:
+        mig:
+          allOf:
+            - $ref: '#/components/schemas/MigSummary'
+            - type: object
+              required: [formatVersion]
+              properties:
+                formatVersion:
+                  type: string
+                  example: 'FV2610'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/AhbMigLink'
     Datenstand:
       type: object
       description: Latest publication date of the AHB data

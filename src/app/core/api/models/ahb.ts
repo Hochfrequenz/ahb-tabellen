@@ -20,6 +20,11 @@ export interface Ahb {
  */
 'ebd_key'?: string | null;
 'line_type': string;
+
+/**
+ * Path of the line through the message structure, with qualifiers, e.g. 'SG4>SG8+Z79>SEQ>D_1229>Z79>'. A segment group header that repeats without a qualifier carries '#n' at the end (e.g. 'SG29>#2').
+ */
+'id_path'?: string | null;
 }>;
   meta: {
 'description': string;

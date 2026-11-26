@@ -1,6 +1,8 @@
 import {
   Component,
   ElementRef,
+  Injector,
+  afterNextRender,
   computed,
   effect,
   input,
@@ -10,12 +12,14 @@ import {
   inject,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { Ahb } from '../../../../core/api';
+import { Ahb, AhbMigLink, AhbMigLinks } from '../../../../core/api';
 import { HighlightPipe, HighlightResult } from '../../../../shared/pipes/highlight.pipe';
 import { environment } from '../../../../environments/environment';
 import { IconLinkComponent } from '../../../../shared/components/icon-link/icon-link.component';
 import { DomSanitizer } from '@angular/platform-browser';
 import { getFormatFromPruefi } from '../../../../shared/utils/pruefi-format.utils';
+import { RowGuide, hiddenRows, treeGuides } from '../../ahb-tree-guides';
+import { MigElementDetailsComponent } from '../../../mig/components/mig-element-details/mig-element-details.component';
 
 interface ExpandedState {
   [key: number]: boolean;
@@ -24,7 +28,7 @@ interface ExpandedState {
 @Component({
   selector: 'app-ahb-table',
   standalone: true,
-  imports: [HighlightPipe, IconLinkComponent],
+  imports: [HighlightPipe, IconLinkComponent, MigElementDetailsComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './ahb-table.component.html',
 })
@@ -37,6 +41,8 @@ export class AhbTableComponent {
   highlight = input<string | undefined>();
   formatVersion = input.required<string>();
   pruefi = input.required<string>();
+  /** MIG element of each line; null hides the MIG column (feature off or no MIG data). */
+  migLinks = input<AhbMigLinks | null>(null);
 
   scrollToElement = output<{ element: HTMLElement; offsetY: number }>();
 
@@ -44,6 +50,51 @@ export class AhbTableComponent {
   markIndex = signal(0);
   expandedRows = signal<ExpandedState>({});
   private lastHighlightText = signal<string | undefined>(undefined);
+
+  readonly migByGuid = computed(
+    () => new Map<string, AhbMigLink>((this.migLinks()?.links ?? []).map(l => [l.guid, l]))
+  );
+  /** The MIG column shows only when there is something to link. */
+  readonly hasMig = computed(() => (this.migLinks()?.links.length ?? 0) > 0);
+  /**
+   * Segment group brackets left of the table, from each line's id_path (see ahb-tree-guides).
+   * Part of the MIG demo, so behind the same feature flag.
+   */
+  readonly guides = computed<(RowGuide | null)[]>(() =>
+    environment.enableMigView
+      ? treeGuides(
+          this.lines().map(l => ({
+            idPath: l.id_path,
+            isSegmentGroup: l.line_type === this.LINE_TYPE.SEGMENT_GROUP,
+          }))
+        )
+      : []
+  );
+  readonly hasGuides = computed(() => this.guides().some(g => g !== null));
+  /** Horizontal space per nesting level, in px. */
+  readonly guideStep = 20;
+  /** Length of the tick at a group's header row, in px. */
+  readonly guideTick = 7;
+  readonly guideWidth = computed(
+    () => Math.max(1, ...this.guides().map(g => g?.brackets.length ?? 0)) * this.guideStep + 8
+  );
+  /**
+   * Collapsed segment groups, by the id_path of their header row. The id_path carries the
+   * qualifier, so `SG4>SG8+Z79>` and `SG4>SG8+ZH0>` collapse independently.
+   */
+  readonly collapsedGroups = signal<ReadonlySet<string>>(new Set());
+  /** Rows hidden by collapsed groups, by row index. */
+  readonly hiddenRows = computed(() => {
+    const collapsed = this.collapsedGroups();
+    if (collapsed.size === 0) return new Set<number>();
+    const rows = new Set<number>();
+    this.lines().forEach((line, i) => {
+      if (line.id_path && collapsed.has(line.id_path)) rows.add(i);
+    });
+    return hiddenRows(this.guides(), rows);
+  });
+  /** Lines whose MIG details are open, by guid. */
+  readonly openMig = signal<ReadonlySet<string>>(new Set());
 
   // max. string length of 'Bedingung/Hinweis' entries
   readonly COLLAPSE_LENGTH = 80;
@@ -63,7 +114,12 @@ export class AhbTableComponent {
     NONE: '',
   } as const;
 
+  /** Bumped after folding re-rendered the rows, so the search hits are read again. */
+  private readonly rowsRendered = signal(0);
+  private readonly injector = inject(Injector);
+
   markElements = computed<HTMLElement[]>(() => {
+    this.rowsRendered();
     const highlight = this.highlight();
     const nativeElement = this.elementRef.nativeElement;
     if (!highlight || !nativeElement) {
@@ -83,6 +139,8 @@ export class AhbTableComponent {
       // Only run auto-expansion when the highlight text actually changes
       if (highlight && highlight !== lastHighlight) {
         this.lastHighlightText.set(highlight);
+        // A new search must find its matches in collapsed groups too.
+        this.collapsedGroups.set(new Set());
         this.markIndex.set(0);
         this.autoExpandRowsWithMatches(highlight);
         setTimeout(() => this.applyCurrentMark());
@@ -262,6 +320,44 @@ export class AhbTableComponent {
       .filter(s => s);
   }
 
+  toggleGroup(idPath: string): void {
+    const collapsed = new Set(this.collapsedGroups());
+    if (!collapsed.delete(idPath)) {
+      collapsed.add(idPath);
+    }
+    this.collapsedGroups.set(collapsed);
+    this.afterRowsChanged();
+  }
+
+  /**
+   * Folding adds or removes rows and their search hits: once they are rendered, count the hits
+   * again and keep the current one if it is still there.
+   */
+  private afterRowsChanged(): void {
+    afterNextRender(
+      () => {
+        this.rowsRendered.update(n => n + 1);
+        if (this.markIndex() >= this.markElements().length) {
+          this.markIndex.set(0);
+        }
+      },
+      { injector: this.injector }
+    );
+  }
+
+  /** Rows of a group, header excluded, for the toggle's label. */
+  groupSize(guide: RowGuide, row: number): number {
+    return (guide.lastRow ?? row) - row;
+  }
+
+  toggleMig(guid: string): void {
+    const open = new Set(this.openMig());
+    if (!open.delete(guid)) {
+      open.add(guid);
+    }
+    this.openMig.set(open);
+  }
+
   toggleExpand(index: number) {
     const currentState = this.expandedRows();
     const newState = {
@@ -269,6 +365,7 @@ export class AhbTableComponent {
       [index]: !currentState[index],
     };
     this.expandedRows.set(newState);
+    this.afterRowsChanged();
 
     // If there's an active search, re-apply highlighting to show/hide matches
     const highlight = this.highlight();

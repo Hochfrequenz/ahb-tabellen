@@ -1,0 +1,230 @@
+<div class="h-screen flex flex-col">
+  <app-header class="flex-none" />
+
+  <div class="flex-1 overflow-hidden flex flex-col bg-hf-pastell-rose">
+    <!-- Title and selection -->
+    <div class="flex-none px-4 md:px-6 lg:px-8 pt-6 pb-3">
+      <div class="flex flex-wrap items-end gap-x-6 gap-y-3">
+        <div>
+          <h1 class="text-2xl font-bold text-hf-text-color">
+            MIG-Struktur
+            @if (tree(); as t) {
+              <span class="font-normal">· {{ t.meta.format }} {{ t.meta.versionsnummer }}</span>
+            }
+          </h1>
+          @if (tree(); as t) {
+            <p class="text-sm text-hf-text-color opacity-80">
+              {{ t.meta.formatVersion }}
+              @if (t.meta.gueltigVon) {
+                · gültig ab {{ t.meta.gueltigVon }}
+              }
+            </p>
+          }
+        </div>
+
+        <div class="flex flex-wrap items-end gap-3 ml-auto">
+          <div class="flex flex-col text-xs text-hf-text-color gap-1">
+            <span>Formatversion</span>
+            <app-format-version-select [formControl]="formatVersionControl" class="w-56" />
+          </div>
+          <label class="flex flex-col text-xs text-hf-text-color gap-1">
+            MIG
+            <select
+              class="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-hf-weiches-schwarz focus:outline-none focus:ring-2 focus:ring-hf-dunkel-rose"
+              [value]="selectedMigKey()"
+              (change)="onMigChange($any($event.target).value)"
+              [disabled]="migs().length === 0">
+              @for (m of migs(); track m.format + m.versionsnummer) {
+                <option [value]="m.format + '|' + m.versionsnummer">
+                  {{ m.format }} {{ m.versionsnummer }}
+                </option>
+              }
+            </select>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="mx-4 md:mx-6 lg:mx-8 p-4 rounded-xl bg-hf-negative-light text-hf-negative-dark">
+        {{ error() }}
+      </div>
+    } @else if (loading()) {
+      <div class="mx-4 md:mx-6 lg:mx-8 p-4 text-hf-text-color">Lade MIG…</div>
+    } @else if (!tree() && migs().length === 0) {
+      <div class="mx-4 md:mx-6 lg:mx-8 p-4 text-hf-text-color">
+        Für {{ formatVersion() }} sind keine MIGs in der Datenbank.
+      </div>
+    }
+
+    @if (tree(); as t) {
+      <div class="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 px-4 md:px-6 lg:px-8 pb-6">
+        <!-- Left: tree / sample message -->
+        <section class="flex-1 min-h-0 flex flex-col bg-white rounded-2xl shadow-sm">
+          <div
+            class="flex-none flex flex-wrap items-center gap-2 px-4 py-2 border-b border-hf-pastell-rose">
+            <div class="flex rounded-lg bg-hf-weiss-rose p-0.5 text-sm" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                [attr.aria-selected]="tab() === 'tree'"
+                (click)="tab.set('tree')"
+                class="px-3 py-1 rounded-md"
+                [class]="tab() === 'tree' ? 'bg-hf-dunkel-rose text-white' : 'text-hf-text-color'">
+                Baum
+              </button>
+              <button
+                type="button"
+                role="tab"
+                [attr.aria-selected]="tab() === 'sample'"
+                (click)="tab.set('sample')"
+                class="px-3 py-1 rounded-md"
+                [class]="
+                  tab() === 'sample' ? 'bg-hf-dunkel-rose text-white' : 'text-hf-text-color'
+                ">
+                Beispielnachricht
+              </button>
+            </div>
+            @if (tab() === 'tree') {
+              <div class="ml-auto flex gap-2 text-sm">
+                <button
+                  type="button"
+                  (click)="expandAll()"
+                  class="px-3 py-1 rounded-lg bg-white border border-gray-300 hover:ring-2 hover:ring-gray-300">
+                  Alle aufklappen
+                </button>
+                <button
+                  type="button"
+                  (click)="collapseAll()"
+                  class="px-3 py-1 rounded-lg bg-white border border-gray-300 hover:ring-2 hover:ring-gray-300">
+                  Alle zuklappen
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="flex-1 min-h-0 overflow-auto p-2">
+            @if (tab() === 'tree') {
+              <div role="tree" [attr.aria-label]="'MIG ' + t.meta.format">
+                @for (n of t.nodes; track $index) {
+                  <app-mig-tree-node [node]="n" (picked)="pick($event)" />
+                }
+              </div>
+            } @else {
+              <p class="px-2 pb-2 text-xs text-hf-text-color opacity-70">
+                Die Beispielsegmente der MIG in Nachrichtenreihenfolge, eingerückt nach
+                Segmentgruppe. Klick auf eine Zeile zeigt das Segment im Baum.
+              </p>
+              <pre class="font-mono text-sm leading-relaxed">
+@for (line of sample(); track $index) {<button type="button" (click)="pickFromSample(line.node)" class="block w-full text-left rounded px-2 hover:bg-hf-weiss-rose" [style.padding-left.rem]="0.5 + line.level * 1.25" [title]="line.node.key + ' ' + line.node.name">{{ line.example }}</button>}</pre>
+            }
+          </div>
+        </section>
+
+        <!-- Right: details -->
+        <aside
+          class="lg:w-[28rem] flex-none min-h-0 overflow-auto bg-white rounded-2xl shadow-sm p-5">
+          @if (state.selected(); as s) {
+            <nav
+              class="flex flex-wrap items-center gap-1 text-xs text-hf-text-color mb-3"
+              aria-label="Pfad">
+              @for (a of selectedLocation()?.ancestors ?? []; track $index) {
+                <button type="button" (click)="pick(a)" class="font-mono hover:underline">
+                  {{ a.key }}
+                </button>
+                <span class="opacity-50">›</span>
+              }
+              <span class="font-mono font-semibold">{{ s.key }}</span>
+            </nav>
+
+            <div class="flex items-start gap-3">
+              <span
+                class="mt-1 flex-none text-[10px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded bg-hf-pastell-blau text-hf-weiches-schwarz">
+                {{ typeLabels[s.type] }}
+              </span>
+              <div>
+                <h2 class="text-xl font-semibold text-hf-weiches-schwarz">
+                  <span class="font-mono">{{ s.key }}</span> {{ s.name }}
+                </h2>
+                <p class="text-sm text-hf-text-color opacity-80">{{ typeNames[s.type] }}</p>
+              </div>
+            </div>
+
+            <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded-xl bg-hf-weiss-rose p-3">
+                <dt class="text-xs text-hf-text-color opacity-70">Status</dt>
+                <dd class="font-semibold text-hf-weiches-schwarz">
+                  {{ s.statusSpecification }} · {{ statusLabels[s.statusSpecification] ?? '' }}
+                </dd>
+              </div>
+              @if (s.maxRepSpecification !== undefined) {
+                <div class="rounded-xl bg-hf-weiss-rose p-3">
+                  <dt class="text-xs text-hf-text-color opacity-70">Max. Wiederholungen</dt>
+                  <dd class="font-semibold text-hf-weiches-schwarz">{{ s.maxRepSpecification }}</dd>
+                </div>
+              }
+              @if (s.formatSpecification) {
+                <div class="rounded-xl bg-hf-weiss-rose p-3">
+                  <dt class="text-xs text-hf-text-color opacity-70">Format</dt>
+                  <dd class="font-mono font-semibold text-hf-weiches-schwarz">
+                    {{ s.formatSpecification }}
+                  </dd>
+                </div>
+              }
+              @if (s.number) {
+                <div class="rounded-xl bg-hf-weiss-rose p-3">
+                  <dt class="text-xs text-hf-text-color opacity-70">Segmentnummer</dt>
+                  <dd class="font-mono font-semibold text-hf-weiches-schwarz">{{ s.number }}</dd>
+                </div>
+              }
+              @if (s.children.length) {
+                <div class="rounded-xl bg-hf-weiss-rose p-3">
+                  <dt class="text-xs text-hf-text-color opacity-70">Enthält</dt>
+                  <dd class="font-semibold text-hf-weiches-schwarz">
+                    {{ s.children.length }} Elemente
+                  </dd>
+                </div>
+              }
+            </dl>
+
+            @if (s.example) {
+              <h3
+                class="mt-5 mb-1 text-xs font-semibold uppercase tracking-wide text-hf-text-color opacity-70">
+                Beispiel
+              </h3>
+              <pre
+                class="font-mono text-sm bg-hf-weiches-schwarz text-hf-pastell-gruen rounded-xl p-3 overflow-x-auto"
+                >{{ s.example }}</pre>
+            }
+
+            @if (s.description) {
+              <h3
+                class="mt-5 mb-1 text-xs font-semibold uppercase tracking-wide text-hf-text-color opacity-70">
+                Beschreibung
+              </h3>
+              <p class="text-sm text-hf-weiches-schwarz whitespace-pre-line leading-relaxed">
+                {{ s.description }}
+              </p>
+            }
+
+            <button
+              type="button"
+              (click)="copyLink()"
+              class="mt-6 px-3 py-1.5 rounded-lg text-sm bg-hf-dunkel-rose text-white hover:opacity-90">
+              {{ linkCopied() ? 'Link kopiert ✓' : 'Link zu diesem Element kopieren' }}
+            </button>
+          } @else {
+            <div
+              class="h-full flex flex-col items-center justify-center text-center text-hf-text-color opacity-80 py-10">
+              <p class="text-lg font-semibold mb-2">Element auswählen</p>
+              <p class="text-sm">
+                Klick auf ein Element im Baum zeigt hier Beschreibung, Beispiel, Status,
+                Wiederholungen und Format.
+              </p>
+            </div>
+          }
+        </aside>
+      </div>
+    }
+  </div>
+</div>

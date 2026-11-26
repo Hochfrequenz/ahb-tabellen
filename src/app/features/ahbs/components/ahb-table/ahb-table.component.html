@@ -2,6 +2,15 @@
   <table class="table-auto w-full min-w-[1000px] text-sm text-hf-text-color">
     <thead #header class="sticky top-0 z-10">
       <tr>
+        @if (hasGuides()) {
+          <th
+            scope="col"
+            class="bg-hf-weiss-rose p-0"
+            [style.width.px]="guideWidth()"
+            [style.min-width.px]="guideWidth()">
+            <span class="sr-only">Struktur</span>
+          </th>
+        }
         <th
           scope="col"
           class="bg-hf-weiss-rose px-6 py-3 text-left text-xs text-hf-text-color uppercase">
@@ -42,66 +51,165 @@
           class="bg-hf-weiss-rose px-6 py-3 text-left text-xs text-hf-text-color uppercase">
           Bedingung / Hinweis / Format
         </th>
+        @if (hasMig()) {
+          <th
+            scope="col"
+            class="bg-hf-weiss-rose px-6 py-3 text-left text-xs text-hf-text-color uppercase">
+            MIG
+          </th>
+        }
       </tr>
     </thead>
     <tbody>
       @for (line of lines(); track line.index; let i = $index) {
-        <tr [class]="getRowClass(i)">
-          <td
-            class="px-6 py-4"
-            [class.font-bold]="isSegmentGroup(i)"
-            [innerHTML]="line.segment_group_key | highlight: highlight()"></td>
-          <td
-            class="px-6 py-4"
-            [class.font-bold]="isSegmentGroup(i)"
-            [innerHTML]="line.section_name | highlight: highlight()"></td>
-          <td
-            class="px-6 py-4"
-            [class.font-bold]="isSegmentGroup(i)"
-            [innerHTML]="line.segment_code | highlight: highlight()"></td>
-          <td class="px-6 py-4" [innerHTML]="line.data_element | highlight: highlight()"></td>
-          <td class="px-6 py-4">
-            @if (generateEbdDeepLink(line.ebd_key); as ebdLink) {
-              <a
-                [href]="ebdLink"
-                target="_blank"
-                class="hover:underline font-bold text-hf-dunkel-blau flex flex-row gap-1 items-center">
+        @if (!hiddenRows().has(i)) {
+          <tr [class]="getRowClass(i)">
+            @if (hasGuides()) {
+              <td
+                class="relative p-0"
+                data-guide
+                [style.width.px]="guideWidth()"
+                [style.min-width.px]="guideWidth()">
+                @if (guides()[i]; as g) {
+                  @for (part of g.brackets; track $index; let level = $index) {
+                    @if (part === 'start') {
+                      @let collapsed = !!line.id_path && collapsedGroups().has(line.id_path);
+                      <button
+                        type="button"
+                        (click)="toggleGroup(line.id_path ?? '')"
+                        [attr.aria-expanded]="!collapsed"
+                        [attr.aria-label]="
+                          (collapsed ? 'Ausklappen: ' : 'Einklappen: ') +
+                          line.segment_group_key +
+                          ' ' +
+                          line.section_name
+                        "
+                        [title]="
+                          collapsed
+                            ? groupSize(g, i) + ' Zeilen ausgeblendet – ausklappen'
+                            : 'Einklappen'
+                        "
+                        class="absolute z-[1] flex h-[18px] w-[18px] -translate-y-1/2 items-center justify-center rounded border border-hf-weiches-schwarz/30 bg-hf-weiss-rose text-sm leading-none text-hf-weiches-schwarz/80 hover:border-hf-weiches-schwarz/60 hover:text-hf-weiches-schwarz"
+                        [style.left.px]="level * guideStep + guideStep / 2 - 9"
+                        [style.top.%]="50">
+                        {{ collapsed ? '▸' : '▾' }}
+                      </button>
+                      @if (!collapsed) {
+                        <span
+                          aria-hidden="true"
+                          class="absolute bottom-0 border-l border-hf-weiches-schwarz/50"
+                          [style.left.px]="level * guideStep + guideStep / 2"
+                          style="top: calc(50% + 9px)"></span>
+                      }
+                    } @else if (part === 'single') {
+                      <span
+                        aria-hidden="true"
+                        class="absolute border-t border-hf-weiches-schwarz/50"
+                        [style.left.px]="level * guideStep + guideStep / 2"
+                        [style.top.%]="50"
+                        [style.width.px]="guideTick"></span>
+                    } @else {
+                      <span
+                        aria-hidden="true"
+                        class="absolute inset-y-0 border-l border-hf-weiches-schwarz/50"
+                        [style.left.px]="level * guideStep + guideStep / 2"></span>
+                    }
+                  }
+                }
+              </td>
+            }
+            <td
+              class="px-6 py-4"
+              [class.font-bold]="isSegmentGroup(i)"
+              [innerHTML]="line.segment_group_key | highlight: highlight()"></td>
+            <td
+              class="px-6 py-4"
+              [class.font-bold]="isSegmentGroup(i)"
+              [innerHTML]="line.section_name | highlight: highlight()"></td>
+            <td
+              class="px-6 py-4"
+              [class.font-bold]="isSegmentGroup(i)"
+              [innerHTML]="line.segment_code | highlight: highlight()"></td>
+            <td class="px-6 py-4" [innerHTML]="line.data_element | highlight: highlight()"></td>
+            <td class="px-6 py-4">
+              @if (generateEbdDeepLink(line.ebd_key); as ebdLink) {
+                <a
+                  [href]="ebdLink"
+                  target="_blank"
+                  class="hover:underline font-bold text-hf-dunkel-blau flex flex-row gap-1 items-center">
+                  <span [innerHTML]="line.value_pool_entry | highlight: highlight()"></span>
+                  <app-icon-link />
+                </a>
+              } @else {
                 <span [innerHTML]="line.value_pool_entry | highlight: highlight()"></span>
-                <app-icon-link />
-              </a>
-            } @else {
-              <span [innerHTML]="line.value_pool_entry | highlight: highlight()"></span>
-            }
-          </td>
-          <td class="px-6 py-4" [innerHTML]="line.name | highlight: highlight()"></td>
-          <td class="px-6 py-4">
-            @if (line.ahb_expression.includes('[')) {
-              <a
-                [href]="generateBedingungsbaumDeepLink(line.ahb_expression)"
-                target="_blank"
-                class="hover:underline font-bold text-hf-dunkel-gelb flex flex-row gap-1 items-center">
-                {{ line.ahb_expression }} <app-icon-link />
-              </a>
-            } @else {
-              {{ line.ahb_expression }}
-            }
-          </td>
-          <td class="px-6 py-4 conditions-column">
-            @if (line.conditions) {
-              @for (
-                condition of addConditionLineBreaks(getDisplayText(line.conditions, i));
-                track $index
-              ) {
-                <div [innerHTML]="condition | highlight: highlight()"></div>
               }
-              @if (shouldShowToggle(line.conditions)) {
-                <button (click)="toggleExpand(i)" class="text-hf-dunkel-rose text-sm mt-1">
-                  {{ isExpanded(i) ? 'weniger anzeigen' : 'mehr anzeigen' }}
-                </button>
+            </td>
+            <td class="px-6 py-4" [innerHTML]="line.name | highlight: highlight()"></td>
+            <td class="px-6 py-4">
+              @if (line.ahb_expression.includes('[')) {
+                <a
+                  [href]="generateBedingungsbaumDeepLink(line.ahb_expression)"
+                  target="_blank"
+                  class="hover:underline font-bold text-hf-dunkel-gelb flex flex-row gap-1 items-center">
+                  {{ line.ahb_expression }} <app-icon-link />
+                </a>
+              } @else {
+                {{ line.ahb_expression }}
               }
+            </td>
+            <td class="px-6 py-4 conditions-column">
+              @if (line.conditions) {
+                @for (
+                  condition of addConditionLineBreaks(getDisplayText(line.conditions, i));
+                  track $index
+                ) {
+                  <div [innerHTML]="condition | highlight: highlight()"></div>
+                }
+                @if (shouldShowToggle(line.conditions)) {
+                  <button (click)="toggleExpand(i)" class="text-hf-dunkel-rose text-sm mt-1">
+                    {{ isExpanded(i) ? 'weniger anzeigen' : 'mehr anzeigen' }}
+                  </button>
+                }
+              }
+            </td>
+            @if (hasMig()) {
+              <td class="px-6 py-4">
+                @if (migByGuid().get(line.guid); as link) {
+                  <button
+                    type="button"
+                    (click)="toggleMig(line.guid)"
+                    [attr.aria-expanded]="openMig().has(line.guid)"
+                    [title]="'MIG: ' + link.element.name"
+                    class="whitespace-nowrap rounded-full border border-hf-dunkel-blau px-2 py-0.5 font-mono text-xs text-hf-dunkel-blau hover:bg-hf-weiss-rose">
+                    {{ link.element.key }} {{ openMig().has(line.guid) ? '▴' : '▾' }}
+                  </button>
+                }
+              </td>
             }
-          </td>
-        </tr>
+          </tr>
+          @if (hasMig() && migLinks(); as mig) {
+            @if (openMig().has(line.guid) && migByGuid().get(line.guid); as link) {
+              <tr>
+                @if (hasGuides()) {
+                  <td class="relative p-0" aria-hidden="true" data-guide>
+                    @if (guides()[i]; as g) {
+                      @for (part of g.brackets; track $index; let level = $index) {
+                        @if (part !== 'single') {
+                          <span
+                            class="absolute inset-y-0 border-l border-hf-weiches-schwarz/50"
+                            [style.left.px]="level * guideStep + guideStep / 2"></span>
+                        }
+                      }
+                    }
+                  </td>
+                }
+                <td colspan="9" class="px-6 pb-4">
+                  <app-mig-element-details [link]="link" [mig]="mig.mig" />
+                </td>
+              </tr>
+            }
+          }
+        }
       }
     </tbody>
   </table>

@@ -42,3 +42,4 @@ services:
       APP_FRISTENKALENDER_BASE_URL: https://fristenkalender-stage.hochfrequenz.app
       APP_ALLOW_SEARCH_INDEXING: 'false'
       APP_ENABLE_PRUEFI_COMPARISON: 'true'
+      APP_ENABLE_MIG_VIEW: 'true'

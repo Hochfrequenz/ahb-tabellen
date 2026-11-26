@@ -121,6 +121,34 @@
             </div>
           </div>
         }
+        @if (showMigView) {
+          <div
+            (click)="onMigClick()"
+            (keydown.enter)="onMigClick()"
+            (keydown.space)="onMigClick()"
+            tabindex="0"
+            role="button"
+            class="bg-hf-pastell-rose rounded-3xl p-6 md:p-8 cursor-pointer transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-black/10 focus:outline-none">
+            <div class="flex flex-col items-center text-center">
+              <div class="mb-4">
+                <img
+                  src="assets/companystylesheet/icons/growing_plant.svg"
+                  alt="MIG-Struktur Icon"
+                  class="w-12 h-12 md:w-16 md:h-16" />
+              </div>
+              <h2 class="text-xl md:text-2xl text-hf-weiches-schwarz font-semibold mb-3">
+                MIG-Struktur
+              </h2>
+              <p class="text-hf-weiches-schwarz text-sm md:text-base opacity-80 leading-relaxed">
+                Den Aufbau einer EDIFACT-Nachricht als Baum erkunden: Segmentgruppen, Segmente,
+                Datenelemente und Codes.
+              </p>
+              <div class="mt-4 text-xs md:text-sm text-hf-weiches-schwarz opacity-60">
+                Klicken zum Öffnen →
+              </div>
+            </div>
+          </div>
+        }
       </div>
 
       <!-- MCP / KI-Anbindung wide tile -->

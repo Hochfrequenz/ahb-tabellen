@@ -102,6 +102,19 @@ describe('MCP server (in-memory integration)', () => {
       expect(parse(result)).toEqual(ahb);
     });
 
+    it('get_ahb leaves out the id_path the web UI uses', async () => {
+      const line = { guid: 'g', name: 'Nachrichten-Kopfsegment' };
+      services.ahb.getAhb.mockResolvedValue({
+        fileType: 'json',
+        content: { meta: {}, lines: [{ ...line, id_path: 'UNH>' }] },
+      });
+      const result = (await client.callTool({
+        name: 'get_ahb',
+        arguments: { formatVersion: 'FV2410', pruefi: '11001' },
+      })) as CallResult;
+      expect(parse(result)).toEqual({ meta: {}, lines: [line] });
+    });
+
     it('search_ahb_lines forwards the validated payload', async () => {
       const searchResult = { items: [], total: 0, page: 1, pageSize: 25 };
       services.ahb.searchAhbLines.mockResolvedValue(searchResult);

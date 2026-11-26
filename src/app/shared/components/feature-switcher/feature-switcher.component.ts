@@ -37,6 +37,7 @@ export class FeatureSwitcherComponent {
     ...(environment.enablePruefiComparison
       ? [{ value: 'pruefi-comparison', label: 'AHB Prüfi-Vergleich', route: '/compare-pruefis' }]
       : []),
+    ...(environment.enableMigView ? [{ value: 'mig', label: 'MIG-Struktur', route: '/mig' }] : []),
   ];
 
   toggleDropdown(event?: Event): void {

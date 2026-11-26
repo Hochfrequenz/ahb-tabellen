@@ -16,4 +16,6 @@ export interface EnvironmentInterface {
   warmupUrl?: string;
   allowSearchIndexing: boolean;
   enablePruefiComparison: boolean;
+  /** MIG structure view; needs a database with MIG data (the AHB-only one has none). */
+  enableMigView: boolean;
 }
