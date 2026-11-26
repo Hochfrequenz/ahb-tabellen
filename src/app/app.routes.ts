@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { pruefiComparisonEnabledGuard } from './guards/pruefi-comparison-enabled.guard';
+import { migViewEnabledGuard } from './guards/mig-view-enabled.guard';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,11 @@ export const routes: Routes = [
       (await import('./features/pruefi-comparison/pruefi-comparison.routes'))
         .PRUEFI_COMPARISON_ROUTES,
     canActivate: [AuthGuard, pruefiComparisonEnabledGuard],
+  },
+  {
+    path: 'mig',
+    loadChildren: async () => (await import('./features/mig/mig.routes')).MIG_ROUTES,
+    canActivate: [AuthGuard, migViewEnabledGuard],
   },
   {
     path: '',

@@ -15,10 +15,13 @@ export class FeatureSelectionPageComponent {
   private router = inject(Router);
 
   readonly showPruefiComparison = environment.enablePruefiComparison;
+  readonly showMigView = environment.enableMigView;
 
-  // Keep the card row balanced: a full row of 4 when the Prüfi-Vergleich card
-  // is shown, or 3 when it is hidden (otherwise 3 cards leave an empty column).
-  readonly cardGridColumnsClass = this.showPruefiComparison ? 'lg:grid-cols-4' : 'lg:grid-cols-3';
+  // Keep the card row balanced: one row with as many columns as cards (3 to 5). Tailwind only
+  // generates classes it finds literally in the source, hence the lookup instead of a template.
+  readonly cardGridColumnsClass = (
+    { 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5' } as Record<number, string>
+  )[3 + Number(this.showPruefiComparison) + Number(this.showMigView)];
 
   onAhbClick() {
     this.router.navigate(['/ahb']);
@@ -34,6 +37,10 @@ export class FeatureSelectionPageComponent {
 
   onPruefiComparisonClick() {
     this.router.navigate(['/compare-pruefis']);
+  }
+
+  onMigClick() {
+    this.router.navigate(['/mig']);
   }
 
   onMcpClick() {

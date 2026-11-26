@@ -24,6 +24,7 @@ describe('buildRuntimeConfig', () => {
       APP_WARMUP_URL: 'https://ahbicht.example/warmup',
       APP_ALLOW_SEARCH_INDEXING: 'false',
       APP_ENABLE_PRUEFI_COMPARISON: 'true',
+      APP_ENABLE_MIG_VIEW: 'false',
     });
 
     expect(config).toEqual({
@@ -40,6 +41,7 @@ describe('buildRuntimeConfig', () => {
       warmupUrl: 'https://ahbicht.example/warmup',
       allowSearchIndexing: false,
       enablePruefiComparison: true,
+      enableMigView: false,
     });
   });
 

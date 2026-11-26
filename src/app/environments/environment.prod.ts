@@ -40,6 +40,7 @@ const defaults: EnvironmentInterface = {
   warmupUrl: 'https://ahbicht.azurewebsites.net/api/ResolveConditionText/FV2504/UTILMDS/333',
   allowSearchIndexing: true,
   enablePruefiComparison: false,
+  enableMigView: false,
 };
 
 export const environment: EnvironmentInterface = withRuntimeConfig(defaults);

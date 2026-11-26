@@ -1,0 +1,65 @@
+@let n = node();
+<div
+  role="treeitem"
+  tabindex="0"
+  [attr.id]="selected() ? 'mig-selected-node' : null"
+  [attr.aria-expanded]="n.children.length ? expanded() : null"
+  [attr.aria-selected]="selected()"
+  (click)="select()"
+  (keydown.enter)="select()"
+  (keydown.space)="toggle($event)"
+  class="flex items-center gap-2 pr-3 py-1 rounded-lg cursor-pointer text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-hf-dunkel-rose"
+  [class.bg-hf-grell-rose]="selected()"
+  [class.hover:bg-hf-weiss-rose]="!selected()"
+  [style.padding-left.rem]="0.25 + depth() * 1.1">
+  @if (n.children.length) {
+    <button
+      type="button"
+      (click)="toggle($event)"
+      class="w-5 h-5 flex-none flex items-center justify-center rounded hover:bg-hf-pastell-rose text-hf-text-color transition-transform duration-150"
+      [class.rotate-90]="expanded()"
+      [attr.aria-label]="expanded() ? 'Zuklappen' : 'Aufklappen'">
+      ▸
+    </button>
+  } @else {
+    <span class="w-5 flex-none"></span>
+  }
+
+  <span
+    class="flex-none w-11 text-center text-[10px] uppercase tracking-wide font-semibold py-0.5 rounded"
+    [class]="
+      n.type === 'segment_group'
+        ? 'bg-hf-dunkel-blau text-white'
+        : n.type === 'segment'
+          ? 'bg-hf-pastell-blau text-hf-weiches-schwarz'
+          : n.type === 'code'
+            ? 'bg-hf-pastell-gelb text-hf-weiches-schwarz'
+            : 'bg-hf-neutral-grau text-hf-weiches-schwarz'
+    ">
+    {{ typeLabels[n.type] }}
+  </span>
+  <span class="font-mono font-semibold text-hf-weiches-schwarz">{{ n.key }}</span>
+  <span class="truncate text-hf-text-color">{{ n.name }}</span>
+
+  <span class="ml-auto flex-none flex items-center gap-1.5 font-mono text-xs text-hf-text-color">
+    @if (n.formatSpecification) {
+      <span class="opacity-70" title="Format">{{ n.formatSpecification }}</span>
+    }
+    @if (n.maxRepSpecification !== undefined) {
+      <span class="opacity-70" title="Maximale Wiederholungen">×{{ n.maxRepSpecification }}</span>
+    }
+    <span
+      class="w-5 text-center py-0.5 rounded font-semibold bg-hf-pastell-mint text-hf-dunkel-mint"
+      title="Status">
+      {{ n.statusSpecification }}
+    </span>
+  </span>
+</div>
+
+@if (expanded()) {
+  <div role="group">
+    @for (child of n.children; track $index) {
+      <app-mig-tree-node [node]="child" [depth]="depth() + 1" (picked)="picked.emit($event)" />
+    }
+  </div>
+}

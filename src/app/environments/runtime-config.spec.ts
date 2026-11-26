@@ -15,6 +15,7 @@ const defaults: EnvironmentInterface = {
   baseUrl: 'https://compiled.example',
   allowSearchIndexing: true,
   enablePruefiComparison: false,
+  enableMigView: false,
 };
 
 describe('withRuntimeConfig', () => {

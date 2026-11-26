@@ -32,6 +32,8 @@ tags:
     description: EDIFACT format versions e.g. `FV2510`
   - name: prüfidentifikatoren
     description: Prüfidentifikatoren which is defined by edi@energy, e.g. 55001
+  - name: mig
+    description: Message Implementation Guides (MIGs), the structure of an EDIFACT message
   - name: maintenance
     description: Endpoints which have mainly a technical focus
 paths:
@@ -259,6 +261,69 @@ paths:
           description: pruefiOld and pruefiNew are identical
         '404':
           description: One or both Pruefidentifikatoren not found in the given format version
+  /api/migs:
+    get:
+      tags:
+        - mig
+      summary: List the MIGs (Message Implementation Guides) of a format version
+      description: Empty if the database contains no MIG data (the AHB-only database).
+      operationId: getMigs
+      parameters:
+        - name: format-version
+          in: query
+          description: FVxxxx code, 'current', or an ISO date YYYY-MM-DD
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MigSummary'
+        '400':
+          description: Invalid format version
+  /api/mig/{format-version}/{format}:
+    get:
+      tags:
+        - mig
+      summary: Get the structure of a MIG as a tree (segment groups, segments, data element groups, data elements, codes)
+      operationId: getMigTree
+      parameters:
+        - name: format-version
+          in: path
+          description: FVxxxx code, 'current', or an ISO date YYYY-MM-DD
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormatVersion'
+        - name: format
+          in: path
+          description: EDIFACT format, e.g. MSCONS
+          required: true
+          schema:
+            type: string
+            example: 'MSCONS'
+        - name: version
+          in: query
+          description: Versionsnummer of the MIG (e.g. S2.2); required only if the format has several MIGs in the format version (UTILMD)
+          required: false
+          schema:
+            type: string
+            example: 'S2.2'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigTree'
+        '400':
+          description: Invalid format version or format, or a version is needed
+        '404':
+          description: No such MIG (or the database contains no MIG data)
   /api/pruefidentifikatoren/{format-version}:
     get:
       tags:
@@ -824,6 +889,76 @@ components:
         - added
         - deleted
         - modified
+    MigSummary:
+      type: object
+      required: [format, versionsnummer, gueltigVon, gueltigBis]
+      properties:
+        format:
+          type: string
+          example: 'UTILMD'
+        versionsnummer:
+          type: string
+          example: 'S2.2'
+        gueltigVon:
+          type: string
+          nullable: true
+          example: '2026-10-01'
+        gueltigBis:
+          type: string
+          nullable: true
+    MigTree:
+      type: object
+      required: [meta, nodes]
+      properties:
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/MigSummary'
+            - type: object
+              required: [formatVersion]
+              properties:
+                formatVersion:
+                  type: string
+                  example: 'FV2610'
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigNode'
+    MigNode:
+      type: object
+      required: [type, key, name, statusStd, statusSpecification, children]
+      properties:
+        type:
+          type: string
+          enum: [segment_group, segment, dataelementgroup, dataelement, code]
+        key:
+          type: string
+          description: SG4, RFF, C_C506, D_1153 or a code value like AAV
+        name:
+          type: string
+        statusStd:
+          type: string
+          description: Status in the EDIFACT standard (M, C, R, D, O, N)
+        statusSpecification:
+          type: string
+          description: Status in the BDEW specification (M, C, R, D, O, N)
+        maxRepStd:
+          type: integer
+        maxRepSpecification:
+          type: integer
+        number:
+          type: string
+        formatStd:
+          type: string
+        formatSpecification:
+          type: string
+        description:
+          type: string
+        example:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigNode'
     Datenstand:
       type: object
       description: Latest publication date of the AHB data

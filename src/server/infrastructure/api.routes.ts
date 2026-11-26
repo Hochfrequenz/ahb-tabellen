@@ -5,6 +5,7 @@ import DatenstandController from '../controller/datenstand';
 import FormatVersionController from '../controller/formatVersion';
 import FormateController from '../controller/formate';
 import HealthController from '../controller/health';
+import MigController from '../controller/mig';
 import SearchController from '../controller/search';
 import RichtungController from '../controller/richtung';
 
@@ -16,6 +17,7 @@ const datenstandController = new DatenstandController();
 const formatVersionController = new FormatVersionController();
 const formateController = new FormateController();
 const healthController = new HealthController();
+const migController = new MigController();
 const searchController = new SearchController();
 const richtungController = new RichtungController();
 
@@ -37,6 +39,14 @@ router.get('/ahb-diff/:pruefi', (req, res, next) => {
 
 router.get('/pruefi-diff/:pruefiOld/:pruefiNew', (req, res, next) => {
   ahbDiffController.getPruefiDiff(req, res, next);
+});
+
+router.get('/migs', (req, res, next) => {
+  migController.list(req, res, next);
+});
+
+router.get('/mig/:formatVersion/:format', (req, res, next) => {
+  migController.get(req, res, next);
 });
 
 router.post('/search/query', (req, res, next) => {

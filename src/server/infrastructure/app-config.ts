@@ -30,6 +30,7 @@ export const ENV_VARS = {
   warmupUrl: 'APP_WARMUP_URL',
   allowSearchIndexing: 'APP_ALLOW_SEARCH_INDEXING',
   enablePruefiComparison: 'APP_ENABLE_PRUEFI_COMPARISON',
+  enableMigView: 'APP_ENABLE_MIG_VIEW',
 } as const satisfies Record<keyof RuntimeConfig, string>;
 
 function setIfPresent<K extends keyof RuntimeConfig>(
@@ -97,6 +98,7 @@ export function buildRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtim
   setIfPresent(config, 'warmupUrl', readString(env, ENV_VARS.warmupUrl));
   setIfPresent(config, 'allowSearchIndexing', readBoolean(env, ENV_VARS.allowSearchIndexing));
   setIfPresent(config, 'enablePruefiComparison', readBoolean(env, ENV_VARS.enablePruefiComparison));
+  setIfPresent(config, 'enableMigView', readBoolean(env, ENV_VARS.enableMigView));
 
   return config;
 }
