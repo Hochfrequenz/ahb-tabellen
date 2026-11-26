@@ -34,6 +34,7 @@ const url = process.argv[2] || process.env.MCP_URL || DEFAULT_URL;
 const EXPECTED_TOOLS = [
   'get_ahb',
   'search_ahb_lines',
+  'search_bedingung_usage',
   'get_ahb_diff',
   'get_ahb_diff_summary',
   'list_format_versions',
