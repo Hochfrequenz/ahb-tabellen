@@ -48,16 +48,31 @@ export interface BedingungUsageResult {
   pruefis: BedingungUsagePruefi[];
 }
 
+/** Package with a cardinality as written in AHB expressions, e.g. `1P0..1`, `12P0..N`. */
+const PACKAGE_WITH_CARDINALITY = /^(\d+P)\d+\.\.(?:\d+|N)$/;
+/** The key shapes the condition usages hold: condition `931`, package `1P`, UB condition `UB1`. */
+const CONDITION_KEY = /^(?:\d+|\d+P|UB\d+)$/;
+
 /**
- * Normalize a user-supplied condition key: strip whitespace and brackets, uppercase letters
- * (`[ ub1 ]` -> `UB1`, `2p` -> `2P`).
- * @throws {@link ValidationError} if nothing remains.
+ * Normalize a user-supplied condition key: strip whitespace and brackets, uppercase letters and
+ * drop a package cardinality (`[ ub1 ]` -> `UB1`, `2p` -> `2P`, `[1P0..1]` -> `1P`).
+ * @throws {@link ValidationError} if the result is not a single condition, package or UB key
+ *   (e.g. a whole expression like `[931] ∧ [932]`), so it is never answered with "unused".
  */
 export function normalizeBedingung(value: string): string {
-  const key = value.replace(/[\s[\]]/g, '').toUpperCase();
+  const key = value
+    .replace(/[\s[\]]/g, '')
+    .toUpperCase()
+    .replace(PACKAGE_WITH_CARDINALITY, '$1');
   if (key === '') {
     throw new ValidationError(
       'bedingung must not be empty (expected e.g. "931", "[931]" or "UB1").'
+    );
+  }
+  if (!CONDITION_KEY.test(key)) {
+    throw new ValidationError(
+      `Invalid bedingung: ${value}. Expected one condition key: a condition ("931", "[931]"), ` +
+        'a package ("1P", "[1P0..1]") or a UB condition ("UB1"), not a whole expression.'
     );
   }
   return key;

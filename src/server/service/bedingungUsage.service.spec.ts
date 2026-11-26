@@ -26,6 +26,9 @@ describe('normalizeBedingung', () => {
     ['ub1', 'UB1'],
     ['[ub1]', 'UB1'],
     ['2p', '2P'],
+    ['[1P0..1]', '1P'],
+    ['[12p0..n]', '12P'],
+    ['[ 2P1..5 ]', '2P'],
   ])('normalizes %j to %j', (input, expected) => {
     expect(normalizeBedingung(input)).toBe(expected);
   });
@@ -33,6 +36,13 @@ describe('normalizeBedingung', () => {
   it.each(['', '  ', '[]', ' [ ] '])('rejects %j as empty', input => {
     expect(() => normalizeBedingung(input)).toThrow(ValidationError);
   });
+
+  it.each(['[931] ∧ [932]', 'Muss [931]', 'UB', 'P1', '1P0..', 'X', '931a'])(
+    'rejects %j, which is no single condition key',
+    input => {
+      expect(() => normalizeBedingung(input)).toThrow(ValidationError);
+    }
+  );
 });
 
 describe('BedingungUsageService', () => {

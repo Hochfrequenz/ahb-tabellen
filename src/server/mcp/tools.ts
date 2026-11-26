@@ -137,15 +137,16 @@ export function registerAhbTools(server: McpServer, services: McpServices): void
         'a line reaches the condition, null meaning direct use and e.g. "UB1" meaning use through ' +
         'condition [UB1]. Results can be large: at most `limit` lines are returned (default 200); ' +
         'if `truncated` is true, `totalLines` tells how many lines match, so narrow the search ' +
-        'with `pruefi` or `format`. ' +
+        "with `pruefi` or `format`. Each line's expression is in `lineAhbStatus`. " +
         bedingungJumpHint,
       inputSchema: {
         formatVersion: z.string().describe(FORMAT_VERSION_DESC),
         bedingung: z
           .string()
           .describe(
-            'Condition key, with or without brackets (e.g. "931", "[931]", "UB1", "2P"); ' +
-              'whitespace is ignored and letters are case-insensitive.'
+            'One condition key, with or without brackets: a condition ("931", "[931]"), a package ' +
+              '("2P", or with cardinality as in the AHB, "[2P0..1]") or a UB condition ("UB1"); ' +
+              'whitespace is ignored and letters are case-insensitive. Whole expressions are rejected.'
           ),
         format: z
           .string()
