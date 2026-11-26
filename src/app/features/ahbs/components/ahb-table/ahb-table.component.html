@@ -89,8 +89,8 @@
                             ? groupSize(g, i) + ' Zeilen ausgeblendet – ausklappen'
                             : 'Einklappen'
                         "
-                        class="absolute z-[1] flex h-3.5 w-3.5 -translate-y-1/2 items-center justify-center rounded-sm text-[10px] leading-none text-hf-weiches-schwarz/70 hover:bg-hf-weiches-schwarz/10"
-                        [style.left.px]="level * guideStep + guideStep / 2 - 7"
+                        class="absolute z-[1] flex h-[18px] w-[18px] -translate-y-1/2 items-center justify-center rounded border border-hf-weiches-schwarz/30 bg-hf-weiss-rose text-sm leading-none text-hf-weiches-schwarz/80 hover:border-hf-weiches-schwarz/60 hover:text-hf-weiches-schwarz"
+                        [style.left.px]="level * guideStep + guideStep / 2 - 9"
                         [style.top.%]="50">
                         {{ collapsed ? '▸' : '▾' }}
                       </button>
@@ -99,7 +99,7 @@
                           aria-hidden="true"
                           class="absolute bottom-0 border-l border-hf-weiches-schwarz/50"
                           [style.left.px]="level * guideStep + guideStep / 2"
-                          style="top: calc(50% + 7px)"></span>
+                          style="top: calc(50% + 9px)"></span>
                       }
                     } @else if (part === 'single') {
                       <span

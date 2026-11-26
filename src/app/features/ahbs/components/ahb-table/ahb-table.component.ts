@@ -70,7 +70,7 @@ export class AhbTableComponent {
   );
   readonly hasGuides = computed(() => this.guides().some(g => g !== null));
   /** Horizontal space per nesting level, in px. */
-  readonly guideStep = 14;
+  readonly guideStep = 20;
   /** Length of the tick at a group's header row, in px. */
   readonly guideTick = 7;
   readonly guideWidth = computed(
